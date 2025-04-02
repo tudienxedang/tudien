@@ -184,6 +184,22 @@
             background: #2980b9;
             transform: translateY(-2px);
         }
+        #speechButton {
+            padding: 0.8rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background var(--transition-speed), transform var(--transition-speed);
+        }
+        #speechButton:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        #speechButton.listening {
+            background: var(--accent-color);
+        }
         .result-container {
             margin-top: 2rem;
             padding: 2rem;
@@ -243,7 +259,10 @@
         <form id="searchForm" role="search">
             <div class="input-group">
                 <label for="word" class="form-label">Nhập từ cần tra</label>
-                <input type="text" id="word" placeholder="Ví dụ: ăn cơm, ka me..." autocomplete="off" list="suggestions">
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="word" placeholder="Ví dụ: ăn cơm, ka me..." autocomplete="off" list="suggestions">
+                    <button type="button" id="speechButton" title="Nhấn để đọc từ"><i class="fas fa-microphone"></i></button>
+                </div>
                 <datalist id="suggestions"></datalist>
             </div>
             <div class="input-group">
@@ -320,7 +339,8 @@
                 resultDiv: document.getElementById('result'),
                 errorDiv: document.getElementById('error'),
                 loading: document.getElementById('loading'),
-                suggestions: document.getElementById('suggestions')
+                suggestions: document.getElementById('suggestions'),
+                speechButton: document.getElementById('speechButton')
             };
 
             function showLoading() { dom.loading.style.display = 'block'; }
@@ -404,9 +424,57 @@
                 });
             }
 
+            function initSpeechRecognition() {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    dom.speechButton.disabled = true;
+                    return showError('Trình duyệt không hỗ trợ nhận diện giọng nói.');
+                }
+
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'vi-VN';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                dom.speechButton.addEventListener('click', () => {
+                    if (dom.speechButton.classList.contains('listening')) {
+                        recognition.stop();
+                        return;
+                    }
+
+                    dom.speechButton.classList.add('listening');
+                    recognition.start();
+
+                    recognition.onstart = () => {
+                        dom.speechButton.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                        showError('Đang lắng nghe... Nhấn lại để dừng.');
+                    };
+
+                    recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript;
+                        dom.wordInput.value = transcript;
+                        clearResults();
+                        const result = searchTerm(transcript);
+                        dom.resultDiv.innerHTML = renderResult(result);
+                    };
+
+                    recognition.onend = () => {
+                        dom.speechButton.classList.remove('listening');
+                        dom.speechButton.innerHTML = '<i class="fas fa-microphone"></i>';
+                    };
+
+                    recognition.onerror = (event) => {
+                        showError(`Lỗi nhận diện giọng nói: ${event.error}`);
+                    };
+                });
+            }
+
             dom.searchForm.addEventListener('submit', handleSearch);
             dom.directionSelect.addEventListener('change', () => dom.wordInput.value = '');
-            fetchDictionary().then(initAutocomplete);
+            fetchDictionary().then(() => {
+                initAutocomplete();
+                initSpeechRecognition();
+            });
         })();
     </script>
 </body>
