@@ -99,13 +99,20 @@
             justify-content: center;
             gap: 2rem;
         }
-        .navbar a {
-            color: var(--primary-color);
+        .menu-link {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--secondary-color);
+            color: white;
             text-decoration: none;
+            border-radius: 20px;
             font-weight: 600;
-            transition: color var(--transition-speed);
+            transition: background var(--transition-speed), transform var(--transition-speed);
         }
-        .navbar a:hover { color: var(--secondary-color); }
+        .menu-link:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
         .container {
             background: rgba(255,255,255,0.98);
             border-radius: 15px;
@@ -234,14 +241,47 @@
             button { width: 100%; }
             .navbar ul { flex-direction: column; gap: 1rem; }
         }
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .footer-content p {
+            margin: 0.5rem 0;
+            color: var(--primary-color);
+        }
+        .hashtag-container {
+            margin-top: 1rem;
+        }
+        .hashtag {
+            display: inline-block;
+            margin: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--secondary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            transition: background var(--transition-speed), transform var(--transition-speed);
+        }
+        .hashtag:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
         <ul>
-            <li><a href="#home" onclick="showSection('home')">Trang chủ</a></li>
-            <li><a href="#intro" onclick="showSection('intro')">Giới thiệu</a></li>
+            <li><a href="#home" class="menu-link" onclick="showSection('home')">Trang chủ</a></li>
+            <li><a href="#intro" class="menu-link" onclick="showSection('intro')">Giới thiệu</a></li>
         </ul>
     </nav>
 
@@ -305,6 +345,22 @@
         </section>
     </section>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>© 2025 Từ điển tiếng Xơ đăng. Tất cả các quyền được bảo lưu.</p>
+            <p>Tác giả: Từ điển tiếng Xơ đăng</p>
+            <div class="hashtag-container">
+                <a href="#TừĐiểnXơĐăng" class="hashtag">#TừĐiểnXơĐăng</a>
+                <a href="#NgônNgữHọc" class="hashtag">#TừĐiểnXêĐăng</a>
+                <a href="#TiếngDânTộc" class="hashtag">#TiếngDânTộc</a>
+                <a href="#HọcTiếngXơĐăng" class="hashtag">#HọcTiếngXơĐăng</a>
+                <a href="#VănHóaDânTộc" class="hashtag">#VănHóaDânTộc</a>
+                <a href="#NgônNgữHọc" class="hashtag">#NgônNgữHọc</a>
+            </div>
+        </div>
+    </footer>
+
     <!-- JavaScript -->
     <script>
         function showSection(sectionId) {
@@ -316,7 +372,7 @@
 
         showSection('home');
 
-        document.querySelectorAll('.navbar a').forEach(link => {
+        document.querySelectorAll('.menu-link').forEach(link => {
             link.addEventListener('click', function(event) {
                 event.preventDefault();
                 const sectionId = this.getAttribute('href').substring(1);
