@@ -169,12 +169,12 @@
         .form-label { font-weight: 600; color: var(--primary-color); }
         input[type="text"], select {
             padding: 0.8rem;
-            border: 2px solid #e0e0e0;
+            border: 2px solid #3498db; /* Viền màu xanh nổi bật */
             border-radius: 8px;
             font-size: 1rem;
         }
         input[type="text"]:focus, select:focus {
-            border-color: var(--secondary-color);
+            border-color: #2980b9; /* Màu xanh đậm hơn khi focus */
             box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
             outline: none;
         }
@@ -239,12 +239,19 @@
             #searchForm { grid-template-columns: 1fr; }
             .container { padding: 1.5rem; }
             button { width: 100%; }
-            .navbar ul { flex-direction: column; gap: 1rem; }
+            .navbar ul {
+                flex-direction: row; /* Menu nằm ngang trên thiết bị di động */
+                justify-content: center;
+                gap: 1rem;
+            }
+            .menu-link {
+                padding: 0.5rem 1rem;
+            }
         }
         .footer {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.95);
             padding: 1rem;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             position: relative;
             z-index: 10;
             text-align: center;
