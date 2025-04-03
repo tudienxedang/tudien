@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Từ Điển Xơ Đăng ↔ Tiếng Việt | Tra 5000+ Từ Chuẩn Xác</title>
-    <meta name="description" content="Khám phá từ điển Xơ Đăng - Việt với hơn 5000 từ vựng chuẩn xác. Tra cứu miễn phí, hỗ trợ phát âm và dịch thuật song ngữ.">
+    <meta name="description" content="Khám phá từ điển Xơ Đăng (Xê đăng)- Việt với hơn 5000 từ vựng chuẩn xác. Tra cứu miễn phí, hỗ trợ phát âm và dịch thuật song ngữ.">
     <meta name="keywords" content="từ điển xơ đăng, dịch tiếng dân tộc, học tiếng xơ đăng, từ vựng xơ đăng, tiếng dân tộc thiểu số">
     <meta name="robots" content="index, follow">
     <meta name="author" content="Từ Điển Dân Tộc">
@@ -135,7 +135,7 @@
         .intro-content {
             padding: 1.5rem;
             background: #f8f9fa;
-            border: 2px solid var(--secondary-color); /* Viền xanh nổi bật */
+            border: 2px solid var(--secondary-color);
             border-radius: 12px;
             margin-bottom: 2rem;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
@@ -170,7 +170,7 @@
         .form-label { font-weight: 600; color: var(--primary-color); }
         input[type="text"], select {
             padding: 0.8rem;
-            border: 2px solid var(--secondary-color); /* Đồng bộ viền xanh */
+            border: 2px solid var(--secondary-color);
             border-radius: 8px;
             font-size: 1rem;
         }
@@ -282,6 +282,21 @@
             background: #2980b9;
             transform: translateY(-2px);
         }
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .social-icons a {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            transition: color var(--transition-speed), transform var(--transition-speed);
+        }
+        .social-icons a:hover {
+            color: #2980b9;
+            transform: translateY(-3px);
+        }
     </style>
 </head>
 <body>
@@ -297,9 +312,9 @@
     <section id="home" class="container active">
         <h1>Tra Cứu Tiếng Xơ Đăng - Tiếng Việt</h1>
         <section class="intro-content">
-            <p>Hệ thống tra cứu song ngữ Xơ Đăng - Việt với hơn 5000 từ vựng, hỗ trợ phát âm và dịch thuật chính xác.</p>
+            <p>Hệ thống tra cứu song ngữ Xơ Đăng - Việt với <span id="dictionary-count">Các từ vựng chuẩn tài liệu dạy học tiếng Xơ đăng (Xê đăng) cho cán bộ công chức</span> và các mẫu câu hỏi đáp, hỗ trợ phát âm và dịch thuật chính xác và được cập nhật thường xuyên.</p>
             <ul>
-                <li><i class="fas fa-book"></i> Hơn 5000 từ vựng chuẩn</li>
+                <li><i class="fas fa-book"></i> Các từ vựng chuẩn tài liệu dạy học tiếng Xơ đăng (Xê đăng) cho cán bộ công chức</li>
                 <li><i class="fas fa-volume-up"></i> Hỗ trợ phát âm</li>
                 <li><i class="fas fa-language"></i> Dịch thuật song ngữ</li>
             </ul>
@@ -366,6 +381,17 @@
                 <a href="#VănHóaDânTộc" class="hashtag">#VănHóaDânTộc</a>
                 <a href="#NgônNgữHọc" class="hashtag">#NgônNgữHọc</a>
             </div>
+            <div class="social-icons">
+                <a href="https://zalo.me/your_zalo_id" target="_blank" title="Zalo">
+                    <i class="fab fa-telegram-plane"></i>
+                </a>
+                <a href="https://facebook.com/your_facebook_page" target="_blank" title="Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="mailto:your_email@gmail.com" title="Gmail">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
         </div>
     </footer>
 
@@ -404,7 +430,8 @@
                 errorDiv: document.getElementById('error'),
                 loading: document.getElementById('loading'),
                 suggestions: document.getElementById('suggestions'),
-                speechButton: document.getElementById('speechButton')
+                speechButton: document.getElementById('speechButton'),
+                dictionaryCount: document.getElementById('dictionary-count')
             };
 
             function showLoading() { dom.loading.style.display = 'block'; }
@@ -436,6 +463,8 @@
                         pronunciation: row[2]?.trim()
                     })).filter(item => item.ethnic && item.viet);
                     initialized = true;
+                    // Cập nhật số lượng từ vựng thực tế
+                    dom.dictionaryCount.textContent = `Hơn ${dictionary.length} từ vựng chuẩn`;
                 } catch (error) {
                     showError(`Lỗi tải dữ liệu: ${error.message}`);
                 } finally {
