@@ -108,7 +108,7 @@
             border-radius: 20px;
             font-weight: 600;
             font-size: 1rem;
-            line-height: 1.5; /* Đảm bảo chiều cao dòng đồng nhất */
+            line-height: 1.5;
             transition: background var(--transition-speed), transform var(--transition-speed);
             border: none;
             cursor: pointer;
@@ -145,7 +145,10 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
         .intro-content p { margin-bottom: 1rem; }
-        .intro-content ul { list-style: none; padding: 0; }
+        .intro-content ul, .intro-content ol {
+            list-style: none;
+            padding: 0;
+        }
         .intro-content li {
             margin-bottom: 0.5rem;
             display: flex;
@@ -341,6 +344,10 @@
         body.dark-mode .footer {
             background: rgba(44,62,80,0.95);
         }
+        /* CSS cho nút Tra cứu */
+        .search-button {
+            font-size: 1rem; /* Điều chỉnh kích thước chữ giống Trang chủ */
+        }
     </style>
 </head>
 <body>
@@ -380,7 +387,7 @@
                     <option value="ethnic_to_viet">Xơ Đăng → Việt</option>
                 </select>
             </div>
-            <button type="submit" aria-label="Tra cứu">🔍 Tra cứu</button>
+            <button type="submit" class="search-button" aria-label="Tra cứu">🔍 Tra cứu</button>
         </form>
         <div class="loading" id="loading" style="display:none">Đang tải...</div>
         <section aria-live="polite">
@@ -406,10 +413,22 @@
             <h2>Lịch Sử và Văn Hóa</h2>
             <p>Người Xơ Đăng có truyền thống văn hóa đặc sắc, thể hiện qua các lễ hội, trang phục và kiến trúc độc đáo như nhà rông. Ngôn ngữ Xơ Đăng không chỉ là phương tiện giao tiếp mà còn là cầu nối văn hóa, lưu giữ những giá trị truyền thống của dân tộc.</p>
             <div class="feature-image">
-                <img src="https://tudienxedang.github.io/tudien/xodang-culture.jpg" alt="Văn hóa dân tộc Xơ Đăng (Xê Đăng) - Nhà rông, phong tục người  Xơ Đăng (Xê Đăng) " loading="lazy">
+                <img src="https://tudienxedang.github.io/tudien/xodang-culture.jpg" alt="Văn hóa dân tộc Xơ Đăng (Xê Đăng) - Nhà rông, phong tục người Xơ Đăng (Xê Đăng)" loading="lazy">
             </div>
             <h2>Tầm Quan Trọng Của Việc Học Tiếng Xơ Đăng</h2>
             <p>Học tiếng Xơ Đăng không chỉ giúp bảo tồn ngôn ngữ mà còn mở ra cơ hội giao lưu văn hóa, hiểu biết sâu sắc hơn về dân tộc Xơ Đăng. Với hệ thống từ điển song ngữ Xơ Đăng - Việt, việc tra cứu và học tập trở nên dễ dàng hơn bao giờ hết.</p>
+        </section>
+        <section class="intro-content">
+            <h2>Hướng Dẫn Sử Dụng Từ Điển</h2>
+            <p>Để sử dụng từ điển Xơ Đăng - Việt một cách hiệu quả, bạn có thể làm theo các bước sau:</p>
+            <ol>
+                <li><strong>Chọn hướng dịch:</strong> Trên trang chủ, bạn có thể chọn hướng dịch từ tiếng Việt sang tiếng Xơ Đăng hoặc ngược lại bằng cách sử dụng ô chọn "Hướng dịch".</li>
+                <li><strong>Nhập từ cần tra:</strong> Nhập từ bạn muốn tra cứu vào ô "Nhập từ cần tra". Bạn có thể nhập từ tiếng Việt hoặc tiếng Xơ Đăng tùy thuộc vào hướng dịch bạn đã chọn.</li>
+                <li><strong>Nhấn nút "Tra cứu":</strong> Sau khi nhập từ, nhấn nút "Tra cứu" để xem kết quả. Kết quả sẽ hiển thị từ tương ứng trong ngôn ngữ còn lại cùng với phát âm (nếu có).</li>
+                <li><strong>Sử dụng tính năng phát âm:</strong> Nếu từ có phát âm, bạn có thể nghe cách phát âm bằng cách nhấn vào biểu tượng loa bên cạnh từ (nếu được tích hợp trong tương lai).</li>
+                <li><strong>Nhận diện giọng nói:</strong> Bạn cũng có thể sử dụng tính năng nhận diện giọng nói bằng cách nhấn vào biểu tượng micro và nói từ bạn muốn tra cứu.</li>
+            </ol>
+            <p>Ngoài ra, từ điển Xơ Đăng còn cung cấp các gợi ý từ vựng khi bạn nhập từ, giúp bạn tra cứu nhanh chóng và chính xác hơn.</p>
         </section>
     </section>
 
