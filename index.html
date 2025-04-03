@@ -135,6 +135,7 @@
         .intro-content {
             padding: 1.5rem;
             background: #f8f9fa;
+            border: 2px solid var(--secondary-color); /* Viền xanh nổi bật */
             border-radius: 12px;
             margin-bottom: 2rem;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
@@ -169,12 +170,12 @@
         .form-label { font-weight: 600; color: var(--primary-color); }
         input[type="text"], select {
             padding: 0.8rem;
-            border: 2px solid #3498db; /* Viền màu xanh nổi bật */
+            border: 2px solid var(--secondary-color); /* Đồng bộ viền xanh */
             border-radius: 8px;
             font-size: 1rem;
         }
         input[type="text"]:focus, select:focus {
-            border-color: #2980b9; /* Màu xanh đậm hơn khi focus */
+            border-color: #2980b9;
             box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
             outline: none;
         }
@@ -240,7 +241,7 @@
             .container { padding: 1.5rem; }
             button { width: 100%; }
             .navbar ul {
-                flex-direction: row; /* Menu nằm ngang trên thiết bị di động */
+                flex-direction: row;
                 justify-content: center;
                 gap: 1rem;
             }
