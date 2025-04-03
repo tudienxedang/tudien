@@ -99,7 +99,7 @@
             justify-content: center;
             gap: 2rem;
         }
-        .menu-link {
+        .menu-link, .menu-button {
             display: inline-block;
             padding: 0.5rem 1rem;
             background: var(--secondary-color);
@@ -107,9 +107,13 @@
             text-decoration: none;
             border-radius: 20px;
             font-weight: 600;
+            font-size: 1rem;
+            line-height: 1.5; /* Đảm bảo chiều cao dòng đồng nhất */
             transition: background var(--transition-speed), transform var(--transition-speed);
+            border: none;
+            cursor: pointer;
         }
-        .menu-link:hover {
+        .menu-link:hover, .menu-button:hover {
             background: #2980b9;
             transform: translateY(-2px);
         }
@@ -160,6 +164,7 @@
             height: auto;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            loading: lazy;
         }
         #searchForm {
             display: grid;
@@ -245,7 +250,7 @@
                 justify-content: center;
                 gap: 1rem;
             }
-            .menu-link {
+            .menu-link, .menu-button {
                 padding: 0.5rem 1rem;
             }
         }
@@ -282,11 +287,21 @@
             background: #2980b9;
             transform: translateY(-2px);
         }
+        .contact-title {
+            display: inline-block;
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
         .social-icons {
             display: flex;
             justify-content: center;
             gap: 1.5rem;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
         .social-icons a {
             color: var(--secondary-color);
@@ -297,6 +312,35 @@
             color: #2980b9;
             transform: translateY(-3px);
         }
+        /* Dark Mode */
+        body.dark-mode {
+            --primary-color: #ecf0f1;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-gradient: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        }
+        body.dark-mode .navbar {
+            background: rgba(44,62,80,0.95);
+        }
+        body.dark-mode .container {
+            background: rgba(44,62,80,0.98);
+        }
+        body.dark-mode .intro-content {
+            background: #34495e;
+        }
+        body.dark-mode .result-container {
+            background: #2c3e50;
+        }
+        body.dark-mode .word-card {
+            background: #34495e;
+        }
+        body.dark-mode .error {
+            background: #e74c3c;
+            color: white;
+        }
+        body.dark-mode .footer {
+            background: rgba(44,62,80,0.95);
+        }
     </style>
 </head>
 <body>
@@ -305,11 +349,12 @@
         <ul>
             <li><a href="#home" class="menu-link" onclick="showSection('home')">Trang chủ</a></li>
             <li><a href="#intro" class="menu-link" onclick="showSection('intro')">Giới thiệu</a></li>
+            <li><button id="darkModeToggle" class="menu-button">Dark Mode</button></li>
         </ul>
     </nav>
 
     <!-- Trang chủ -->
-    <section id="home" class="container active">
+    <main id="home" class="container active">
         <h1>Tra Cứu Tiếng Xơ Đăng - Tiếng Việt</h1>
         <section class="intro-content">
             <p>Hệ thống tra cứu song ngữ Xơ Đăng - Việt với <span id="dictionary-count">Các từ vựng chuẩn tài liệu dạy học tiếng Xơ đăng (Xê đăng) cho cán bộ công chức</span> và các mẫu câu hỏi đáp, hỗ trợ phát âm và dịch thuật chính xác và được cập nhật thường xuyên.</p>
@@ -323,19 +368,19 @@
             <div class="input-group">
                 <label for="word" class="form-label">Nhập từ cần tra</label>
                 <div style="display: flex; gap: 0.5rem;">
-                    <input type="text" id="word" placeholder="Ví dụ: ăn cơm, ka me..." autocomplete="off" list="suggestions">
-                    <button type="button" id="speechButton" title="Nhấn để đọc từ"><i class="fas fa-microphone"></i></button>
+                    <input type="text" id="word" placeholder="Ví dụ: ăn cơm, ka me..." autocomplete="off" list="suggestions" aria-label="Nhập từ cần tra cứu">
+                    <button type="button" id="speechButton" title="Nhấn để đọc từ" aria-label="Nhận diện giọng nói"><i class="fas fa-microphone"></i></button>
                 </div>
                 <datalist id="suggestions"></datalist>
             </div>
             <div class="input-group">
                 <label for="direction" class="form-label">Hướng dịch</label>
-                <select id="direction">
+                <select id="direction" aria-label="Chọn hướng dịch">
                     <option value="viet_to_ethnic">Việt → Xơ Đăng</option>
                     <option value="ethnic_to_viet">Xơ Đăng → Việt</option>
                 </select>
             </div>
-            <button type="submit">🔍 Tra cứu</button>
+            <button type="submit" aria-label="Tra cứu">🔍 Tra cứu</button>
         </form>
         <div class="loading" id="loading" style="display:none">Đang tải...</div>
         <section aria-live="polite">
@@ -344,7 +389,7 @@
                 <div id="error" class="error" role="alert" hidden></div>
             </div>
         </section>
-    </section>
+    </main>
 
     <!-- Trang giới thiệu -->
     <section id="intro" class="container">
@@ -381,16 +426,19 @@
                 <a href="#VănHóaDânTộc" class="hashtag">#VănHóaDânTộc</a>
                 <a href="#NgônNgữHọc" class="hashtag">#NgônNgữHọc</a>
             </div>
-            <div class="social-icons">
-                <a href="https://zalo.me/your_zalo_id" target="_blank" title="Zalo">
-                    <i class="fab fa-telegram-plane"></i>
-                </a>
-                <a href="https://facebook.com/your_facebook_page" target="_blank" title="Facebook">
-                    <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="mailto:hvty.thcsbtdttstumorong@moet.edu.vn" title="Gmail">
-                    <i class="fas fa-envelope"></i>
-                </a>
+            <div class="contact-section">
+                <span class="contact-title">Liên hệ</span>
+                <div class="social-icons">
+                    <a href="https://zalo.me/your_zalo_id" target="_blank" title="Zalo" aria-label="Liên hệ qua Zalo">
+                        <i class="fab fa-telegram-plane"></i>
+                    </a>
+                    <a href="https://facebook.com/your_facebook_page" target="_blank" title="Facebook" aria-label="Trang Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="mailto:your_email@gmail.com" title="Gmail" aria-label="Gửi email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </footer>
@@ -413,6 +461,15 @@
                 showSection(sectionId);
             });
         });
+
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        });
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
 
         (function() {
             const config = {
@@ -463,7 +520,6 @@
                         pronunciation: row[2]?.trim()
                     })).filter(item => item.ethnic && item.viet);
                     initialized = true;
-                    // Cập nhật số lượng từ vựng thực tế
                     dom.dictionaryCount.textContent = `Hơn ${dictionary.length} từ vựng chuẩn`;
                 } catch (error) {
                     showError(`Lỗi tải dữ liệu: ${error.message}`);
