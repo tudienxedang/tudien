@@ -1,0 +1,146 @@
+{
+  "name": "Từ Điển Xơ Đăng (Xê Đăng) ↔ Tiếng Việt",
+  "short_name": "Từ Điển Xơ Đăng",
+  "description": "Tra cứu song ngữ Xơ Đăng - Việt với 5000+ từ vựng chuẩn xác, hỗ trợ phát âm và dịch thuật",
+  "start_url": "/tudien/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#27ae60",
+  "orientation": "portrait",
+  "scope": "/tudien/",
+  "lang": "vi",
+  "dir": "ltr",
+  "categories": ["education", "books", "utilities"],
+  "icons": [
+    {
+      "src": "/tudien/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tudien/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tudien/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tudien/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tudien/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tudien/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tudien/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tudien/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/tudien/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Giao diện tra cứu từ điển"
+    },
+    {
+      "src": "/tudien/screenshot2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Trắc nghiệm tiếng Xơ Đăng"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tra cứu từ",
+      "short_name": "Tra cứu",
+      "description": "Mở trang tra cứu từ điển",
+      "url": "/tudien/#home",
+      "icons": [
+        {
+          "src": "/tudien/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Trắc nghiệm",
+      "short_name": "Quiz",
+      "description": "Làm bài trắc nghiệm tiếng Xơ Đăng",
+      "url": "/tudien/#quiz",
+      "icons": [
+        {
+          "src": "/tudien/icon-quiz-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Đóng góp",
+      "short_name": "Đóng góp",
+      "description": "Đóng góp từ vựng và âm thanh",
+      "url": "/tudien/#contribute",
+      "icons": [
+        {
+          "src": "/tudien/icon-contribute-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "features": [
+    "Tra cứu từ điển Xơ Đăng - Việt",
+    "Phát âm chuẩn tiếng Xơ Đăng",
+    "Trắc nghiệm kiến thức",
+    "Hỗ trợ làm việc offline",
+    "Trợ lý chat AI",
+    "Đóng góp cộng đồng"
+  ],
+  "display_override": ["window-controls-overlay", "standalone"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+tudien",
+      "url": "/tudien/?word=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/tudien/share-target",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}
