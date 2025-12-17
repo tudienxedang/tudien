@@ -2569,7 +2569,7 @@
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-globe"></i>
-                        <span>Được sử dụng chủ yếu ở tỉnh Kon Tum, Việt Nam.</span>
+                        <span>Được sử dụng chủ yếu ở tỉnh Kon Tum cũ ngay là tỉnh Quảng Ngãi, Việt Nam.</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-users"></i>
@@ -3024,7 +3024,7 @@
             let currentSearchResults = [];
             let currentDisplayedResults = 0;
             let isProcessingMoreResults = false;
-            const MAX_INITIAL_RESULTS = 5; // Chỉ hiển thị tối đa 5 từ ban đầu
+            const MAX_INITIAL_RESULTS = 7; // Chỉ hiển thị tối đa 5 từ ban đầu
             
             const dom = {
                 searchForm: document.getElementById('searchForm'),
@@ -3397,7 +3397,7 @@
                             const wordToCheck = isVietToEthnic ? item.viet : item.ethnic;
                             return wordToCheck && wordToCheck.toLowerCase().includes(term);
                         })
-                        .slice(0, 3);
+                        .slice(0, 5);
                     
                     suggestions.forEach(item => {
                         const option = document.createElement('option');
