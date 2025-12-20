@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Từ Điển Xơ Đăng">
-    <link rel="apple-touch-icon" href="/icon-192x192.png">
+    <link rel="apple-touch-icon" href="./icon-192x192.png">
 
     <!-- Open Graph & Twitter Cards -->
     <meta property="og:type" content="website">
@@ -53,7 +53,7 @@
         "inLanguage": ["vi", "sed"],
         "publisher": {
             "@type": "Organization",
-            "name": "mrkhangkhoi",
+            "name": "minhbao-hami",
             "logo": {
                 "@type": "ImageObject",
                 "url": "https://tudienxedang.github.io/tudien/logo.png"
@@ -1835,8 +1835,8 @@
             }
         }
 
-        /* ===== QUIZ STYLES ===== */
-        .quiz-topic-selection {
+        /* ===== HỌC VÀ KIỂM TRA STYLES (GỘP ÔN TẬP VÀ TRẮC NGHIỆM) ===== */
+        .study-quiz-topic-selection {
             background: white;
             border-radius: 15px;
             padding: 2rem;
@@ -1844,7 +1844,7 @@
             margin-bottom: 2rem;
         }
         
-        .quiz-topic-selection h2 {
+        .study-quiz-topic-selection h2 {
             color: var(--secondary-color);
             margin-bottom: 1.5rem;
             display: flex;
@@ -1853,14 +1853,14 @@
             justify-content: center;
         }
         
-        .topics-grid {
+        .study-quiz-topics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             margin-top: 1.5rem;
         }
         
-        .topic-card {
+        .study-quiz-topic-card {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             border: 2px solid #e2e8f0;
             border-radius: 12px;
@@ -1875,37 +1875,402 @@
             min-height: 120px;
         }
         
-        .topic-card:hover {
+        .study-quiz-topic-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             border-color: var(--secondary-color);
             background: linear-gradient(135deg, #e8f5e9 0%, #d4edda 100%);
         }
         
-        .topic-card.active {
+        .study-quiz-topic-card.active {
             border-color: var(--secondary-color);
             background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
             box-shadow: 0 5px 15px rgba(39, 174, 96, 0.2);
         }
         
-        .topic-card i {
+        .study-quiz-topic-card i {
             font-size: 2.5rem;
             color: var(--secondary-color);
             margin-bottom: 1rem;
         }
         
-        .topic-card h3 {
+        .study-quiz-topic-card h3 {
             color: var(--primary-color);
             margin-bottom: 0.5rem;
             font-size: 1.2rem;
         }
         
-        .topic-card p {
+        .study-quiz-topic-card p {
             color: #666;
             font-size: 0.9rem;
         }
         
-        /* Quiz Interface */
+        /* Study Interface (Ôn tập) */
+        .study-interface {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .study-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .study-info {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        #currentStudyTopicTitle {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.4rem;
+        }
+        
+        .study-progress {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            background: #e8f5e9;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        
+        .study-stats {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #3498db;
+            background: #e3f2fd;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Flashcard styles - ĐÃ SỬA: THÊM ÂM THANH VÀ NỔI BẬT HƠN */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            margin: 2rem auto;
+        }
+        
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+        }
+        
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .flashcard-front {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: 3px solid white;
+        }
+        
+        .flashcard-back {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            transform: rotateY(180deg);
+            border: 3px solid white;
+        }
+        
+        .flashcard-question {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+        }
+        
+        .flashcard-answer {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+        }
+        
+        /* THÊM NỘI DUNG CÂU HỎI KHI LẬT THẺ */
+        .flashcard-question-full {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-style: italic;
+            padding: 0 1rem;
+        }
+        
+        .flashcard-instruction {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 2rem;
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+        
+        /* Tick mark khi lật thẻ */
+        .flashcard-tick {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: white;
+            background: rgba(0, 0, 0, 0.2);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .flashcard-tick.visible {
+            opacity: 1;
+        }
+        
+        /* ===== THÊM SỐ THỨ TỰ THẺ VÀ HIỆU ỨNG HOÀN THÀNH - ĐÃ SỬA LỖI HIỂN THỊ ===== */
+        .flashcard-number {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            background: rgba(0, 0, 0, 0.25);
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        
+        /* FIX: Không áp dụng transform: rotateY(180deg) cho .flashcard-back .flashcard-number */
+        /* Thay vào đó, chúng ta sẽ xử lý bằng JavaScript */
+        
+        .flashcard-number.completed {
+            background: rgba(39, 174, 96, 0.9);
+            animation: pulseNumber 1.5s ease-in-out;
+        }
+        
+        @keyframes pulseNumber {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Hiệu ứng hoàn thành ôn tập */
+        .flashcard.completed-card {
+            animation: cardCompleted 1s ease;
+        }
+        
+        @keyframes cardCompleted {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.05) rotateY(5deg); }
+            50% { transform: scale(1.08) rotateY(-5deg); }
+            75% { transform: scale(1.05) rotateY(5deg); }
+            100% { transform: scale(1) rotateY(0deg); }
+        }
+        
+        /* Hiệu ứng chuyển thẻ */
+        .flashcard.next-card {
+            animation: nextCardSlide 0.5s ease;
+        }
+        
+        @keyframes nextCardSlide {
+            from { 
+                opacity: 0; 
+                transform: translateX(30px) rotateY(10deg);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0) rotateY(0deg);
+            }
+        }
+        
+        .flashcard.prev-card {
+            animation: prevCardSlide 0.5s ease;
+        }
+        
+        @keyframes prevCardSlide {
+            from { 
+                opacity: 0; 
+                transform: translateX(-30px) rotateY(-10deg);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0) rotateY(0deg);
+            }
+        }
+        
+        /* Hiệu ứng khi học xong một thẻ */
+        .card-completion-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(39, 174, 96, 0.3) 0%, transparent 70%);
+            border-radius: 15px;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .card-completion-effect.active {
+            animation: completionGlow 1.5s ease;
+        }
+        
+        @keyframes completionGlow {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0; transform: scale(1.3); }
+        }
+        
+        .flashcard-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .flashcard-nav-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .flashcard-nav-btn:hover {
+            background: #219653;
+            transform: scale(1.1);
+        }
+        
+        .flashcard-nav-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .flashcard-flip-btn {
+            background: #3498db;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .flashcard-flip-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        /* Study progress */
+        .study-progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+        
+        .study-progress-fill {
+            height: 100%;
+            background: var(--secondary-color);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        /* Start quiz button */
+        .start-quiz-btn {
+            display: block;
+            margin: 2rem auto 0;
+            padding: 1rem 2.5rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .start-quiz-btn:hover {
+            background: #c0392b;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .start-quiz-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Quiz Interface (Trắc nghiệm) */
         .quiz-interface {
             background: white;
             border-radius: 15px;
@@ -1930,7 +2295,7 @@
             min-width: 200px;
         }
         
-        #currentTopicTitle {
+        #currentQuizTopicTitle {
             color: var(--primary-color);
             margin: 0;
             font-size: 1.4rem;
@@ -2230,19 +2595,42 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
+        /* Animation for correct/incorrect answers */
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes incorrectAnswer {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .option.correct-animation {
+            animation: correctAnswer 0.5s ease;
+        }
+        
+        .option.incorrect-animation {
+            animation: incorrectAnswer 0.5s ease;
+        }
+        
         /* Dark mode adjustments */
-        body.dark-mode .quiz-topic-selection,
+        body.dark-mode .study-quiz-topic-selection,
+        body.dark-mode .study-interface,
         body.dark-mode .quiz-interface,
         body.dark-mode .quiz-result {
             background: #2c3e50;
         }
         
-        body.dark-mode .topic-card {
+        body.dark-mode .study-quiz-topic-card {
             background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
             border-color: #4a6278;
         }
         
-        body.dark-mode .topic-card:hover {
+        body.dark-mode .study-quiz-topic-card:hover {
             background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
         }
         
@@ -2266,8 +2654,17 @@
             color: #ecf0f1;
         }
         
+        body.dark-mode .flashcard-front {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+        }
+        
+        body.dark-mode .flashcard-back {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
+            .study-header,
             .quiz-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -2293,28 +2690,32 @@
                 flex-direction: column;
                 text-align: center;
             }
-        }
-        
-        /* Animation for correct/incorrect answers */
-        @keyframes correctAnswer {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes incorrectAnswer {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-            100% { transform: translateX(0); }
-        }
-        
-        .option.correct-animation {
-            animation: correctAnswer 0.5s ease;
-        }
-        
-        .option.incorrect-animation {
-            animation: incorrectAnswer 0.5s ease;
+            
+            .flashcard-container {
+                height: 250px;
+            }
+            
+            .flashcard-front, .flashcard-back {
+                padding: 1.5rem;
+            }
+            
+            .flashcard-question {
+                font-size: 1.2rem;
+            }
+            
+            .flashcard-answer {
+                font-size: 1.5rem;
+            }
+            
+            .flashcard-question-full {
+                font-size: 1rem;
+            }
+            
+            .flashcard-number {
+                font-size: 0.9rem;
+                padding: 4px 8px;
+                min-width: 50px;
+            }
         }
 
         /* Install App Button */
@@ -2380,7 +2781,272 @@
         .offline-indicator.online {
             background: #27ae60;
         }
-    </style>
+
+        /* Hướng dẫn học tập mới */
+        .study-guide {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 5px solid #2196f3;
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.15);
+        }
+        
+        .study-guide h3 {
+            color: #1976d2;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .guide-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .guide-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .guide-step:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .step-number {
+            background: #2196f3;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            color: #1976d2;
+            margin-bottom: 0.3rem;
+            font-size: 1.1rem;
+        }
+        
+        .step-content p {
+            color: #37474f;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .study-tip {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 2px solid #4caf50;
+            text-align: center;
+        }
+        
+        .study-tip p {
+            color: #2e7d32;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        body.dark-mode .study-guide {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            border-left-color: #3949ab;
+        }
+        
+        body.dark-mode .study-guide h3 {
+            color: #7986cb;
+        }
+        
+        body.dark-mode .guide-step {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        body.dark-mode .guide-step:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        body.dark-mode .step-content p {
+            color: #e3f2fd;
+        }
+        
+        body.dark-mode .study-tip {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            border-color: #4caf50;
+        }
+        
+        body.dark-mode .study-tip p {
+            color: #c8e6c9;
+        }
+        
+        /* ===== FIXES CHO DARK MODE VÀ HIỂN THỊ KẾT QUẢ ===== */
+        /* FIX: Màu chữ trong input tìm kiếm ở dark mode */
+        body.dark-mode input[type="text"],
+        body.dark-mode select {
+            color: #ffffff !important;
+            background-color: #34495e;
+        }
+        
+        body.dark-mode input[type="text"]::placeholder {
+            color: #bdc3c7 !important;
+        }
+        
+        /* FIX: Cải thiện hiển thị kết quả tìm kiếm */
+        .word-display-item {
+            margin-bottom: 1.2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        body.dark-mode .word-display-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .highlight-word {
+            font-size: 2rem;
+            color: #e74c3c;
+            margin: 0.5rem 0;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        body.dark-mode .highlight-word {
+            color: #ff6b6b;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .word-text {
+            font-size: 1.8rem;
+            color: #27ae60;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+        
+        body.dark-mode .word-text {
+            color: #2ecc71;
+        }
+        
+        .pronunciation {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            font-style: italic;
+            background: #f8f9fa;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        body.dark-mode .pronunciation {
+            color: #bdc3c7;
+            background: #34495e;
+            border-left-color: #3498db;
+        }
+        
+        /* FIX: Sắp xếp lại thứ tự hiển thị trong kết quả tìm kiếm */
+        .word-display {
+            gap: 1.5rem;
+        }
+        
+        /* FIX: Đồng bộ font chữ và kích thước */
+        .word-display-label {
+            font-size: 1rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        body.dark-mode .word-display-label {
+            color: #ecf0f1;
+        }
+        
+        /* FIX: Cải thiện card kết quả */
+        .word-card {
+            border-left: 6px solid #27ae60;
+            transition: all 0.3s ease;
+        }
+        
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        body.dark-mode .word-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* FIX: Icon trong kết quả tìm kiếm */
+        .word-display-label i {
+            color: #27ae60;
+            font-size: 1.2rem;
+        }
+        
+        body.dark-mode .word-display-label i {
+            color: #2ecc71;
+        }
+        
+        /* FIX: Audio player trong dark mode */
+        body.dark-mode .drive-audio-player {
+            background: #2c3e50;
+        }
+        
+        /* FIX: Ví dụ minh họa */
+        .example-viet, .example-ethnic {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            padding: 1rem;
+        }
+        
+        /* FIX: Đảm bảo tính nhất quán trên mobile */
+        @media (max-width: 768px) {
+            .highlight-word {
+                font-size: 1.8rem;
+            }
+            
+            .word-text {
+                font-size: 1.6rem;
+            }
+            
+            .pronunciation {
+                font-size: 1.1rem;
+            }
+            
+            .word-display-label {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Giữ nguyên transform của mặt sau */
+.flashcard-back .flashcard-number {
+    transform: none !important;
+}
+
+
+}
+   
+
+
+ </style>
 </head>
 <body>
     <!-- Install App Button -->
@@ -2416,15 +3082,7 @@
                 </button>
             </div>
             <div class="chat-messages" id="chatMessages">
-                <div class="welcome-message">
-                    <h4><i class="fas fa-graduation-cap"></i> Chào bạn!</h4>
-                    <p>Tôi là trợ lý tiếng Xơ Đăng. Tôi có thể giúp bạn tìm hiểu về ngôn ngữ và văn hóa Xơ Đăng.</p>
-                    <p style="font-size: 0.9rem; margin-top: 8px; color: #666;">Hãy hỏi tôi bất cứ điều gì về tiếng Xơ Đăng!</p>
-                </div>
-                <div class="message bot">
-                    Xin chào! Tôi có thể giúp gì cho bạn về tiếng Xơ Đăng hôm nay?
-                    <div class="message-time">Vừa xong</div>
-                </div>
+                <!-- Tin nhắn sẽ được tạo động -->
             </div>
             <div class="chat-input-container">
                 <input type="text" class="chat-input" id="chatInput" placeholder="Nhập câu hỏi của bạn..." aria-label="Nhập câu hỏi">
@@ -2441,7 +3099,7 @@
             <li><a href="#home" class="menu-link" onclick="showSection('home')"><i class="fas fa-home"></i> Trang chủ</a></li>
             <li><a href="#intro" class="menu-link" onclick="showSection('intro')"><i class="fas fa-info-circle"></i> Giới thiệu</a></li>
             <li><a href="#contribute" class="menu-link" onclick="showSection('contribute')"><i class="fas fa-microphone-alt"></i> Đóng góp</a></li>
-            <li><a href="#quiz" class="menu-link" onclick="showSection('quiz')"><i class="fas fa-question-circle"></i> Trắc nghiệm</a></li>
+            <li><a href="#quiz" class="menu-link" onclick="showSection('quiz')"><i class="fas fa-book"></i> Học và Kiểm tra</a></li>
             <li><button id="darkModeToggle" class="menu-button"><i class="fas fa-moon"></i> Dark Mode</button></li>
         </ul>
     </nav>
@@ -2465,6 +3123,10 @@
                     <div class="stat-item">
                         <div class="stat-number" id="stat-examples">2000+</div>
                         <div class="stat-label">Ví dụ</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="stat-questions">100+</div>
+                        <div class="stat-label">Câu hỏi ôn tập</div>
                     </div>
                 </div>
                 <div class="features-list">
@@ -2491,6 +3153,14 @@
                     <div class="feature-item">
                         <i class="fas fa-bolt"></i>
                         <span>Tìm kiếm thông minh với AI</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-book-open"></i>
+                        <span>Hệ thống học tập thông minh</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Trắc nghiệm đa dạng chủ đề</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-comments"></i>
@@ -2569,7 +3239,7 @@
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-globe"></i>
-                        <span>Được sử dụng chủ yếu ở tỉnh Kon Tum cũ ngay là tỉnh Quảng Ngãi, Việt Nam.</span>
+                        <span>Được sử dụng chủ yếu ở tỉnh Kon Tum, Việt Nam.</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-users"></i>
@@ -2625,6 +3295,10 @@
                     <div class="feature-item">
                         <i class="fas fa-microphone"></i>
                         <span style="text-align: justify;"><strong>Nhận diện giọng nói:</strong> Bạn cũng có thể sử dụng tính năng nhận diện giọng nói bằng cách nhấn vào biểu tượng micro và nói từ bạn muốn tra cứu.</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-book-open"></i>
+                        <span style="text-align: justify;"><strong>Học tập:</strong> Vào mục "Học và Kiểm tra" để học từ vựng qua flashcard và kiểm tra kiến thức qua trắc nghiệm.</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-hand-holding-heart"></i>
@@ -2738,27 +3412,140 @@
             </div>
         </section>
 
-        <!-- Trang Trắc Nghiệm -->
+        <!-- Trang Học và Kiểm tra (Gộp Ôn tập và Trắc nghiệm) -->
         <section id="quiz" class="container">
-            <h1>Trắc Nghiệm Tiếng Xơ Đăng</h1>
+            <h1>Học và Kiểm Tra Tiếng Xơ Đăng</h1>
             
             <div class="intro-content">
-                <p>Kiểm tra kiến thức của bạn về tiếng Xơ Đăng qua các câu hỏi trắc nghiệm. Chọn chủ đề và trả lời 5 câu hỏi để nhận đánh giá.</p>
+                <p>Học từ vựng tiếng Xơ Đăng qua hệ thống flashcard thông minh, sau đó kiểm tra kiến thức bằng bài trắc nghiệm. Phương pháp học tập khoa học giúp bạn ghi nhớ lâu hơn.</p>
+                <div class="study-progress-bar">
+                    <div class="study-progress-fill" id="studyProgressFill" style="width: 0%"></div>
+                </div>
             </div>
             
             <!-- Bước 1: Chọn chủ đề -->
-            <div id="quizTopicSelection" class="quiz-topic-selection">
-                <h2><i class="fas fa-folder-open"></i> Chọn Chủ Đề</h2>
-                <div class="topics-grid" id="topicsGrid">
+            <div id="studyQuizTopicSelection" class="study-quiz-topic-selection">
+                <h2><i class="fas fa-folder-open"></i> Chọn Chủ Đề Học Tập</h2>
+                <p>Chọn một chủ đề để bắt đầu học và kiểm tra kiến thức của bạn:</p>
+                <div class="study-quiz-topics-grid" id="studyQuizTopicsGrid">
                     <!-- Các chủ đề sẽ được load từ API -->
                 </div>
             </div>
             
-            <!-- Bước 2: Giao diện làm bài -->
+            <!-- Bước 2: Giao diện học tập (Flashcard) -->
+            <div id="studyInterface" class="study-interface" style="display: none;">
+                <div class="study-header">
+                    <div class="study-info">
+                        <h2 id="currentStudyTopicTitle">Chủ đề: </h2>
+                        <div class="study-progress">
+                            <span id="currentStudyCardNumber">1</span>/<span id="totalStudyCards">0</span> thẻ
+                        </div>
+                    </div>
+                    
+                    <div class="study-stats">
+                        <i class="fas fa-chart-line"></i> <span id="studyCompletion">0% đã học</span>
+                    </div>
+                </div>
+                
+                <!-- Hướng dẫn học tập mới -->
+                <div class="study-guide">
+                    <h3><i class="fas fa-graduation-cap"></i> Hướng Dẫn Học Tập</h3>
+                    <div class="guide-steps">
+                        <div class="guide-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Xem câu hỏi</h4>
+                                <p>Đọc câu hỏi trên mặt trước của thẻ. Cố gắng nhớ câu trả lời trước khi lật thẻ.</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Lật thẻ</h4>
+                                <p>Nhấn vào thẻ hoặc nút "Lật thẻ" để xem đáp án. Khi bạn lật thẻ, dấu tick xanh sẽ xuất hiện để đánh dấu bạn đã học thẻ này.</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Ôn tập</h4>
+                                <p>Sử dụng nút "Câu trước" và "Câu tiếp theo" để xem lại các thẻ đã học hoặc chuyển sang thẻ mới.</p>
+                            </div>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Kiểm tra</h4>
+                                <p>Sau khi học ít nhất 70% số thẻ, nút "Bắt đầu kiểm tra" sẽ mở khóa. Nhấn vào để làm bài trắc nghiệm.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="study-tip">
+                        <p><i class="fas fa-lightbulb"></i> Mẹo: Học ít nhất 70% số thẻ để đảm bảo bạn đã nắm vững kiến thức trước khi làm bài kiểm tra!</p>
+                    </div>
+                </div>
+                
+                <div class="flashcard-container">
+                    <div class="flashcard" id="flashcard">
+                        <!-- Hiệu ứng hoàn thành -->
+                        <div class="card-completion-effect" id="cardCompletionEffect"></div>
+                        
+                        <!-- Mặt trước -->
+                        <div class="flashcard-front" id="flashcardFront">
+                            <div class="flashcard-number" id="frontCardNumber">1/10</div>
+                            <div class="flashcard-tick" id="frontTick"><i class="fas fa-check"></i></div>
+                            <div class="flashcard-question" id="flashcardQuestion">
+                                <!-- Câu hỏi sẽ được hiển thị ở đây -->
+                            </div>
+                            <div class="flashcard-instruction">
+                                <i class="fas fa-hand-point-up"></i> Nhấn vào thẻ để xem đáp án
+                            </div>
+                        </div>
+                        
+                        <!-- Mặt sau -->
+                        <div class="flashcard-back" id="flashcardBack">
+                            <div class="flashcard-number" id="backCardNumber">1/10</div>
+                            <div class="flashcard-tick" id="backTick"><i class="fas fa-check"></i></div>
+                            <!-- THÊM NỘI DUNG CÂU HỎI KHI LẬT THẺ -->
+                            <div class="flashcard-question-full" id="flashcardQuestionFull">
+                                <!-- Câu hỏi đầy đủ sẽ được hiển thị ở đây -->
+                            </div>
+                            <div class="flashcard-answer" id="flashcardAnswer">
+                                <!-- Đáp án sẽ được hiển thị ở đây -->
+                            </div>
+                            <div class="flashcard-instruction">
+                                <i class="fas fa-hand-point-up"></i> Nhấn vào thẻ để quay lại
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flashcard-controls">
+                    <button id="prevCardBtn" class="flashcard-nav-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="flipCardBtn" class="flashcard-flip-btn">
+                        <i class="fas fa-sync-alt"></i> Lật thẻ
+                    </button>
+                    <button id="nextCardBtn" class="flashcard-nav-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <div class="study-progress-bar">
+                    <div class="study-progress-fill" id="studySessionProgressFill" style="width: 0%"></div>
+                </div>
+                
+                <button id="startQuizBtn" class="start-quiz-btn" disabled>
+                    <i class="fas fa-play-circle"></i> Bắt đầu kiểm tra
+                </button>
+            </div>
+            
+            <!-- Bước 3: Giao diện làm bài trắc nghiệm -->
             <div id="quizInterface" class="quiz-interface" style="display: none;">
                 <div class="quiz-header">
                     <div class="quiz-info">
-                        <h2 id="currentTopicTitle">Chủ đề: </h2>
+                        <h2 id="currentQuizTopicTitle">Chủ đề: </h2>
                         <div class="quiz-progress">
                             <span id="currentQuestionNumber">1</span>/5
                         </div>
@@ -2792,10 +3579,10 @@
                 </div>
             </div>
             
-            <!-- Bước 3: Kết quả -->
+            <!-- Bước 4: Kết quả -->
             <div id="quizResult" class="quiz-result" style="display: none;">
                 <div class="result-header">
-                    <h2><i class="fas fa-trophy"></i> Kết Quả Trắc Nghiệm</h2>
+                    <h2><i class="fas fa-trophy"></i> Kết Quả Kiểm Tra</h2>
                     <p id="resultTopic">Chủ đề: </p>
                 </div>
                 
@@ -2845,6 +3632,7 @@
                 <a href="#VănHóaDânTộc" class="hashtag">#VănHóaDânTộc</a>
                 <a href="#NgônNgữHọc" class="hashtag">#NgônNgữHọc</a>
                 <a href="#PWA" class="hashtag">#ỨngDụngOffline</a>
+                <a href="#HọcTập" class="hashtag">#HọcTậpThôngMinh</a>
             </div>
             <div class="contact-section">
                 <span class="contact-title">Liên hệ</span>
@@ -3039,6 +3827,7 @@
                 statWords: document.getElementById('stat-words'),
                 statAudio: document.getElementById('stat-audio'),
                 statExamples: document.getElementById('stat-examples'),
+                statQuestions: document.getElementById('stat-questions'),
                 searchStatus: document.getElementById('searchStatus')
             };
 
@@ -3197,7 +3986,7 @@
                 return displayList.slice(0, 50);
             }
 
-            // --- RENDER KẾT QUẢ ---
+            // --- RENDER KẾT QUẢ - ĐÃ SỬA THỨ TỰ HIỂN THỊ ====
             function renderCard(entry, direction) {
                 const isVietToEthnic = direction === 'viet_to_ethnic';
                 
@@ -3268,6 +4057,7 @@
                     `;
                 }
 
+                // FIX: THAY ĐỔI THỨ TỰ HIỂN THỊ - Tiếng Việt -> Tiếng Xơ Đăng -> Phiên âm -> Phát âm
                 return `
                     <div class="${cardClass}">
                         <div class="word-display">
@@ -3281,17 +4071,6 @@
                                 </div>
                             </div>
                             
-                            ${pronunciation ? `
-                                <div class="word-display-item">
-                                    <div class="word-display-label">
-                                        <i class="fas fa-volume-up"></i> Phiên âm:
-                                    </div>
-                                    <div class="word-display-value">
-                                        <span class="pronunciation">${pronunciation}</span>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
                             <div class="word-display-item">
                                 <div class="word-display-label">
                                     <i class="fas fa-flag"></i> ${targetLabel}:
@@ -3300,6 +4079,17 @@
                                     <span class="word-text">${targetWord}</span>
                                 </div>
                             </div>
+                            
+                            ${pronunciation ? `
+                                <div class="word-display-item">
+                                    <div class="word-display-label">
+                                        <i class="fas fa-volume-up"></i> Phiên âm (Xơ Đăng):
+                                    </div>
+                                    <div class="word-display-value">
+                                        <span class="pronunciation">${pronunciation}</span>
+                                    </div>
+                                </div>
+                            ` : ''}
                         </div>
                         
                         ${audioPlayer}
@@ -3397,7 +4187,7 @@
                             const wordToCheck = isVietToEthnic ? item.viet : item.ethnic;
                             return wordToCheck && wordToCheck.toLowerCase().includes(term);
                         })
-                        .slice(0, 5);
+                        .slice(0, 3);
                     
                     suggestions.forEach(item => {
                         const option = document.createElement('option');
@@ -4299,20 +5089,22 @@
             
         })();
 
-        // ===== CHAT WIDGET FUNCTIONALITY - ĐÃ BỔ SUNG LƯU CÂU HỎI =====
+        // ===== CHAT WIDGET FUNCTIONALITY - ĐÃ SỬA THEO YÊU CẦU =====
         (function() {
             // Cấu hình
             const CHAT_CONFIG = {
                 API_KEY: 'AIzaSyD757jS4SLR7-EzrPgrW9WrLQeD2DQExHw',
                 SHEET_ID: '1Z59pDBu_tGwlYqUeS1-VJLpcHozp7LbxnC_-qhT3iHs',
-                RANGE: 'chat!A2:B',
-                QUESTION_RANGE: 'cauhoi!A2:B' // Sheet lưu câu hỏi
+                RANGE: 'chat!A2:B'
             };
             
             // Biến toàn cục
             let chatMessages = [];
             let isChatOpen = false;
             let isTyping = false;
+            let chatQnA = []; // Mảng chứa các cặp câu hỏi và câu trả lời
+            let randomQuestions = []; // 3 câu hỏi ngẫu nhiên ban đầu
+            let usedQuestions = new Set(); // Lưu các câu hỏi đã sử dụng
             
             // DOM Elements
             const dom = {
@@ -4388,41 +5180,8 @@
                 }
             }
             
-            // Lưu câu hỏi vào Google Sheets
-            async function saveQuestionToSheet(question) {
-                try {
-                    const timestamp = formatDateTime();
-                    const questionData = [[timestamp, question]];
-                    
-                    // Sử dụng Google Sheets API để thêm dòng mới
-                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${CHAT_CONFIG.SHEET_ID}/values/${CHAT_CONFIG.QUESTION_RANGE}:append?valueInputOption=USER_ENTERED&key=${CHAT_CONFIG.API_KEY}`;
-                    
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            values: questionData,
-                            majorDimension: 'ROWS'
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Lỗi lưu câu hỏi: ${response.status}`);
-                    }
-                    
-                    console.log('Câu hỏi đã được lưu thành công');
-                    return true;
-                    
-                } catch (error) {
-                    console.error('Lỗi khi lưu câu hỏi:', error);
-                    return false;
-                }
-            }
-            
-            // Tìm kiếm câu trả lời từ Google Sheets
-            async function findAnswer(question) {
+            // Tải dữ liệu chat từ Google Sheets
+            async function loadChatData() {
                 try {
                     const url = `https://sheets.googleapis.com/v4/spreadsheets/${CHAT_CONFIG.SHEET_ID}/values/${CHAT_CONFIG.RANGE}?key=${CHAT_CONFIG.API_KEY}`;
                     const response = await fetch(url);
@@ -4434,68 +5193,141 @@
                     const data = await response.json();
                     
                     if (!data.values || data.values.length === 0) {
-                        return null;
+                        throw new Error('Không có dữ liệu');
                     }
                     
-                    // Tìm câu hỏi khớp (không phân biệt hoa thường)
-                    const normalizedQuestion = question.toLowerCase().trim();
+                    // Lưu dữ liệu vào mảng chatQnA
+                    chatQnA = data.values.map(row => ({
+                        question: row[0] ? row[0].trim() : '',
+                        answer: row[1] ? row[1].trim() : ''
+                    })).filter(item => item.question && item.answer);
                     
-                    for (const row of data.values) {
-                        const sheetQuestion = row[0] ? row[0].toLowerCase().trim() : '';
-                        const sheetAnswer = row[1] ? row[1].trim() : '';
-                        
-                        // Kiểm tra khớp chính xác hoặc chứa
-                        if (sheetQuestion === normalizedQuestion || 
-                            normalizedQuestion.includes(sheetQuestion) || 
-                            sheetQuestion.includes(normalizedQuestion)) {
-                            return sheetAnswer;
-                        }
-                    }
+                    // Lấy 3 câu hỏi ngẫu nhiên
+                    getRandomQuestions(3);
                     
-                    // Nếu không tìm thấy, kiểm tra các từ khóa
-                    const keywords = normalizedQuestion.split(' ');
-                    for (const row of data.values) {
-                        const sheetQuestion = row[0] ? row[0].toLowerCase().trim() : '';
-                        const sheetAnswer = row[1] ? row[1].trim() : '';
-                        
-                        // Kiểm tra nếu có từ khóa nào khớp
-                        for (const keyword of keywords) {
-                            if (keyword.length > 2 && sheetQuestion.includes(keyword)) {
-                                return sheetAnswer;
-                            }
-                        }
-                    }
-                    
-                    return null;
-                    
+                    return true;
                 } catch (error) {
-                    console.error('Lỗi khi tìm câu trả lời:', error);
-                    return null;
+                    console.error('Lỗi khi tải dữ liệu chat:', error);
+                    // Nếu không tải được, dùng dữ liệu mẫu
+                    chatQnA = [
+                        { question: 'Xin chào bằng tiếng Xơ Đăng là gì?', answer: 'Bơ rơ ha' },
+                        { question: 'Cảm ơn tiếng Xơ Đăng nói thế nào?', answer: 'Hơ măn ơn' },
+                        { question: 'Tạm biệt trong tiếng Xơ Đăng là gì?', answer: 'Brơi' },
+                        { question: 'Bạn có khỏe không?', answer: 'Brơi ha mơ hă?' },
+                        { question: 'Tôi khỏe, cảm ơn', answer: 'Brơi ha, hơ măn ơn' },
+                        { question: 'Tên bạn là gì?', answer: 'Brơi pêng hơ rơ ha?' },
+                        { question: 'Tên tôi là...', answer: 'Brơi pêng ha...' },
+                        { question: 'Bạn bao nhiêu tuổi?', answer: 'Brơi năm hơ rơ ha?' }
+                    ];
+                    getRandomQuestions(3);
+                    return false;
                 }
+            }
+            
+            // Lấy câu hỏi ngẫu nhiên
+            function getRandomQuestions(count) {
+                if (chatQnA.length === 0) return;
+                
+                // Lọc các câu hỏi chưa được sử dụng
+                const availableQuestions = chatQnA.filter(q => !usedQuestions.has(q.question));
+                
+                // Nếu không đủ câu hỏi, reset usedQuestions
+                if (availableQuestions.length < count) {
+                    usedQuestions.clear();
+                    availableQuestions.push(...chatQnA);
+                }
+                
+                // Xáo trộn mảng
+                const shuffled = [...availableQuestions].sort(() => 0.5 - Math.random());
+                
+                // Lấy count câu đầu tiên
+                randomQuestions = shuffled.slice(0, count);
+                
+                // Đánh dấu các câu hỏi đã sử dụng
+                randomQuestions.forEach(q => usedQuestions.add(q.question));
+            }
+            
+            // Lấy một câu hỏi ngẫu nhiên mới
+            function getNewRandomQuestion() {
+                if (chatQnA.length === 0) return null;
+                
+                // Lọc các câu hỏi chưa được sử dụng
+                const availableQuestions = chatQnA.filter(q => !usedQuestions.has(q.question));
+                
+                // Nếu không còn câu hỏi, reset usedQuestions
+                if (availableQuestions.length === 0) {
+                    usedQuestions.clear();
+                    availableQuestions.push(...chatQnA);
+                }
+                
+                // Lấy ngẫu nhiên một câu hỏi
+                const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+                const question = availableQuestions[randomIndex];
+                
+                // Đánh dấu đã sử dụng
+                usedQuestions.add(question.question);
+                
+                return question;
+            }
+            
+            // Hiển thị lời chào và 3 câu hỏi ngẫu nhiên
+            function displayWelcomeWithQuestions() {
+                // Xóa nội dung cũ
+                dom.chatMessages.innerHTML = '';
+                
+                // Thêm lời chào
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.className = 'message bot';
+                welcomeDiv.innerHTML = `
+                    Xin chào! Tôi là trợ lý tiếng Xơ Đăng. Tôi có thể giúp bạn tìm hiểu về ngôn ngữ và văn hóa Xơ Đăng.
+                    <div class="message-time">${formatTime()}</div>
+                `;
+                dom.chatMessages.appendChild(welcomeDiv);
+                
+                // Thêm 3 câu hỏi ngẫu nhiên dưới dạng các nút
+                const questionsDiv = document.createElement('div');
+                questionsDiv.className = 'welcome-message';
+                questionsDiv.innerHTML = `
+                    <h4><i class="fas fa-lightbulb"></i> Gợi ý câu hỏi:</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;">
+                        ${randomQuestions.map(q => `
+                            <button class="hashtag" style="font-size: 0.8rem; padding: 6px 12px; cursor: pointer;" 
+                                    onclick="document.getElementById('chatInput').value='${q.question.replace(/'/g, "\\'")}'; document.getElementById('sendChatBtn').click();">
+                                ${q.question}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                dom.chatMessages.appendChild(questionsDiv);
+                
+                dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+            }
+            
+            // Tìm câu trả lời từ dữ liệu đã tải
+            async function findAnswer(question) {
+                // Nếu chưa có dữ liệu, tải dữ liệu
+                if (chatQnA.length === 0) {
+                    await loadChatData();
+                }
+                
+                const normalizedQuestion = question.toLowerCase().trim();
+                
+                // Tìm kiếm trong chatQnA (khớp chính xác)
+                for (const item of chatQnA) {
+                    const sheetQuestion = item.question.toLowerCase().trim();
+                    // Kiểm tra khớp chính xác
+                    if (sheetQuestion === normalizedQuestion) {
+                        return item.answer;
+                    }
+                }
+                
+                return null;
             }
             
             // Xử lý tin nhắn từ người dùng
             async function handleUserMessage(message) {
                 // Hiển thị tin nhắn người dùng
                 displayMessage(message, 'user');
-                
-                // Lưu câu hỏi vào Google Sheets
-                const isSaved = await saveQuestionToSheet(message);
-                
-                // Hiển thị thông báo lưu câu hỏi
-                if (isSaved) {
-                    const noticeDiv = document.createElement('div');
-                    noticeDiv.className = 'message bot';
-                    noticeDiv.style.fontSize = '0.85rem';
-                    noticeDiv.style.color = '#666';
-                    noticeDiv.style.fontStyle = 'italic';
-                    noticeDiv.innerHTML = `
-                        Để đảm bảo nâng cao chất lượng ứng dụng thì các câu hỏi của bạn được lưu lại.
-                        <div class="message-time">${formatTime()}</div>
-                    `;
-                    dom.chatMessages.appendChild(noticeDiv);
-                    dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
-                }
                 
                 // Hiển thị typing indicator
                 showTypingIndicator();
@@ -4507,27 +5339,86 @@
                 setTimeout(() => {
                     hideTypingIndicator();
                     
-                    // Hiển thị câu trả lời
                     if (answer) {
+                        // Nếu tìm thấy câu trả lời
                         displayMessage(answer, 'bot');
+                        
+                        // Sau khi trả lời, lấy câu hỏi ngẫu nhiên mới
+                        const newQuestion = getNewRandomQuestion();
+                        if (newQuestion) {
+                            setTimeout(() => {
+                                const suggestionDiv = document.createElement('div');
+                                suggestionDiv.className = 'welcome-message';
+                                suggestionDiv.innerHTML = `
+                                    <h4><i class="fas fa-lightbulb"></i> Bạn có thể hỏi tiếp:</h4>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;">
+                                        <button class="hashtag" style="font-size: 0.8rem; padding: 6px 12px; cursor: pointer;" 
+                                                onclick="document.getElementById('chatInput').value='${newQuestion.question.replace(/'/g, "\\'")}'; document.getElementById('sendChatBtn').click();">
+                                            ${newQuestion.question}
+                                        </button>
+                                    </div>
+                                `;
+                                dom.chatMessages.appendChild(suggestionDiv);
+                                dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+                            }, 500);
+                        }
                     } else {
-                        displayMessage("Xin lỗi, nội dung đang được cập nhật. Vui lòng hỏi câu khác hoặc sử dụng tính năng tra từ điển.", 'bot');
+                        // Nếu không tìm thấy, trả lời xin lỗi và gợi ý một câu hỏi ngẫu nhiên
+                        const newQuestion = getNewRandomQuestion();
+                        let apology = 'Xin lỗi, tôi không hiểu câu hỏi của bạn. ';
+                        
+                        if (newQuestion) {
+                            apology += `Bạn có thể thử hỏi: "${newQuestion.question}"`;
+                            
+                            // Hiển thị nút gợi ý
+                            setTimeout(() => {
+                                const suggestionDiv = document.createElement('div');
+                                suggestionDiv.className = 'welcome-message';
+                                suggestionDiv.innerHTML = `
+                                    <h4><i class="fas fa-lightbulb"></i> Gợi ý:</h4>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;">
+                                        <button class="hashtag" style="font-size: 0.8rem; padding: 6px 12px; cursor: pointer;" 
+                                                onclick="document.getElementById('chatInput').value='${newQuestion.question.replace(/'/g, "\\'")}'; document.getElementById('sendChatBtn').click();">
+                                            ${newQuestion.question}
+                                        </button>
+                                    </div>
+                                `;
+                                dom.chatMessages.appendChild(suggestionDiv);
+                                dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+                            }, 100);
+                        } else {
+                            apology += 'Vui lòng thử lại với câu hỏi khác.';
+                        }
+                        
+                        displayMessage(apology, 'bot');
                     }
                 }, 1000 + Math.random() * 1000); // Thêm độ trễ tự nhiên
             }
             
             // Mở/đóng chat
-            dom.chatToggleBtn.addEventListener('click', () => {
+            dom.chatToggleBtn.addEventListener('click', async () => {
                 isChatOpen = !isChatOpen;
                 dom.chatWindow.classList.toggle('active', isChatOpen);
                 
                 // Ẩn thông báo khi mở chat
                 if (isChatOpen) {
                     dom.chatNotification.style.display = 'none';
-                }
-                
-                // Focus vào input khi mở chat
-                if (isChatOpen) {
+                    
+                    // Nếu chưa tải dữ liệu, thì tải
+                    if (chatQnA.length === 0) {
+                        await loadChatData();
+                    }
+                    
+                    // Reset usedQuestions khi mở chat mới
+                    usedQuestions.clear();
+                    
+                    // Lấy 3 câu hỏi ngẫu nhiên mới
+                    getRandomQuestions(3);
+                    
+                    // Hiển thị lời chào và 3 câu hỏi ngẫu nhiên
+                    displayWelcomeWithQuestions();
+                    
+                    // Focus vào input khi mở chat
                     setTimeout(() => {
                         dom.chatInput.focus();
                     }, 300);
@@ -4556,7 +5447,7 @@
                 }
             });
             
-            // Tự động mở chat khi có thông báo (ví dụ: lần đầu truy cập)
+            // Tự động mở chat khi có thông báo
             setTimeout(() => {
                 // Chỉ hiển thị thông báo nếu chưa từng mở chat
                 const hasOpenedChat = localStorage.getItem('hasOpenedChat');
@@ -4566,7 +5457,7 @@
                 }
             }, 5000);
             
-            // Đóng chat khi click ra ngoài (cho mobile)
+            // Đóng chat khi click ra ngoài
             document.addEventListener('click', (e) => {
                 if (isChatOpen && 
                     !dom.chatWindow.contains(e.target) && 
@@ -4576,75 +5467,90 @@
                 }
             });
             
-            // Thêm một số câu hỏi mẫu khi mở chat lần đầu
-            const welcomeQuestions = [
-                "Xin chào bằng tiếng Xơ Đăng là gì?",
-                "Cảm ơn tiếng Xơ Đăng nói thế nào?",
-                "Giới thiệu về ngôn ngữ Xơ Đăng",
-                "Tôi muốn học tiếng Xơ Đăng"
-            ];
-            
-            // Hiển thị câu hỏi mẫu sau khi mở chat
-            dom.chatWindow.addEventListener('click', function initWelcomeQuestions(e) {
-                if (e.target === dom.chatInput || e.target === dom.sendChatBtn) {
-                    return;
-                }
-                
-                // Chỉ thêm câu hỏi mẫu nếu chưa có tin nhắn nào
-                if (chatMessages.length <= 2) {
-                    setTimeout(() => {
-                        const sampleQuestions = document.createElement('div');
-                        sampleQuestions.className = 'welcome-message';
-                        sampleQuestions.innerHTML = `
-                            <h4><i class="fas fa-lightbulb"></i> Gợi ý câu hỏi:</h4>
-                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center;">
-                                ${welcomeQuestions.map(q => `
-                                    <button class="hashtag" style="font-size: 0.8rem; padding: 6px 12px; cursor: pointer;" onclick="document.getElementById('chatInput').value='${q}'; document.getElementById('sendChatBtn').click();">
-                                        ${q}
-                                    </button>
-                                `).join('')}
-                            </div>
-                        `;
-                        
-                        dom.chatMessages.appendChild(sampleQuestions);
-                        dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
-                    }, 500);
-                    
-                    // Xóa sự kiện sau khi đã thực hiện
-                    dom.chatWindow.removeEventListener('click', initWelcomeQuestions);
-                }
+            // Khởi tạo trạng thái ban đầu - tải dữ liệu ngay khi trang được tải
+            loadChatData().then(() => {
+                console.log('Chat widget đã sẵn sàng!');
             });
-            
-            // Khởi tạo trạng thái ban đầu
-            console.log('Chat widget đã sẵn sàng!');
             
         })();
 
-        // ===== QUIZ FUNCTIONALITY =====
+        // ===== HỌC VÀ KIỂM TRA FUNCTIONALITY (GỘP ÔN TẬP VÀ TRẮC NGHIỆM) - ĐÃ SỬA LOGIC VÀ THÊM ÂM THANH =====
         (function() {
             // Cấu hình
-            const QUIZ_CONFIG = {
+            const STUDY_QUIZ_CONFIG = {
                 API_KEY: 'AIzaSyD757jS4SLR7-EzrPgrW9WrLQeD2DQExHw',
                 SHEET_ID: '1Z59pDBu_tGwlYqUeS1-VJLpcHozp7LbxnC_-qhT3iHs',
                 RANGE: 'Tracnghiem!A2:H' // A: STT, B: Câu hỏi, C-F: Đáp án, G: Đáp án đúng, H: Chủ đề
             };
             
             // Biến toàn cục
-            let quizData = [];
+            let studyQuizData = [];
             let topics = new Map();
             let currentTopic = null;
-            let currentQuestions = [];
+            let currentStudyCards = []; // Thẻ học tập (flashcard)
+            let currentStudyCardIndex = 0;
+            let currentQuizQuestions = []; // Câu hỏi trắc nghiệm
             let currentQuestionIndex = 0;
             let userAnswers = new Array(5).fill(null);
             let quizTimer = null;
             let timeElapsed = 0;
+            let studiedCards = new Set(); // Lưu các thẻ đã học - ĐÃ THAY ĐỔI: Lưu theo chủ đề
+            let studySessionStarted = false;
+            
+            // Lưu trữ tiến độ học tập theo chủ đề
+            let studyProgressByTopic = new Map();
+            
+            // Hàm phát âm thanh khi lật thẻ
+            function playFlipSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 600;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                } catch (e) {
+                    console.log("Không thể phát âm thanh lật thẻ: ", e);
+                }
+            }
             
             // DOM Elements
             const dom = {
-                topicsGrid: document.getElementById('topicsGrid'),
-                quizTopicSelection: document.getElementById('quizTopicSelection'),
+                studyQuizTopicsGrid: document.getElementById('studyQuizTopicsGrid'),
+                studyQuizTopicSelection: document.getElementById('studyQuizTopicSelection'),
+                studyInterface: document.getElementById('studyInterface'),
+                currentStudyTopicTitle: document.getElementById('currentStudyTopicTitle'),
+                currentStudyCardNumber: document.getElementById('currentStudyCardNumber'),
+                totalStudyCards: document.getElementById('totalStudyCards'),
+                studyCompletion: document.getElementById('studyCompletion'),
+                flashcard: document.getElementById('flashcard'),
+                flashcardFront: document.getElementById('flashcardFront'),
+                flashcardBack: document.getElementById('flashcardBack'),
+                flashcardQuestion: document.getElementById('flashcardQuestion'),
+                flashcardQuestionFull: document.getElementById('flashcardQuestionFull'),
+                flashcardAnswer: document.getElementById('flashcardAnswer'),
+                frontTick: document.getElementById('frontTick'),
+                backTick: document.getElementById('backTick'),
+                frontCardNumber: document.getElementById('frontCardNumber'),
+                backCardNumber: document.getElementById('backCardNumber'),
+                cardCompletionEffect: document.getElementById('cardCompletionEffect'),
+                prevCardBtn: document.getElementById('prevCardBtn'),
+                flipCardBtn: document.getElementById('flipCardBtn'),
+                nextCardBtn: document.getElementById('nextCardBtn'),
+                studyProgressFill: document.getElementById('studyProgressFill'),
+                studySessionProgressFill: document.getElementById('studySessionProgressFill'),
+                startQuizBtn: document.getElementById('startQuizBtn'),
                 quizInterface: document.getElementById('quizInterface'),
-                currentTopicTitle: document.getElementById('currentTopicTitle'),
+                currentQuizTopicTitle: document.getElementById('currentQuizTopicTitle'),
                 currentQuestionNumber: document.getElementById('currentQuestionNumber'),
                 quizTimer: document.getElementById('quizTimer'),
                 questionText: document.getElementById('questionText'),
@@ -4704,26 +5610,26 @@
             }
             
             // Lấy dữ liệu từ Google Sheets
-            async function fetchQuizData() {
+            async function fetchStudyQuizData() {
                 try {
-                    showLoading('Đang tải dữ liệu trắc nghiệm...');
-                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${QUIZ_CONFIG.SHEET_ID}/values/${QUIZ_CONFIG.RANGE}?key=${QUIZ_CONFIG.API_KEY}`;
+                    showLoading('Đang tải dữ liệu học tập...');
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${STUDY_QUIZ_CONFIG.SHEET_ID}/values/${STUDY_QUIZ_CONFIG.RANGE}?key=${STUDY_QUIZ_CONFIG.API_KEY}`;
                     const response = await fetch(url);
                     
                     if (!response.ok) {
-                        throw new Error('Không thể tải dữ liệu trắc nghiệm');
+                        throw new Error('Không thể tải dữ liệu học tập');
                     }
                     
                     const data = await response.json();
                     
                     if (!data.values || data.values.length === 0) {
-                        throw new Error('Không có dữ liệu trắc nghiệm');
+                        throw new Error('Không có dữ liệu học tập');
                     }
                     
                     // Parse dữ liệu
-                    quizData = data.values.map(row => ({
+                    studyQuizData = data.values.map(row => ({
                         id: row[0] || '',
-                        question: row[1] || '',
+                        question: row[1] || 'Câu hỏi',
                         options: [
                             row[2] || '',
                             row[3] || '',
@@ -4735,7 +5641,7 @@
                     }));
                     
                     // Nhóm theo chủ đề
-                    quizData.forEach(item => {
+                    studyQuizData.forEach(item => {
                         const topic = item.topic;
                         if (!topics.has(topic)) {
                             topics.set(topic, []);
@@ -4746,16 +5652,53 @@
                     // Hiển thị chủ đề
                     displayTopics();
                     
-                    showToast('Đã tải dữ liệu trắc nghiệm thành công!', 'success');
+                    // Cập nhật số câu hỏi trong thống kê chính
+                    const statQuestions = document.getElementById('stat-questions');
+                    if (statQuestions) {
+                        statQuestions.textContent = `${studyQuizData.length}+`;
+                    }
+                    
+                    // Tải tiến độ học tập từ localStorage
+                    loadStudyProgressFromStorage();
+                    
+                    showToast('Đã tải dữ liệu học tập thành công!', 'success');
                     
                 } catch (error) {
-                    console.error('Lỗi khi tải dữ liệu trắc nghiệm:', error);
-                    showToast('Không thể tải dữ liệu trắc nghiệm. Vui lòng thử lại sau.', 'error');
+                    console.error('Lỗi khi tải dữ liệu học tập:', error);
+                    showToast('Không thể tải dữ liệu học tập. Vui lòng thử lại sau.', 'error');
                     // Hiển thị dữ liệu mẫu nếu không kết nối được
                     loadSampleData();
                 } finally {
                     hideLoading();
                 }
+            }
+            
+            // Tải tiến độ học tập từ localStorage
+            function loadStudyProgressFromStorage() {
+                const savedProgress = localStorage.getItem('studyProgressByTopic');
+                if (savedProgress) {
+                    try {
+                        const parsed = JSON.parse(savedProgress);
+                        studyProgressByTopic = new Map(Object.entries(parsed));
+                        
+                        // Chuyển đổi Set từ string
+                        studyProgressByTopic.forEach((cards, topic) => {
+                            studyProgressByTopic.set(topic, new Set(JSON.parse(cards)));
+                        });
+                    } catch (e) {
+                        console.error('Lỗi khi tải tiến độ học tập:', e);
+                        studyProgressByTopic = new Map();
+                    }
+                }
+            }
+            
+            // Lưu tiến độ học tập vào localStorage
+            function saveStudyProgressToStorage() {
+                const progressToSave = {};
+                studyProgressByTopic.forEach((cards, topic) => {
+                    progressToSave[topic] = JSON.stringify(Array.from(cards));
+                });
+                localStorage.setItem('studyProgressByTopic', JSON.stringify(progressToSave));
             }
             
             // Dữ liệu mẫu khi không kết nối được API
@@ -4833,7 +5776,7 @@
                     }
                 ];
                 
-                quizData = sampleData;
+                studyQuizData = sampleData;
                 sampleData.forEach(item => {
                     const topic = item.topic;
                     if (!topics.has(topic)) {
@@ -4843,23 +5786,39 @@
                 });
                 
                 displayTopics();
+                
+                // Cập nhật số câu hỏi trong thống kê chính
+                const statQuestions = document.getElementById('stat-questions');
+                if (statQuestions) {
+                    statQuestions.textContent = `${studyQuizData.length}+`;
+                }
+                
+                // Tải tiến độ học tập từ localStorage
+                loadStudyProgressFromStorage();
             }
             
             // Hiển thị các chủ đề
             function displayTopics() {
-                dom.topicsGrid.innerHTML = '';
+                dom.studyQuizTopicsGrid.innerHTML = '';
                 
                 topics.forEach((questions, topicName) => {
+                    // Lấy tiến độ học tập của chủ đề này
+                    const studiedCards = studyProgressByTopic.get(topicName) || new Set();
+                    const progressPercentage = questions.length > 0 ? Math.round((studiedCards.size / questions.length) * 100) : 0;
+                    
                     const topicCard = document.createElement('div');
-                    topicCard.className = 'topic-card';
+                    topicCard.className = 'study-quiz-topic-card';
                     topicCard.innerHTML = `
                         <i class="fas fa-folder"></i>
                         <h3>${topicName}</h3>
                         <p>${questions.length} câu hỏi</p>
+                        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #27ae60; font-weight: 600;">
+                            ${progressPercentage}% đã học
+                        </div>
                     `;
                     
                     topicCard.addEventListener('click', () => selectTopic(topicName));
-                    dom.topicsGrid.appendChild(topicCard);
+                    dom.studyQuizTopicsGrid.appendChild(topicCard);
                 });
             }
             
@@ -4867,27 +5826,247 @@
             function selectTopic(topicName) {
                 currentTopic = topicName;
                 
-                // Lấy 5 câu hỏi ngẫu nhiên từ chủ đề
+                // Reset trạng thái học tập cho phiên hiện tại
+                currentStudyCardIndex = 0;
+                studySessionStarted = false;
+                
+                // Lấy tất cả câu hỏi của chủ đề
                 const allQuestions = topics.get(topicName);
-                currentQuestions = getRandomQuestions(allQuestions, 5);
+                currentStudyCards = allQuestions.map((q, index) => ({
+                    index: index, // Lưu index gốc để theo dõi
+                    question: q.question,
+                    answer: q.options[q.correctAnswer - 1], // Đáp án đúng
+                    fullQuestion: q.question // Lưu câu hỏi đầy đủ
+                }));
+                
+                // Xáo trộn thẻ học tập
+                currentStudyCards = shuffleArray(currentStudyCards);
+                
+                // Lấy tiến độ đã học của chủ đề này
+                const savedStudiedCards = studyProgressByTopic.get(topicName) || new Set();
+                studiedCards = savedStudiedCards;
+                
+                // Hiển thị giao diện học tập
+                dom.studyQuizTopicSelection.style.display = 'none';
+                dom.studyInterface.style.display = 'block';
+                dom.quizInterface.style.display = 'none';
+                dom.quizResult.style.display = 'none';
+                
+                // Cập nhật thông tin
+                dom.currentStudyTopicTitle.textContent = `Chủ đề: ${topicName}`;
+                dom.totalStudyCards.textContent = currentStudyCards.length;
+                
+                // Hiển thị thẻ đầu tiên
+                displayStudyCard();
+                
+                // Cập nhật tiến độ học tập
+                updateStudyProgress();
+            }
+            
+            // Xáo trộn mảng
+            function shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            // Hiển thị thẻ học tập - ĐÃ SỬA LỖI HIỂN THỊ SỐ THỨ TỰ
+            function displayStudyCard() {
+                const card = currentStudyCards[currentStudyCardIndex];
+                const isStudied = studiedCards.has(card.index);
+                const totalCards = currentStudyCards.length;
+                const currentCardNumber = currentStudyCardIndex + 1;
+                
+                // Cập nhật số thẻ
+                dom.currentStudyCardNumber.textContent = currentCardNumber;
+                
+                // Cập nhật số thứ tự trên thẻ (cả hai mặt)
+                // FIX: Sửa lỗi hiển thị số thứ tự trên mặt sau
+                const frontNumberText = `${currentCardNumber}/${totalCards}`;
+                const backNumberText = `${currentCardNumber}/${totalCards}`;
+                
+                dom.frontCardNumber.textContent = frontNumberText;
+                dom.backCardNumber.textContent = backNumberText;
+                
+                // Thêm hiệu ứng cho số thứ tự nếu thẻ đã học
+                if (isStudied) {
+                    dom.frontCardNumber.classList.add('completed');
+                    dom.backCardNumber.classList.add('completed');
+                } else {
+                    dom.frontCardNumber.classList.remove('completed');
+                    dom.backCardNumber.classList.remove('completed');
+                }
+                
+                // Hiển thị câu hỏi
+                dom.flashcardQuestion.textContent = card.question;
+                dom.flashcardQuestionFull.textContent = card.fullQuestion; // Hiển thị câu hỏi đầy đủ
+                
+                // Hiển thị đáp án
+                dom.flashcardAnswer.textContent = card.answer;
+                
+                // Hiển thị/ẩn dấu tick
+                if (isStudied) {
+                    dom.frontTick.classList.add('visible');
+                    dom.backTick.classList.add('visible');
+                } else {
+                    dom.frontTick.classList.remove('visible');
+                    dom.backTick.classList.remove('visible');
+                }
+                
+                // Reset thẻ về mặt trước
+                dom.flashcard.classList.remove('flipped');
+                dom.flashcard.classList.remove('completed-card');
+                
+                // Cập nhật nút điều khiển
+                dom.prevCardBtn.disabled = currentStudyCardIndex === 0;
+                dom.nextCardBtn.disabled = currentStudyCardIndex === currentStudyCards.length - 1;
+                
+                // Cập nhật tiến độ phiên học
+                const sessionProgress = ((currentStudyCardIndex + 1) / currentStudyCards.length) * 100;
+                dom.studySessionProgressFill.style.width = `${sessionProgress}%`;
+                
+                // Thêm hiệu ứng chuyển thẻ
+                setTimeout(() => {
+                    if (currentStudyCardIndex > 0) {
+                        dom.flashcard.classList.add('prev-card');
+                        setTimeout(() => {
+                            dom.flashcard.classList.remove('prev-card');
+                        }, 500);
+                    } else if (currentStudyCardIndex < currentStudyCards.length - 1) {
+                        dom.flashcard.classList.add('next-card');
+                        setTimeout(() => {
+                            dom.flashcard.classList.remove('next-card');
+                        }, 500);
+                    }
+                }, 10);
+            }
+            
+            // Cập nhật tiến độ học tập tổng thể
+            function updateStudyProgress() {
+                const totalCards = currentStudyCards.length;
+                const studiedCount = studiedCards.size;
+                const progressPercentage = totalCards > 0 ? Math.round((studiedCount / totalCards) * 100) : 0;
+                
+                // Cập nhật thanh tiến độ
+                dom.studyProgressFill.style.width = `${progressPercentage}%`;
+                dom.studyCompletion.textContent = `${progressPercentage}% đã học`;
+                
+                // Kích hoạt nút bắt đầu kiểm tra nếu đã học đủ
+                if (progressPercentage >= 70) {
+                    dom.startQuizBtn.disabled = false;
+                    dom.startQuizBtn.innerHTML = '<i class="fas fa-play-circle"></i> Bắt đầu kiểm tra';
+                } else {
+                    dom.startQuizBtn.disabled = true;
+                    dom.startQuizBtn.innerHTML = `<i class="fas fa-play-circle"></i> Bắt đầu kiểm tra (cần học thêm ${70 - progressPercentage}%)`;
+                }
+                
+                // Lưu tiến độ vào localStorage
+                studyProgressByTopic.set(currentTopic, studiedCards);
+                saveStudyProgressToStorage();
+            }
+            
+            // Đánh dấu thẻ đã học
+            function markCardAsStudied() {
+                const card = currentStudyCards[currentStudyCardIndex];
+                if (!studiedCards.has(card.index)) {
+                    studiedCards.add(card.index);
+                    
+                    // Hiển thị dấu tick
+                    dom.frontTick.classList.add('visible');
+                    dom.backTick.classList.add('visible');
+                    
+                    // Thêm hiệu ứng cho số thứ tự
+                    dom.frontCardNumber.classList.add('completed');
+                    dom.backCardNumber.classList.add('completed');
+                    
+                    // Kích hoạt hiệu ứng hoàn thành
+                    dom.cardCompletionEffect.classList.add('active');
+                    setTimeout(() => {
+                        dom.cardCompletionEffect.classList.remove('active');
+                    }, 1500);
+                    
+                    // Thêm hiệu ứng cho thẻ
+                    dom.flashcard.classList.add('completed-card');
+                    setTimeout(() => {
+                        dom.flashcard.classList.remove('completed-card');
+                    }, 1000);
+                    
+                    // Cập nhật tiến độ
+                    updateStudyProgress();
+                    
+                    // Phát âm thanh hoàn thành
+                    playFlipSound();
+                }
+            }
+            
+            // Các nút điều khiển học tập
+            dom.prevCardBtn.addEventListener('click', () => {
+                if (currentStudyCardIndex > 0) {
+                    currentStudyCardIndex--;
+                    displayStudyCard();
+                }
+            });
+            
+            dom.nextCardBtn.addEventListener('click', () => {
+                if (currentStudyCardIndex < currentStudyCards.length - 1) {
+                    currentStudyCardIndex++;
+                    displayStudyCard();
+                }
+            });
+            
+            dom.flipCardBtn.addEventListener('click', () => {
+                dom.flashcard.classList.toggle('flipped');
+                studySessionStarted = true;
+                markCardAsStudied();
+                playFlipSound(); // Phát âm thanh khi lật thẻ
+            });
+            
+            // Lật thẻ khi click vào thẻ
+            dom.flashcard.addEventListener('click', (e) => {
+                // Chỉ lật thẻ khi click vào thẻ, không phải vào nút
+                if (!e.target.closest('.flashcard-nav-btn') && !e.target.closest('.flashcard-flip-btn') && !e.target.closest('.flashcard-number')) {
+                    dom.flashcard.classList.toggle('flipped');
+                    studySessionStarted = true;
+                    markCardAsStudied();
+                    playFlipSound(); // Phát âm thanh khi lật thẻ
+                }
+            });
+            
+            // Bắt đầu kiểm tra
+            dom.startQuizBtn.addEventListener('click', () => {
+                // Kiểm tra xem đã học đủ chưa
+                const studiedCount = studiedCards.size;
+                const totalCards = currentStudyCards.length;
+                const progressPercentage = totalCards > 0 ? Math.round((studiedCount / totalCards) * 100) : 0;
+                
+                if (progressPercentage < 70) {
+                    showToast(`Bạn cần học ít nhất 70% để bắt đầu kiểm tra. Hiện tại: ${progressPercentage}%`, 'error');
+                    return;
+                }
+                
+                // Lấy 5 câu hỏi ngẫu nhiên từ chủ đề
+                const allQuestions = topics.get(currentTopic);
+                currentQuizQuestions = getRandomQuestions(allQuestions, 5);
                 currentQuestionIndex = 0;
                 userAnswers = new Array(5).fill(null);
                 timeElapsed = 0;
                 
-                // Hiển thị giao diện làm bài
-                dom.quizTopicSelection.style.display = 'none';
+                // Hiển thị giao diện kiểm tra
+                dom.studyInterface.style.display = 'none';
                 dom.quizInterface.style.display = 'block';
-                dom.quizResult.style.display = 'none';
                 
                 // Cập nhật thông tin
-                dom.currentTopicTitle.textContent = `Chủ đề: ${topicName}`;
+                dom.currentQuizTopicTitle.textContent = `Chủ đề: ${currentTopic}`;
                 
                 // Bắt đầu bộ đếm thời gian
                 startTimer();
                 
                 // Hiển thị câu hỏi đầu tiên
                 displayQuestion();
-            }
+            });
             
             // Lấy câu hỏi ngẫu nhiên
             function getRandomQuestions(questions, count) {
@@ -4907,7 +6086,7 @@
             
             // Hiển thị câu hỏi
             function displayQuestion() {
-                const question = currentQuestions[currentQuestionIndex];
+                const question = currentQuizQuestions[currentQuestionIndex];
                 
                 // Cập nhật số câu hỏi
                 dom.currentQuestionNumber.textContent = currentQuestionIndex + 1;
@@ -4938,7 +6117,7 @@
                 
                 // Cập nhật nút điều khiển
                 dom.prevQuestionBtn.disabled = currentQuestionIndex === 0;
-                dom.nextQuestionBtn.disabled = currentQuestionIndex === currentQuestions.length - 1;
+                dom.nextQuestionBtn.disabled = currentQuestionIndex === currentQuizQuestions.length - 1;
                 dom.submitQuizBtn.disabled = userAnswers.includes(null);
             }
             
@@ -4970,7 +6149,7 @@
             });
             
             dom.nextQuestionBtn.addEventListener('click', () => {
-                if (currentQuestionIndex < currentQuestions.length - 1) {
+                if (currentQuestionIndex < currentQuizQuestions.length - 1) {
                     currentQuestionIndex++;
                     displayQuestion();
                 }
@@ -4999,7 +6178,7 @@
                 let score = 0;
                 const results = [];
                 
-                currentQuestions.forEach((question, index) => {
+                currentQuizQuestions.forEach((question, index) => {
                     const userAnswer = userAnswers[index];
                     const isCorrect = userAnswer === question.correctAnswer;
                     
@@ -5035,16 +6214,16 @@
                 
                 if (score === 5) {
                     title = 'Xuất sắc! 🎉';
-                    description = 'Bạn thật sự am hiểu tiếng Xơ Đăng. Tiếp tục phát huy nhé!';
+                    description = 'Bạn đã nắm vững kiến thức về chủ đề này. Tiếp tục phát huy nhé!';
                 } else if (score >= 4) {
                     title = 'Rất tốt! 👍';
-                    description = 'Kiến thức của bạn về tiếng Xơ Đăng khá vững. Cố gắng hơn nữa nhé!';
+                    description = 'Kiến thức của bạn khá vững. Hãy ôn tập thêm để đạt điểm tuyệt đối!';
                 } else if (score >= 3) {
                     title = 'Khá ổn! 👌';
-                    description = 'Bạn đã nắm được kiến thức cơ bản. Hãy ôn tập thêm để tiến bộ hơn.';
+                    description = 'Bạn đã nắm được kiến thức cơ bản. Hãy học thêm để tiến bộ hơn.';
                 } else {
                     title = 'Cần cố gắng thêm! 💪';
-                    description = 'Đừng nản lòng! Hãy học thêm và thử lại lần nữa.';
+                    description = 'Đừng nản lòng! Hãy quay lại học tập và thử lại lần nữa.';
                 }
                 
                 dom.resultTitle.textContent = title;
@@ -5081,16 +6260,19 @@
             dom.newTopicBtn.addEventListener('click', () => {
                 // Quay lại chọn chủ đề
                 dom.quizResult.style.display = 'none';
-                dom.quizTopicSelection.style.display = 'block';
+                dom.studyQuizTopicSelection.style.display = 'block';
+                
+                // Hiển thị lại các chủ đề với tiến độ cập nhật
+                displayTopics();
             });
             
             dom.shareResultBtn.addEventListener('click', () => {
                 const score = parseInt(dom.finalScore.textContent);
-                const message = `Tôi vừa đạt ${score}/5 điểm trong bài trắc nghiệm tiếng Xơ Đăng chủ đề "${currentTopic}"! 🎯\n\nThử thách bản thân tại: ${window.location.href}`;
+                const message = `Tôi vừa đạt ${score}/5 điểm trong bài kiểm tra tiếng Xơ Đăng chủ đề "${currentTopic}"! 🎯\n\nThử thách bản thân tại: ${window.location.href}`;
                 
                 if (navigator.share) {
                     navigator.share({
-                        title: 'Kết quả trắc nghiệm tiếng Xơ Đăng',
+                        title: 'Kết quả kiểm tra tiếng Xơ Đăng',
                         text: message,
                         url: window.location.href
                     }).catch(console.error);
@@ -5106,10 +6288,10 @@
             });
             
             // Khởi tạo
-            function initQuiz() {
-                fetchQuizData();
+            function initStudyQuiz() {
+                fetchStudyQuizData();
                 
-                // Xử lý khi chuyển đến section trắc nghiệm
+                // Xử lý khi chuyển đến section học và kiểm tra
                 const quizLink = document.querySelector('a[href="#quiz"]');
                 if (quizLink) {
                     quizLink.addEventListener('click', function(e) {
@@ -5117,15 +6299,15 @@
                         showSection('quiz');
                         
                         // Nếu chưa tải dữ liệu thì tải
-                        if (quizData.length === 0) {
-                            fetchQuizData();
+                        if (studyQuizData.length === 0) {
+                            fetchStudyQuizData();
                         }
                     });
                 }
             }
             
             // Khởi động khi trang được tải
-            document.addEventListener('DOMContentLoaded', initQuiz);
+            document.addEventListener('DOMContentLoaded', initStudyQuiz);
         })();
 
         // ===== THÊM VÀO FOOTER - PWA STATUS =====
