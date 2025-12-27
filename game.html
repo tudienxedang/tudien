@@ -1,15 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi" class="h-full">
- <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Học tiếng xơ đăng qua trò chơi tương tác</title>
+  <title>Học Tiếng Xê Đăng</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
   <style>
     body {
       box-sizing: border-box;
@@ -521,7 +521,6 @@
       animation: pulse 2s ease-in-out infinite;
     }
 
-    /* Âm thanh controls */
     .sound-controls {
       position: fixed;
       top: 20px;
@@ -562,7 +561,6 @@
       border-color: #dc2626;
     }
 
-    /* Leaderboard improvements */
     .leaderboard-entry {
       transition: all 0.3s ease;
     }
@@ -595,11 +593,56 @@
       border-radius: 3px;
       transition: width 0.5s ease;
     }
+
+    .level-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+      color: white;
+    }
+
+    .level-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .level-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      transition: width 0.5s ease;
+    }
+
+    .new-level-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      animation: pulse 1.5s infinite;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+    }
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
- </head>
- <body class="h-full">
+</head>
+<body class="h-full">
   <div id="app" class="h-full w-full overflow-auto bg-gradient-to-br from-blue-50 to-indigo-100"></div>
   <div id="offline-indicator" style="display: none;"></div>
   
@@ -610,64 +653,266 @@
   </div>
 
   <script>
-    // Cấu hình Google Sheets - CHỈ dùng cho câu hỏi, không dùng cho điểm số
+    // ========== CẤU HÌNH TỰ ĐỘNG LEVEL ==========
+    const AUTO_LEVEL_CONFIG = {
+      game1: { questionsPerLevel: 3 },
+      game2: { questionsPerLevel: 5 },
+      game3: { questionsPerLevel: 5 },
+      game4: { questionsPerLevel: 4 }
+    };
+
+    // Cấu hình Google Sheets
     const API_KEY = 'AIzaSyD757jS4SLR7-EzrPgrW9WrLQeD2DQExHw';
     const SPREADSHEET_ID = '1Z59pDBu_tGwlYqUeS1-VJLpcHozp7LbxnC_-qhT3iHs';
-    const RANGE = 'Game!A3:T';
+    const RANGE = 'Game!A3:AC100';
 
     // Dữ liệu mẫu backup
     const MOCK_DATA = {
       game1: [
-        ['Con voi', 'Chiêng', 'Chuột', 'Gà', 'Chó'],
-        ['Mèo', 'Meo', 'Chó', 'Gà', 'Vịt'],
-        ['Chó', 'Aso', 'Mèo', 'Gà', 'Vịt'],
-        ['Gà', 'Manuk', 'Chó', 'Mèo', 'Vịt'],
-        ['Nước', 'Dak', 'Lửa', 'Đất', 'Gió'],
-        ['Mẹ', 'Mê', 'Bố', 'Con', 'Anh'],
-        ['Tốt', 'Tôch', 'Xấu', 'Đẹp', 'To'],
-        ['Một', 'Muôi', 'Hai', 'Ba', 'Bốn'],
-        ['Trời', 'Muâ', 'Đất', 'Nước', 'Lửa'],
-        ['Yêu', 'Mơ guôl', 'Ghét', 'Thương', 'Nhớ']
+        { question: 'Con voi', correct: 'Chiêng', wrongs: [], level: 1, topic: 'Động vật' },
+        { question: 'Mèo', correct: 'Meo', wrongs: [], level: 1, topic: 'Động vật' },
+        { question: 'Chó', correct: 'Aso', wrongs: [], level: 1, topic: 'Động vật' },
+        { question: 'Gà', correct: 'Manuk', wrongs: [], level: 2, topic: 'Động vật' },
+        { question: 'Nước', correct: 'Dak', wrongs: [], level: 2, topic: 'Thiên nhiên' },
+        { question: 'Mẹ', correct: 'Mê', wrongs: [], level: 2, topic: 'Gia đình' },
+        { question: 'Tốt', correct: 'Tôch', wrongs: [], level: 3, topic: 'Tính từ' },
+        { question: 'Một', correct: 'Muôi', wrongs: [], level: 3, topic: 'Số đếm' },
+        { question: 'Trời', correct: 'Muâ', wrongs: [], level: 3, topic: 'Thiên nhiên' },
+        { question: 'Yêu', correct: 'Mơ guôl', wrongs: [], level: 4, topic: 'Cảm xúc' }
       ],
       game2: [
-        ['Nước', 'Dak', 'Lửa', 'Đất', 'Gió'],
-        ['Lửa', 'Apui', 'Nước', 'Đất', 'Gió'],
-        ['Trời', 'Muâ', 'Đất', 'Nước', 'Gió'],
-        ['Ăn cơm', 'Sa ơi', 'Uống nước', 'Ngủ', 'Đi'],
-        ['Tốt', 'Tôch', 'Xấu', 'Đẹp', 'To'],
-        ['Mẹ', 'Mê', 'Bố', 'Con', 'Anh'],
-        ['Con voi', 'Chiêng', 'Chuột', 'Gà', 'Chó'],
-        ['Nhà', 'Hơm', 'Rừng', 'Núi', 'Sông'],
-        ['Yêu', 'Mơ guôl', 'Ghét', 'Thương', 'Nhớ'],
-        ['Cây', 'Ka yông', 'Hoa', 'Lá', 'Quả']
+        { question: 'Nước', correct: 'Dak', wrongs: ['Lửa', 'Đất', 'Gió'], level: 1, topic: 'Thiên nhiên' },
+        { question: 'Lửa', correct: 'Apui', wrongs: ['Nước', 'Đất', 'Gió'], level: 1, topic: 'Thiên nhiên' },
+        { question: 'Trời', correct: 'Muâ', wrongs: ['Đất', 'Nước', 'Gió'], level: 1, topic: 'Thiên nhiên' },
+        { question: 'Ăn cơm', correct: 'Sa ơi', wrongs: ['Uống nước', 'Ngủ', 'Đi'], level: 1, topic: 'Hoạt động' },
+        { question: 'Tốt', correct: 'Tôch', wrongs: ['Xấu', 'Đẹp', 'To'], level: 1, topic: 'Tính từ' },
+        { question: 'Mẹ', correct: 'Mê', wrongs: ['Bố', 'Con', 'Anh'], level: 2, topic: 'Gia đình' },
+        { question: 'Con voi', correct: 'Chiêng', wrongs: ['Chuột', 'Gà', 'Chó'], level: 2, topic: 'Động vật' },
+        { question: 'Nhà', correct: 'Hơm', wrongs: ['Rừng', 'Núi', 'Sông'], level: 2, topic: 'Nơi chốn' },
+        { question: 'Yêu', correct: 'Mơ guôl', wrongs: ['Ghét', 'Thương', 'Nhớ'], level: 2, topic: 'Cảm xúc' },
+        { question: 'Cây', correct: 'Ka yông', wrongs: ['Hoa', 'Lá', 'Quả'], level: 2, topic: 'Thực vật' }
       ],
       game3: [
-        ['Nhà', 'Hơm', 'Rừng', 'Núi', 'Sông'],
-        ['Rừng', 'Bri', 'Nhà', 'Núi', 'Biển'],
-        ['Núi', 'Gunung', 'Rừng', 'Biển', 'Sông'],
-        ['Ăn cơm', 'Sa ơi', 'Uống nước', 'Ngủ', 'Đi'],
-        ['Mẹ', 'Mê', 'Bố', 'Con', 'Anh'],
-        ['Tốt', 'Tôch', 'Xấu', 'Đẹp', 'To'],
-        ['Con voi', 'Chiêng', 'Chuột', 'Gà', 'Chó'],
-        ['Nước', 'Dak', 'Lửa', 'Đất', 'Gió'],
-        ['Yêu', 'Mơ guôl', 'Ghét', 'Thương', 'Nhớ'],
-        ['Cây', 'Ka yông', 'Hoa', 'Lá', 'Quả']
+        { question: 'Nhà', correct: 'Hơm', wrongs: ['Rừng', 'Núi', 'Sông'], level: 1, topic: 'Nơi chốn' },
+        { question: 'Rừng', correct: 'Bri', wrongs: ['Nhà', 'Núi', 'Biển'], level: 1, topic: 'Thiên nhiên' },
+        { question: 'Núi', correct: 'Gunung', wrongs: ['Rừng', 'Biển', 'Sông'], level: 1, topic: 'Thiên nhiên' },
+        { question: 'Ăn cơm', correct: 'Sa ơi', wrongs: ['Uống nước', 'Ngủ', 'Đi'], level: 1, topic: 'Hoạt động' },
+        { question: 'Mẹ', correct: 'Mê', wrongs: ['Bố', 'Con', 'Anh'], level: 1, topic: 'Gia đình' },
+        { question: 'Tốt', correct: 'Tôch', wrongs: ['Xấu', 'Đẹp', 'To'], level: 2, topic: 'Tính từ' },
+        { question: 'Con voi', correct: 'Chiêng', wrongs: ['Chuột', 'Gà', 'Chó'], level: 2, topic: 'Động vật' },
+        { question: 'Nước', correct: 'Dak', wrongs: ['Lửa', 'Đất', 'Gió'], level: 2, topic: 'Thiên nhiên' },
+        { question: 'Yêu', correct: 'Mơ guôl', wrongs: ['Ghét', 'Thương', 'Nhớ'], level: 2, topic: 'Cảm xúc' },
+        { question: 'Cây', correct: 'Ka yông', wrongs: ['Hoa', 'Lá', 'Quả'], level: 2, topic: 'Thực vật' }
       ],
       game4: [
-        ['Một', 'Muôi', 'Hai', 'Ba', 'Bốn'],
-        ['Hai', 'Bar', 'Một', 'Ba', 'Bốn'],
-        ['Ba', 'Pơi', 'Một', 'Hai', 'Bốn'],
-        ['Bốn', 'Pan', 'Một', 'Hai', 'Ba'],
-        ['Năm', 'Thơm', 'Một', 'Hai', 'Ba'],
-        ['Sáu', 'Ơm', 'Một', 'Hai', 'Ba'],
-        ['Bảy', 'Tuh', 'Một', 'Hai', 'Ba'],
-        ['Tám', 'Tam', 'Một', 'Hai', 'Ba'],
-        ['Chín', 'Chin', 'Một', 'Hai', 'Ba'],
-        ['Mười', 'Pluh', 'Một', 'Hai', 'Ba']
+        { question: 'Một', correct: 'Muôi', wrongs: ['Hai', 'Ba', 'Bốn'], level: 1, topic: 'Số đếm' },
+        { question: 'Hai', correct: 'Bar', wrongs: ['Một', 'Ba', 'Bốn'], level: 1, topic: 'Số đếm' },
+        { question: 'Ba', correct: 'Pơi', wrongs: ['Một', 'Hai', 'Bốn'], level: 1, topic: 'Số đếm' },
+        { question: 'Bốn', correct: 'Pan', wrongs: ['Một', 'Hai', 'Ba'], level: 1, topic: 'Số đếm' },
+        { question: 'Năm', correct: 'Thơm', wrongs: ['Một', 'Hai', 'Ba'], level: 2, topic: 'Số đếm' },
+        { question: 'Sáu', correct: 'Ơm', wrongs: ['Một', 'Hai', 'Ba'], level: 2, topic: 'Số đếm' },
+        { question: 'Bảy', correct: 'Tuh', wrongs: ['Một', 'Hai', 'Ba'], level: 2, topic: 'Số đếm' },
+        { question: 'Tám', correct: 'Tam', wrongs: ['Một', 'Hai', 'Ba'], level: 2, topic: 'Số đếm' },
+        { question: 'Chín', correct: 'Chin', wrongs: ['Một', 'Hai', 'Ba'], level: 3, topic: 'Số đếm' },
+        { question: 'Mười', correct: 'Pluh', wrongs: ['Một', 'Hai', 'Ba'], level: 3, topic: 'Số đếm' }
       ]
     };
 
-    // State toàn cục
+    // ========== HỆ THỐNG TÍNH LEVEL TỰ ĐỘNG ==========
+    
+    function loadMaxLevelsFromCache() {
+      try {
+        const cached = localStorage.getItem('xedang_max_levels_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          const cacheTime = localStorage.getItem('xedang_max_levels_time');
+          const now = Date.now();
+          
+          if (cacheTime && (now - parseInt(cacheTime)) < 300000) {
+            console.log('📊 Đang sử dụng maxLevels từ cache');
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Không thể load maxLevels từ cache:', e);
+      }
+      
+      return {
+        game1: 3,
+        game2: 3,
+        game3: 3,
+        game4: 3
+      };
+    }
+
+    function calculateMaxLevelsFromSheet(gameData) {
+      const maxLevels = {};
+      
+      Object.keys(gameData).forEach(gameKey => {
+        const questions = gameData[gameKey];
+        if (!questions || questions.length === 0) {
+          maxLevels[gameKey] = 1;
+          return;
+        }
+        
+        const levels = questions
+          .filter(q => q.level && q.level > 0)
+          .map(q => q.level);
+        
+        const maxLevelFromSheet = levels.length > 0 ? Math.max(...levels) : 1;
+        
+        const questionsPerLevel = AUTO_LEVEL_CONFIG[gameKey].questionsPerLevel;
+        const maxLevelByCount = Math.max(1, Math.ceil(questions.length / questionsPerLevel));
+        
+        maxLevels[gameKey] = Math.max(maxLevelFromSheet, maxLevelByCount, 1);
+        maxLevels[gameKey] = Math.min(maxLevels[gameKey], 100);
+      });
+      
+      console.log('📊 Max levels từ sheet:', maxLevels);
+      return maxLevels;
+    }
+
+    function calculateMaxLevels() {
+      const maxLevels = {};
+      const lastUpdated = localStorage.getItem('xedang_last_level_calculation') || 0;
+      const now = Date.now();
+      
+      if (now - lastUpdated < 120000 && window.calculatedMaxLevels) {
+        return window.calculatedMaxLevels;
+      }
+      
+      Object.keys(gameData).forEach(gameKey => {
+        const gameQuestions = gameData[gameKey];
+        if (!gameQuestions || gameQuestions.length === 0) {
+          maxLevels[gameKey] = 1;
+          return;
+        }
+        
+        const manualLevels = gameQuestions
+          .filter(q => q.level && q.level > 0)
+          .map(q => q.level);
+        
+        const autoMaxLevel = Math.max(1, Math.ceil(gameQuestions.length / AUTO_LEVEL_CONFIG[gameKey].questionsPerLevel));
+        
+        const manualMax = manualLevels.length > 0 ? Math.max(...manualLevels) : 0;
+        maxLevels[gameKey] = Math.max(manualMax, autoMaxLevel, 1);
+        maxLevels[gameKey] = Math.min(maxLevels[gameKey], 100);
+        maxLevels[gameKey] = Math.max(1, maxLevels[gameKey]);
+      });
+      
+      window.calculatedMaxLevels = maxLevels;
+      localStorage.setItem('xedang_last_level_calculation', now.toString());
+      localStorage.setItem('xedang_max_levels_cache', JSON.stringify(maxLevels));
+      localStorage.setItem('xedang_max_levels_time', now.toString());
+      
+      console.log('📊 Đã tính lại maxLevels:', maxLevels);
+      return maxLevels;
+    }
+
+    function checkForNewLevels() {
+      try {
+        const lastSeenLevels = JSON.parse(localStorage.getItem('xedang_last_seen_levels') || '{}');
+        let hasNewLevels = false;
+        let newLevelsCount = 0;
+        
+        Object.keys(maxLevels).forEach(gameKey => {
+          const lastSeen = lastSeenLevels[gameKey] || 0;
+          if (maxLevels[gameKey] > lastSeen) {
+            hasNewLevels = true;
+            newLevelsCount += (maxLevels[gameKey] - lastSeen);
+            console.log(`🎮 ${gameKey}: Có ${maxLevels[gameKey] - lastSeen} level mới!`);
+          }
+        });
+        
+        localStorage.setItem('xedang_last_seen_levels', JSON.stringify(maxLevels));
+        
+        if (hasNewLevels && newLevelsCount > 0) {
+          showToast(`✨ Có ${newLevelsCount} level mới được mở khóa!`, 'success');
+          return true;
+        }
+      } catch (e) {
+        console.warn('Không thể kiểm tra level mới:', e);
+      }
+      return false;
+    }
+
+    function getQuestionsByLevelExact(gameKey, currentLevel) {
+      const questions = gameData[gameKey];
+      if (!questions || questions.length === 0) {
+        return getFallbackQuestions(gameKey, currentLevel);
+      }
+      
+      let levelQuestions = questions.filter(q => q.level === currentLevel);
+      
+      if (levelQuestions.length === 0) {
+        const questionsPerLevel = AUTO_LEVEL_CONFIG[gameKey].questionsPerLevel;
+        const startIndex = (currentLevel - 1) * questionsPerLevel;
+        const endIndex = startIndex + questionsPerLevel;
+        levelQuestions = questions.slice(startIndex, endIndex);
+      }
+      
+      const questionsPerLevel = AUTO_LEVEL_CONFIG[gameKey].questionsPerLevel;
+      if (levelQuestions.length < questionsPerLevel) {
+        const needed = questionsPerLevel - levelQuestions.length;
+        const additionalQuestions = questions.slice(0, needed);
+        levelQuestions = [...levelQuestions, ...additionalQuestions];
+      }
+      
+      if (gameKey !== 'game1') {
+        levelQuestions = levelQuestions.map(q => {
+          const allAnswers = [q.correct, ...q.wrongs];
+          const shuffledAnswers = [...allAnswers].sort(() => Math.random() - 0.5);
+          return {
+            ...q,
+            correct: q.correct,
+            wrongs: shuffledAnswers.filter(a => a !== q.correct).slice(0, 3)
+          };
+        });
+      }
+      
+      return levelQuestions.slice(0, questionsPerLevel);
+    }
+
+    function getQuestionsByLevel(gameKey, currentLevel) {
+      return getQuestionsByLevelExact(gameKey, currentLevel);
+    }
+
+    function getFallbackQuestions(gameKey, currentLevel) {
+      const fallback = {
+        game1: [
+          { question: `Level ${currentLevel} - Câu 1`, correct: 'Đáp án 1', wrongs: [], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 2`, correct: 'Đáp án 2', wrongs: [], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 3`, correct: 'Đáp án 3', wrongs: [], level: currentLevel, topic: 'Chung' }
+        ],
+        game2: [
+          { question: `Level ${currentLevel} - Câu 1`, correct: 'Đáp án 1', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 2`, correct: 'Đáp án 2', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 3`, correct: 'Đáp án 3', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 4`, correct: 'Đáp án 4', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 5`, correct: 'Đáp án 5', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' }
+        ],
+        game3: [
+          { question: `Level ${currentLevel} - Câu 1`, correct: 'Đáp án 1', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 2`, correct: 'Đáp án 2', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 3`, correct: 'Đáp án 3', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 4`, correct: 'Đáp án 4', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 5`, correct: 'Đáp án 5', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' }
+        ],
+        game4: [
+          { question: `Level ${currentLevel} - Câu 1`, correct: 'Đáp án 1', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 2`, correct: 'Đáp án 2', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 3`, correct: 'Đáp án 3', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' },
+          { question: `Level ${currentLevel} - Câu 4`, correct: 'Đáp án 4', wrongs: ['Sai 1', 'Sai 2', 'Sai 3'], level: currentLevel, topic: 'Chung' }
+        ]
+      };
+      
+      return fallback[gameKey] || [];
+    }
+
+    function checkGameCompletion(gameKey, currentLevel) {
+      return currentLevel >= maxLevels[gameKey];
+    }
+
     let currentUser = null;
     let gameData = {
       game1: [],
@@ -675,10 +920,17 @@
       game3: [],
       game4: []
     };
+    
+    let maxLevels = {
+      game1: 3,
+      game2: 3,
+      game3: 3,
+      game4: 3
+    };
+    
     let currentScreen = 'login';
     let isOnline = navigator.onLine;
 
-    // Game states
     let game1State = {
       level: 1,
       cards: [],
@@ -686,7 +938,8 @@
       matchedPairs: 0,
       moves: 0,
       totalPairs: 0,
-      totalScore: 0
+      totalScore: 0,
+      currentTopic: ''
     };
 
     let game2State = {
@@ -700,7 +953,8 @@
       questionIndex: 0,
       lives: 3,
       combo: 0,
-      maxCombo: 0
+      maxCombo: 0,
+      currentTopic: ''
     };
 
     let game3State = {
@@ -713,7 +967,8 @@
       questionIndex: 0,
       lives: 3,
       combo: 0,
-      maxCombo: 0
+      maxCombo: 0,
+      currentTopic: ''
     };
 
     let game4State = {
@@ -729,11 +984,11 @@
       currentQuestion: null,
       selectedPlot: null,
       combo: 0,
-      maxCombo: 0
+      maxCombo: 0,
+      currentTopic: ''
     };
 
-    // ========== BIẾN CỜ QUAN TRỌNG: Theo dõi trạng thái khởi tạo game ==========
-    let isGame4Initialized = false; // QUAN TRỌNG: Theo dõi xem game 4 đã được khởi tạo chưa
+    let isGame4Initialized = false;
 
     // ========== HỆ THỐNG ÂM THANH ==========
     let audioContext;
@@ -743,7 +998,6 @@
     let bgmPlaying = false;
     let currentBGM = null;
 
-    // Khởi tạo Audio Context
     function initAudio() {
       if (!audioContext) {
         try {
@@ -755,7 +1009,6 @@
       }
     }
 
-    // Tạo âm thanh đơn giản
     function createBeep(frequency, duration, type = 'sine', volume = 0.3) {
       if (!audioContext || !sfxEnabled) return null;
       
@@ -782,9 +1035,7 @@
       }
     }
 
-    // Hiệu ứng âm thanh cho các sự kiện game
     const SoundEffects = {
-      // Game 1: Lật thẻ
       flipCard: () => createBeep(523.25, 0.1, 'sine', 0.2),
       matchSuccess: () => {
         if (!audioContext || !sfxEnabled) return;
@@ -793,8 +1044,6 @@
         setTimeout(() => createBeep(1046.50, 0.2, 'sine', 0.3), 200);
       },
       matchFail: () => createBeep(220, 0.3, 'sine', 0.2),
-      
-      // Game 2: Mưa từ vựng
       wordCaught: () => {
         if (!audioContext || !sfxEnabled) return;
         createBeep(784, 0.1, 'sine', 0.3);
@@ -809,8 +1058,6 @@
         setTimeout(() => createBeep(784, 0.1), 200);
         setTimeout(() => createBeep(1047, 0.3), 300);
       },
-      
-      // Game 3: Bảo vệ cứ điểm
       shoot: () => createBeep(880, 0.1, 'square', 0.2),
       enemyHit: () => createBeep(587, 0.1, 'sine', 0.3),
       enemyDestroy: () => {
@@ -819,8 +1066,6 @@
         setTimeout(() => createBeep(330, 0.2, 'sawtooth', 0.3), 100);
       },
       enemyPass: () => createBeep(220, 0.5, 'sine', 0.3),
-      
-      // Game 4: Nông trại số
       plantSeed: () => createBeep(659, 0.2, 'sine', 0.2),
       growPlant: () => {
         if (!audioContext || !sfxEnabled) return;
@@ -834,8 +1079,6 @@
         setTimeout(() => createBeep(1318, 0.2), 160);
       },
       wrongAnswer: () => createBeep(220, 0.3, 'sawtooth', 0.2),
-      
-      // Chung
       buttonClick: () => createBeep(440, 0.05, 'sine', 0.1),
       correctAnswer: () => {
         if (!audioContext || !sfxEnabled) return;
@@ -867,12 +1110,10 @@
       }
     };
 
-    // Nhạc nền cho các game
     function playBackgroundMusic(gameType) {
       if (!audioContext || !bgmEnabled || bgmPlaying) return;
       
       try {
-        // Dừng nhạc cũ nếu có
         if (bgmSource) {
           bgmSource.stop();
           bgmSource = null;
@@ -885,7 +1126,6 @@
         bgmSource.connect(gainNode);
         gainNode.connect(audioContext.destination);
         
-        // Tần số và kiểu nhạc khác nhau cho từng game
         switch(gameType) {
           case 'game1':
             bgmSource.frequency.value = 220;
@@ -908,7 +1148,6 @@
             bgmSource.type = 'sine';
         }
         
-        // Tạo hiệu ứng nhấn nhá
         const now = audioContext.currentTime;
         gainNode.gain.setValueAtTime(0.05, now);
         gainNode.gain.exponentialRampToValueAtTime(0.03, now + 2);
@@ -916,7 +1155,6 @@
         bgmSource.start();
         bgmPlaying = true;
         
-        // Lặp lại âm thanh
         bgmSource.onended = () => {
           if (bgmPlaying && currentScreen.includes('game')) {
             playBackgroundMusic(currentBGM);
@@ -968,7 +1206,6 @@
         btn.classList.add('muted');
       }
       
-      // Phát âm thanh xác nhận
       if (sfxEnabled) {
         SoundEffects.buttonClick();
       }
@@ -979,7 +1216,6 @@
       if (controls) {
         controls.style.display = 'flex';
         
-        // Cập nhật trạng thái nút
         const bgmBtn = document.getElementById('bgm-toggle');
         const sfxBtn = document.getElementById('sfx-toggle');
         
@@ -1001,7 +1237,6 @@
       }
     }
 
-    // Config mặc định cho Element SDK
     const defaultConfig = {
       app_title: 'Học Tiếng Xê Đăng',
       welcome_message: 'Chào mừng đến với',
@@ -1018,7 +1253,62 @@
       success_color: '#10b981'
     };
 
-    // Theo dõi trạng thái mạng
+    function initWithCache() {
+      clearStaleCache();
+      
+      maxLevels = loadMaxLevelsFromCache();
+      
+      const cacheTimestamp = localStorage.getItem('xedang_cache_timestamp');
+      const now = Date.now();
+      const oneHour = 3600000;
+      
+      if (!cacheTimestamp || (now - parseInt(cacheTimestamp)) > oneHour) {
+        localStorage.setItem('xedang_needs_refresh', 'true');
+      }
+      
+      try {
+        const cachedData = localStorage.getItem('xedang_offline_data');
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          gameData = parsed.gameData || parsed;
+          
+          if (localStorage.getItem('xedang_needs_refresh') === 'true') {
+            console.log('🔄 Tính lại maxLevels từ cache...');
+            maxLevels = calculateMaxLevels();
+            localStorage.removeItem('xedang_needs_refresh');
+          }
+        }
+      } catch (e) {
+        console.warn('Cache bị lỗi, sử dụng dữ liệu mẫu');
+        gameData = MOCK_DATA;
+        maxLevels = calculateMaxLevels();
+      }
+      
+      localStorage.setItem('xedang_cache_timestamp', now.toString());
+    }
+
+    function clearStaleCache() {
+      const keys = [
+        'xedang_offline_data',
+        'xedang_max_levels_cache',
+        'xedang_last_level_calculation',
+        'xedang_last_seen_levels',
+        'xedang_max_levels_time'
+      ];
+      
+      keys.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value) {
+          try {
+            JSON.parse(value);
+          } catch (e) {
+            console.warn(`Xóa cache lỗi: ${key}`);
+            localStorage.removeItem(key);
+          }
+        }
+      });
+    }
+
     window.addEventListener('online', () => {
       isOnline = true;
       updateOfflineIndicator();
@@ -1067,71 +1357,221 @@
       }
     }
 
-    // Fetch dữ liệu từ Google Sheets với offline support
     async function fetchData() {
-      // Tải dữ liệu offline trước
+      console.log('🔄 Đang fetch dữ liệu...');
+      
+      maxLevels = loadMaxLevelsFromCache();
+      
       const offlineData = localStorage.getItem('xedang_offline_data');
       
       if (offlineData) {
         try {
-          gameData = JSON.parse(offlineData);
+          const parsedData = JSON.parse(offlineData);
+          gameData = parsedData.gameData || parsedData;
+          
+          const recalculated = calculateMaxLevels();
+          maxLevels = { ...maxLevels, ...recalculated };
         } catch (e) {
+          console.warn('Dữ liệu offline bị lỗi:', e);
           gameData = MOCK_DATA;
+          maxLevels = calculateMaxLevels();
         }
       } else {
         gameData = MOCK_DATA;
+        maxLevels = calculateMaxLevels();
       }
 
-      // Nếu online, thử cập nhật dữ liệu mới
       if (isOnline) {
         try {
           const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
           const response = await fetch(url, { 
             method: 'GET',
-            signal: AbortSignal.timeout(10000) // 10s timeout
+            signal: AbortSignal.timeout(15000)
           });
+          
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
           
           const data = await response.json();
           
           if (data.values && data.values.length > 0) {
-            gameData.game1 = data.values.map(row => [
-              row[0] || '', row[1] || '', row[2] || '', row[3] || '', row[4] || ''
-            ]).filter(row => row[0] && row[1]);
+            console.log('📥 Đã nhận dữ liệu từ Google Sheets');
             
-            gameData.game2 = data.values.map(row => [
-              row[5] || '', row[6] || '', row[7] || '', row[8] || '', row[9] || ''
-            ]).filter(row => row[0] && row[1]);
+            const newGameData = {
+              game1: [], game2: [], game3: [], game4: []
+            };
             
-            gameData.game3 = data.values.map(row => [
-              row[10] || '', row[11] || '', row[12] || '', row[13] || '', row[14] || ''
-            ]).filter(row => row[0] && row[1]);
+            let totalQuestions = 0;
             
-            gameData.game4 = data.values.map(row => [
-              row[15] || '', row[16] || '', row[17] || '', row[18] || '', row[19] || ''
-            ]).filter(row => row[0] && row[1]);
+            data.values.forEach((row, rowIndex) => {
+              if (row[1] && row[1].trim()) {
+                let manualLevel = 1;
+                if (row[3] !== undefined && row[3] !== '') {
+                  const parsed = parseInt(row[3]);
+                  if (!isNaN(parsed) && parsed >= 1) {
+                    manualLevel = parsed;
+                  }
+                }
+                
+                newGameData.game1.push({
+                  question: row[1].trim(),
+                  correct: row[2] ? row[2].trim() : 'Đáp án',
+                  wrongs: [],
+                  level: manualLevel,
+                  topic: row[4] ? row[4].trim() : 'Chung'
+                });
+                totalQuestions++;
+              }
+              
+              if (row[6] && row[6].trim()) {
+                let manualLevel = 1;
+                if (row[11] !== undefined && row[11] !== '') {
+                  const parsed = parseInt(row[11]);
+                  if (!isNaN(parsed) && parsed >= 1) {
+                    manualLevel = parsed;
+                  }
+                }
+                
+                newGameData.game2.push({
+                  question: row[6].trim(),
+                  correct: row[7] ? row[7].trim() : 'Đáp án',
+                  wrongs: [
+                    row[8] ? row[8].trim() : 'Sai 1',
+                    row[9] ? row[9].trim() : 'Sai 2',
+                    row[10] ? row[10].trim() : 'Sai 3'
+                  ].filter(a => a && a !== 'Đáp án' && a !== ''),
+                  level: manualLevel,
+                  topic: row[12] ? row[12].trim() : 'Chung'
+                });
+                totalQuestions++;
+              }
+              
+              if (row[14] && row[14].trim()) {
+                let manualLevel = 1;
+                if (row[19] !== undefined && row[19] !== '') {
+                  const parsed = parseInt(row[19]);
+                  if (!isNaN(parsed) && parsed >= 1) {
+                    manualLevel = parsed;
+                  }
+                }
+                
+                newGameData.game3.push({
+                  question: row[14].trim(),
+                  correct: row[15] ? row[15].trim() : 'Đáp án',
+                  wrongs: [
+                    row[16] ? row[16].trim() : 'Sai 1',
+                    row[17] ? row[17].trim() : 'Sai 2',
+                    row[18] ? row[18].trim() : 'Sai 3'
+                  ].filter(a => a && a !== 'Đáp án' && a !== ''),
+                  level: manualLevel,
+                  topic: row[20] ? row[20].trim() : 'Chung'
+                });
+                totalQuestions++;
+              }
+              
+              if (row[22] && row[22].trim()) {
+                let manualLevel = 1;
+                if (row[27] !== undefined && row[27] !== '') {
+                  const parsed = parseInt(row[27]);
+                  if (!isNaN(parsed) && parsed >= 1) {
+                    manualLevel = parsed;
+                  }
+                }
+                
+                newGameData.game4.push({
+                  question: row[22].trim(),
+                  correct: row[23] ? row[23].trim() : 'Đáp án',
+                  wrongs: [
+                    row[24] ? row[24].trim() : 'Sai 1',
+                    row[25] ? row[25].trim() : 'Sai 2',
+                    row[26] ? row[26].trim() : 'Sai 3'
+                  ].filter(a => a && a !== 'Đáp án' && a !== ''),
+                  level: manualLevel,
+                  topic: row[28] ? row[28].trim() : 'Chung'
+                });
+                totalQuestions++;
+              }
+            });
 
-            // Lưu dữ liệu offline
-            localStorage.setItem('xedang_offline_data', JSON.stringify(gameData));
+            Object.keys(newGameData).forEach(gameKey => {
+              newGameData[gameKey].sort((a, b) => {
+                if (a.level !== b.level) return a.level - b.level;
+                return newGameData[gameKey].indexOf(a) - newGameData[gameKey].indexOf(b);
+              });
+            });
+
+            gameData = newGameData;
+            
+            maxLevels = calculateMaxLevelsFromSheet(newGameData);
+            
+            localStorage.setItem('xedang_offline_data', JSON.stringify({
+              gameData: gameData,
+              maxLevels: maxLevels,
+              totalQuestions: totalQuestions,
+              fetchedAt: Date.now()
+            }));
             localStorage.setItem('xedang_offline_timestamp', Date.now().toString());
             
-            showToast('📶 Đã cập nhật dữ liệu mới từ server!', 'success');
+            const oldMaxLevels = { ...maxLevels };
+            maxLevels = calculateMaxLevels();
+            
+            const hasNewLevels = checkForNewLevels();
+            
+            console.log('✅ Đã cập nhật dữ liệu:', {
+              totalQuestions,
+              oldMaxLevels,
+              newMaxLevels: maxLevels,
+              hasNewLevels
+            });
+            
+            if (hasNewLevels) {
+              showToast('✨ Có level mới được mở khóa!', 'success');
+            } else {
+              showToast('✅ Đã cập nhật dữ liệu mới!', 'success');
+            }
+            
             updateOfflineIndicator();
           }
         } catch (error) {
-          console.error('Error fetching online data:', error);
-          // Không hiển thị lỗi nếu đã có dữ liệu offline
+          console.warn('Không thể fetch dữ liệu online:', error);
           if (!offlineData) {
-            localStorage.setItem('xedang_offline_data', JSON.stringify(MOCK_DATA));
+            localStorage.setItem('xedang_offline_data', JSON.stringify({
+              gameData: MOCK_DATA,
+              maxLevels: calculateMaxLevels(),
+              fetchedAt: Date.now()
+            }));
             localStorage.setItem('xedang_offline_timestamp', Date.now().toString());
           }
+          showToast('⚠️ Đang sử dụng dữ liệu offline', 'info');
         }
+      } else {
+        console.log('📴 Đang ở chế độ offline, sử dụng dữ liệu cache');
+        showToast('📴 Đang ở chế độ offline', 'info');
       }
     }
 
-    // Toast notification
+    async function forceRefreshData() {
+      if (!isOnline) {
+        showToast('📵 Bạn đang offline, không thể làm mới dữ liệu', 'error');
+        return;
+      }
+      
+      showToast('🔄 Đang làm mới dữ liệu và tính lại level...', 'info');
+      
+      localStorage.removeItem('xedang_last_level_calculation');
+      localStorage.removeItem('xedang_max_levels_cache');
+      localStorage.removeItem('xedang_max_levels_time');
+      localStorage.setItem('xedang_needs_refresh', 'true');
+      
+      await fetchData();
+      
+      if (currentScreen === 'menu') {
+        render();
+      }
+    }
+
     function showToast(message, type = 'success') {
       const toast = document.createElement('div');
-      toast.className = `toast ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
+      toast.className = `toast ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : type === 'info' ? 'bg-blue-500' : 'bg-yellow-500'}`;
       toast.textContent = message;
       document.body.appendChild(toast);
       
@@ -1140,9 +1580,6 @@
       }, 3000);
     }
 
-    // ========== HỆ THỐNG LƯU ĐIỂM CẢI THIỆN ==========
-    
-    // LocalStorage helpers
     function saveUser(username) {
       const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
       if (!users[username]) {
@@ -1160,7 +1597,13 @@
             game4: []
           },
           lastPlayed: Date.now(),
-          joinedDate: new Date().toISOString()
+          joinedDate: new Date().toISOString(),
+          highestLevels: {
+            game1: 0,
+            game2: 0,
+            game3: 0,
+            game4: 0
+          }
         };
       }
       currentUser = users[username];
@@ -1174,7 +1617,6 @@
         const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
         currentUser = users[username];
         
-        // Nếu user cũ không có cấu trúc mới, nâng cấp cấu trúc
         if (currentUser && !currentUser.gameScores) {
           currentUser.gameScores = {
             game1: [],
@@ -1186,7 +1628,6 @@
           currentUser.lastPlayed = Date.now();
           currentUser.joinedDate = currentUser.joinedDate || new Date().toISOString();
           
-          // Lưu lại
           users[username] = currentUser;
           localStorage.setItem('xedang_users', JSON.stringify(users));
         }
@@ -1196,18 +1637,15 @@
       return false;
     }
 
-    // Hàm cập nhật điểm - SỬA LỖI: Xóa hàm cũ, chỉ giữ hàm mới
     function updateUserScore(gameType, score, levelCompleted, sessionScore = 0) {
       const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
       
       if (currentUser && users[currentUser.name]) {
         const user = users[currentUser.name];
         
-        // Tạo cấu trúc lưu điểm theo game nếu chưa có
         if (!user.gameScores) user.gameScores = {};
         if (!user.gameScores[gameType]) user.gameScores[gameType] = [];
         
-        // Lưu điểm của session hiện tại
         const gameSession = {
           score: score,
           level: levelCompleted,
@@ -1215,20 +1653,20 @@
           date: new Date().toLocaleDateString('vi-VN'),
           time: new Date().toLocaleTimeString('vi-VN'),
           sessionScore: sessionScore,
-          isFinal: levelCompleted >= 5
+          isFinal: levelCompleted >= maxLevels[gameType]
         };
         
         user.gameScores[gameType].push(gameSession);
         
-        // Giữ tối đa 20 session mỗi game
         if (user.gameScores[gameType].length > 20) {
           user.gameScores[gameType] = user.gameScores[gameType].slice(-20);
         }
         
-        // Tính điểm cao nhất cho game này
+        if (!user.highestLevels) user.highestLevels = {};
+        user.highestLevels[gameType] = Math.max(user.highestLevels[gameType] || 0, levelCompleted);
+        
         const gameBestScore = Math.max(...user.gameScores[gameType].map(s => s.score));
         
-        // Tính tổng điểm tất cả game
         let totalAllGames = 0;
         Object.values(user.gameScores).forEach(gameScores => {
           if (Array.isArray(gameScores) && gameScores.length > 0) {
@@ -1237,37 +1675,26 @@
           }
         });
         
-        // Cập nhật thông tin user
         user.totalScore = totalAllGames;
         user.bestScore = Math.max(user.bestScore || 0, gameBestScore);
         user.gamesPlayed += 1;
         user.lastPlayed = Date.now();
-        
-        // Tính level dựa trên tổng điểm
         user.level = Math.min(10, Math.floor(user.totalScore / 500) + 1);
         
-        // Lưu lại
         localStorage.setItem('xedang_users', JSON.stringify(users));
         currentUser = user;
         
-        console.log(`Đã lưu điểm: ${score} cho game ${gameType}, Tổng điểm: ${user.totalScore}`);
-        
-        // Đồng bộ lên Google Sheets nếu được bật
-        if (SCORE_SYNC_CONFIG.enabled && SCORE_SYNC_CONFIG.sheetId && SCORE_SYNC_CONFIG.apiKey) {
-          syncScoreToGoogleSheet(currentUser.name, score, gameType, levelCompleted);
-        }
+        console.log(`💾 Đã lưu điểm: ${score} cho game ${gameType}, Level: ${levelCompleted}/${maxLevels[gameType]}`);
         
         return user;
       }
       return null;
     }
 
-    // Hàm lấy bảng xếp hạng
     function getLeaderboard() {
       const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
       
       const leaderboard = Object.values(users).map(user => {
-        // Tính điểm trung bình mỗi game
         let avgScorePerGame = 0;
         let gamesWithScores = 0;
         
@@ -1295,7 +1722,6 @@
         };
       });
       
-      // Sắp xếp theo tiêu chí: totalScore > bestScore > level > lastPlayed
       leaderboard.sort((a, b) => {
         if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
         if (b.bestScore !== a.bestScore) return b.bestScore - a.bestScore;
@@ -1303,17 +1729,15 @@
         return b.lastPlayed - a.lastPlayed;
       });
       
-      return leaderboard.slice(0, 10); // Top 10
+      return leaderboard.slice(0, 10);
     }
 
-    // Hàm lấy rank của người chơi hiện tại
     function getCurrentUserRank() {
       const leaderboard = getLeaderboard();
       const currentIndex = leaderboard.findIndex(user => user.name === currentUser.name);
       return currentIndex >= 0 ? currentIndex + 1 : null;
     }
 
-    // Hàm lấy thống kê chi tiết cho user
     function getUserStats(username) {
       const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
       const user = users[username];
@@ -1328,10 +1752,10 @@
         gamesPlayed: user.gamesPlayed || 0,
         certificatesCount: (user.certificates || []).length,
         lastPlayed: user.lastPlayed ? new Date(user.lastPlayed).toLocaleDateString('vi-VN') : 'Chưa chơi',
-        joinedDate: user.joinedDate ? new Date(user.joinedDate).toLocaleDateString('vi-VN') : 'Mới'
+        joinedDate: user.joinedDate ? new Date(user.joinedDate).toLocaleDateString('vi-VN') : 'Mới',
+        highestLevels: user.highestLevels || {}
       };
       
-      // Thống kê theo game
       if (user.gameScores) {
         stats.gameStats = {};
         Object.keys(user.gameScores).forEach(gameType => {
@@ -1348,7 +1772,8 @@
               totalScore: totalScore,
               bestScore: bestScore,
               avgScore: avgScore.toFixed(1),
-              lastPlayed: lastPlayed
+              lastPlayed: lastPlayed,
+              highestLevel: stats.highestLevels[gameType] || 0
             };
           }
         });
@@ -1378,93 +1803,6 @@
       }
     }
 
-    // ========== CHỨC NĂNG ĐỒNG BỘ GOOGLE SHEETS ==========
-    
-    // Cấu hình cho đồng bộ điểm
-    const SCORE_SYNC_CONFIG = {
-      enabled: false,
-      sheetId: '',
-      apiKey: ''
-    };
-
-    // Hàm đồng bộ điểm lên Google Sheets
-    async function syncScoreToGoogleSheet(username, score, gameType, level) {
-      if (!SCORE_SYNC_CONFIG.enabled || !SCORE_SYNC_CONFIG.sheetId || !SCORE_SYNC_CONFIG.apiKey) {
-        return false;
-      }
-      
-      if (!isOnline) {
-        // Lưu vào queue nếu offline
-        const pendingSync = JSON.parse(localStorage.getItem('xedang_pending_sync') || '[]');
-        pendingSync.push({
-          username, score, gameType, level, timestamp: Date.now()
-        });
-        localStorage.setItem('xedang_pending_sync', JSON.stringify(pendingSync));
-        return false;
-      }
-      
-      try {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SCORE_SYNC_CONFIG.sheetId}/values/Leaderboard!A:E:append?valueInputOption=USER_ENTERED&key=${SCORE_SYNC_CONFIG.apiKey}`;
-        
-        const data = {
-          values: [[
-            new Date().toISOString(),
-            username,
-            score,
-            gameType,
-            level
-          ]]
-        };
-        
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        
-        if (response.ok) {
-          return true;
-        } else {
-          throw new Error('Lỗi đồng bộ');
-        }
-      } catch (error) {
-        console.error('Lỗi đồng bộ điểm:', error);
-        return false;
-      }
-    }
-
-    // Hàm đồng bộ tất cả điểm đang chờ
-    async function syncPendingScores() {
-      if (!isOnline) return;
-      
-      const pendingSync = JSON.parse(localStorage.getItem('xedang_pending_sync') || '[]');
-      if (pendingSync.length === 0) return;
-      
-      for (const item of pendingSync) {
-        await syncScoreToGoogleSheet(item.username, item.score, item.gameType, item.level);
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-      
-      // Xóa sau khi đồng bộ xong
-      localStorage.removeItem('xedang_pending_sync');
-    }
-
-    // Tải cấu hình đồng bộ khi khởi động
-    function loadSyncConfig() {
-      try {
-        const savedConfig = localStorage.getItem('xedang_sync_config');
-        if (savedConfig) {
-          const config = JSON.parse(savedConfig);
-          SCORE_SYNC_CONFIG.sheetId = config.sheetId || '';
-          SCORE_SYNC_CONFIG.apiKey = config.apiKey || '';
-          SCORE_SYNC_CONFIG.enabled = config.enabled || false;
-        }
-      } catch (error) {
-        console.error('Lỗi tải cấu hình đồng bộ:', error);
-      }
-    }
-
-    // ========== TÍNH NĂNG TỰ ĐỘNG LƯU TIẾN TRÌNH ==========
     let autoSaveInterval = null;
 
     function startAutoSave(gameType, getStateFunc) {
@@ -1492,7 +1830,6 @@
       }
     }
 
-    // ========== HÀM LƯU VÀ THOÁT ==========
     function saveAndExit(gameType) {
       let score = 0;
       let level = 1;
@@ -1516,24 +1853,13 @@
           break;
       }
       
-      // Lưu điểm
       updateUserScore(gameType, score, level, score);
-      
-      // Phát âm thanh
       SoundEffects.buttonClick();
-      
-      // Hiển thị thông báo
       showToast(`✅ Đã lưu ${score} điểm!`, 'success');
-      
-      // Dừng auto-save
       stopAutoSave();
-      
-      // Quay về menu
       setTimeout(() => backToMenu(), 1000);
     }
 
-    // ========== GIẢI PHÁP FIX GAME 4: TÁCH BIỆT KHỞI TẠO VÀ TIẾP TỤC ==========
-    // Hàm này chỉ được gọi khi bắt đầu game mới từ menu
     function resetGame4ForNewGame() {
       game4State = {
         level: 1,
@@ -1548,27 +1874,31 @@
         currentQuestion: null,
         selectedPlot: null,
         combo: 0,
-        maxCombo: 0
+        maxCombo: 0,
+        currentTopic: ''
       };
       isGame4Initialized = true;
       startAutoSave('game4', () => game4State);
     }
 
-    // Hàm cập nhật UI cho Game 4 (không reset state)
     function updateGame4UI() {
-      document.getElementById('game4-level').textContent = game4State.level;
-      document.getElementById('game4-harvest').textContent = game4State.harvestCount;
-      document.getElementById('game4-score').textContent = game4State.totalScore;
+      const levelElement = document.getElementById('game4-level');
+      const harvestElement = document.getElementById('game4-harvest');
+      const scoreElement = document.getElementById('game4-score');
+      const topicElement = document.getElementById('game4-topic');
+      
+      if (levelElement) levelElement.textContent = game4State.level;
+      if (harvestElement) harvestElement.textContent = game4State.harvestCount;
+      if (scoreElement) scoreElement.textContent = game4State.totalScore;
+      if (topicElement) topicElement.textContent = game4State.currentTopic || 'Chung';
     }
 
-    // Hàm cập nhật tất cả ô đất
     function updateAllPlotsDisplay() {
       for (let i = 0; i < game4State.plots.length; i++) {
         updatePlotDisplay(i);
       }
     }
 
-    // Render chính - SỬA QUAN TRỌNG: Xử lý riêng cho Game 4
     function render() {
       const app = document.getElementById('app');
       
@@ -1579,7 +1909,6 @@
         app.innerHTML = renderMenu();
         showSoundControls();
         stopBackgroundMusic();
-        // Khi về menu, đánh dấu game 4 chưa khởi tạo (để lần sau vào sẽ là game mới)
         isGame4Initialized = false;
       } else if (currentScreen === 'leaderboard') {
         app.innerHTML = renderLeaderboard();
@@ -1611,11 +1940,9 @@
       } else if (currentScreen === 'game4') {
         app.innerHTML = renderGame4();
         
-        // QUAN TRỌNG: Chỉ khởi tạo game nếu chưa được khởi tạo (vào từ menu)
         if (!isGame4Initialized) {
           resetGame4ForNewGame();
         } else {
-          // Nếu đã khởi tạo (đang chơi, lên level), chỉ cập nhật UI
           updateGame4UI();
           updateAllPlotsDisplay();
         }
@@ -1661,6 +1988,15 @@
                 Bắt đầu học
               </button>
             </form>
+            
+            <div class="text-center">
+              <button 
+                onclick="forceRefreshData()"
+                class="text-sm text-blue-500 hover:text-blue-700 underline"
+              >
+                🔄 Làm mới dữ liệu từ server
+              </button>
+            </div>
           </div>
         </div>
       `;
@@ -1678,20 +2014,28 @@
       const game4Name = config.game4_name || defaultConfig.game4_name;
       
       const games = [
-        { id: 'game1', name: game1Name, icon: '🎴', color: primaryColor, desc: 'Lật thẻ tìm cặp từ khớp' },
-        { id: 'game2', name: game2Name, icon: '🧺', color: secondaryColor, desc: 'Hứng đáp án đúng rơi xuống' },
-        { id: 'game3', name: game3Name, icon: '🎯', color: '#8b5cf6', desc: 'Bắn kẻ địch bằng đáp án đúng' },
-        { id: 'game4', name: game4Name, icon: '🌾', color: '#10b981', desc: 'Trồng cây bằng kiến thức' }
+        { id: 'game1', name: game1Name, icon: '🎴', color: primaryColor, desc: 'Lật thẻ tìm cặp từ khớp', maxLevel: maxLevels.game1 },
+        { id: 'game2', name: game2Name, icon: '🧺', color: secondaryColor, desc: 'Hứng đáp án đúng rơi xuống', maxLevel: maxLevels.game2 },
+        { id: 'game3', name: game3Name, icon: '🎯', color: '#8b5cf6', desc: 'Bắn kẻ địch bằng đáp án đúng', maxLevel: maxLevels.game3 },
+        { id: 'game4', name: game4Name, icon: '🌾', color: '#10b981', desc: 'Trồng cây bằng kiến thức', maxLevel: maxLevels.game4 }
       ];
 
       const certCount = (currentUser.certificates || []).length;
       const userStats = getUserStats(currentUser.name);
       const userRank = getCurrentUserRank();
       
-      // Thông tin offline
       const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
       const offlineStatus = !isOnline ? '📵 Offline' : '📶 Online';
       const dataCount = gameData.game1.length + gameData.game2.length + gameData.game3.length + gameData.game4.length;
+
+      let hasNewLevels = false;
+      if (userStats && userStats.highestLevels) {
+        Object.keys(userStats.highestLevels).forEach(gameKey => {
+          if (maxLevels[gameKey] > userStats.highestLevels[gameKey]) {
+            hasNewLevels = true;
+          }
+        });
+      }
 
       return `
         <div class="min-h-full p-4" style="background: ${bgColor};">
@@ -1715,9 +2059,14 @@
                         Hạng: #${userRank}
                       </span>
                     ` : ''}
+                    ${hasNewLevels ? `
+                      <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium animate-pulse">
+                        ✨ Có level mới!
+                      </span>
+                    ` : ''}
                   </div>
                   ${certCount > 0 ? `<p class="text-sm text-amber-600 mt-2">🏆 ${certCount} chứng nhận</p>` : ''}
-                  <p class="text-xs text-gray-500 mt-2">${offlineStatus} • ${dataCount} câu hỏi đã lưu</p>
+                  <p class="text-xs text-gray-500 mt-2">${offlineStatus} • ${dataCount} câu hỏi • Tự động Level</p>
                 </div>
                 <div class="flex flex-wrap gap-3">
                   ${certCount > 0 ? `
@@ -1728,6 +2077,9 @@
                   <button onclick="showLeaderboard()" class="px-4 py-2 rounded-lg font-medium hover:opacity-80 transition" style="background: ${secondaryColor}; color: white;" onclick="SoundEffects.buttonClick()">
                     🏆 Bảng xếp hạng
                   </button>
+                  <button onclick="forceRefreshData()" class="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition" onclick="SoundEffects.buttonClick()">
+                    🔄 Làm mới
+                  </button>
                   <button onclick="logout()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" style="color: ${textColor};" onclick="SoundEffects.buttonClick()">
                     Đăng xuất
                   </button>
@@ -1736,19 +2088,40 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              ${games.map(game => `
+              ${games.map(game => {
+                const userHighestLevel = userStats?.highestLevels?.[game.id] || 0;
+                const hasNewLevel = maxLevels[game.id] > userHighestLevel;
+                const progressPercent = maxLevels[game.id] > 0 ? Math.min(100, (userHighestLevel / maxLevels[game.id]) * 100) : 0;
+                
+                return `
                 <div 
                   onclick="startGame('${game.id}'); SoundEffects.buttonClick()" 
-                  class="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition transform hover:-translate-y-1"
+                  class="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition transform hover:-translate-y-1 relative"
                 >
+                  ${hasNewLevel ? '<div class="new-level-badge">NEW</div>' : ''}
                   <div class="text-6xl mb-4 text-center">${game.icon}</div>
                   <h3 class="text-2xl font-bold text-center mb-2" style="color: ${textColor};">${game.name}</h3>
-                  <p class="text-center text-gray-600 text-sm mb-4">${game.desc}</p>
-                  <div class="h-2 rounded-full mt-4" style="background: ${game.color}20;">
-                    <div class="h-full rounded-full transition-all" style="width: ${Math.min(100, currentUser.level * 10)}%; background: ${game.color};"></div>
+                  <p class="text-center text-gray-600 text-sm mb-2">${game.desc}</p>
+                  <div class="flex items-center justify-center gap-2 mb-4">
+                    <span class="level-indicator">
+                      ${game.maxLevel} Level
+                      ${hasNewLevel ? '✨' : ''}
+                    </span>
+                  </div>
+                  <div class="mb-2">
+                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                      <span>Tiến độ của bạn</span>
+                      <span>${userHighestLevel}/${game.maxLevel}</span>
+                    </div>
+                    <div class="level-progress-bar">
+                      <div class="level-progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                  </div>
+                  <div class="text-center text-xs text-gray-500">
+                    ${hasNewLevel ? `Có ${game.maxLevel - userHighestLevel} level mới!` : 'Tự động mở level mới khi thêm câu hỏi'}
                   </div>
                 </div>
-              `).join('')}
+              `}).join('')}
             </div>
           </div>
         </div>
@@ -1780,7 +2153,6 @@
                 </div>
               </div>
 
-              <!-- Hiển thị rank của người chơi hiện tại -->
               ${currentUser && currentUserRank ? `
                 <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
                   <div class="flex items-center justify-between">
@@ -1814,7 +2186,6 @@
                 </div>
               ` : ''}
 
-              <!-- Bảng xếp hạng chính -->
               <div class="space-y-3">
                 ${leaderboard.map((user, index) => {
                   const isCurrentUser = currentUser && user.name === currentUser.name;
@@ -1869,7 +2240,6 @@
                 ` : ''}
               </div>
               
-              <!-- Thống kê bổ sung -->
               ${leaderboard.length > 0 ? `
                 <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div class="bg-blue-50 rounded-xl p-4 text-center">
@@ -1963,26 +2333,18 @@
       const textColor = config.text_color || defaultConfig.text_color;
       const badges = currentUser.badges || [];
 
-      // Tất cả huy hiệu có thể đạt được
       const allBadges = [
-        // Streak badges
         { id: 'streak_3', name: '🔥 Streak 3 ngày', desc: 'Chơi liên tục 3 ngày', category: 'Streak' },
         { id: 'streak_7', name: '🔥🔥 Streak 7 ngày', desc: 'Chơi liên tục 7 ngày', category: 'Streak' },
         { id: 'streak_14', name: '🔥🔥🔥 Streak 14 ngày', desc: 'Chơi liên tục 14 ngày', category: 'Streak' },
         { id: 'streak_30', name: '🔥🔥🔥🔥 Streak 30 ngày', desc: 'Chơi liên tục 30 ngày', category: 'Streak' },
-        
-        // Combo badges
         { id: 'combo_5', name: '⚡ Combo x5', desc: 'Trả lời đúng liên tiếp 5 lần', category: 'Combo' },
         { id: 'combo_10', name: '⚡⚡ Combo x10', desc: 'Trả lời đúng liên tiếp 10 lần', category: 'Combo' },
         { id: 'combo_20', name: '⚡⚡⚡ Combo x20', desc: 'Trả lời đúng liên tiếp 20 lần', category: 'Combo' },
-        
-        // Score badges
         { id: 'score_100', name: '⭐ Điểm 100+', desc: 'Đạt tổng điểm 100', category: 'Điểm' },
         { id: 'score_500', name: '⭐⭐ Điểm 500+', desc: 'Đạt tổng điểm 500', category: 'Điểm' },
         { id: 'score_1000', name: '⭐⭐⭐ Điểm 1000+', desc: 'Đạt tổng điểm 1000', category: 'Điểm' },
         { id: 'score_2000', name: '⭐⭐⭐⭐ Điểm 2000+', desc: 'Đạt tổng điểm 2000', category: 'Điểm' },
-        
-        // Game badges
         { id: 'games_5', name: '🎮 Chơi 5 trận', desc: 'Hoàn thành 5 trận game', category: 'Game' },
         { id: 'games_10', name: '🎮🎮 Chơi 10 trận', desc: 'Hoàn thành 10 trận game', category: 'Game' },
         { id: 'games_25', name: '🎮🎮🎮 Chơi 25 trận', desc: 'Hoàn thành 25 trận game', category: 'Game' },
@@ -2039,7 +2401,6 @@
       `;
     }
 
-    // ========== GAME 1: LẬT Ô GHI NHỚ ==========
     function renderGame1() {
       const config = window.elementSdk?.config || defaultConfig;
       const bgColor = config.background_color || defaultConfig.background_color;
@@ -2054,7 +2415,7 @@
               <div class="flex justify-between items-center mb-4">
                 <div>
                   <h2 class="text-2xl font-bold" style="color: ${textColor};">🎴 ${game1Name}</h2>
-                  <p class="text-sm text-gray-600 mt-1">Tìm cặp thẻ khớp nhau</p>
+                  <p class="text-sm text-gray-600 mt-1">Tìm cặp thẻ khớp nhau • Level ${game1State.level}/${maxLevels.game1}</p>
                 </div>
                 <div class="flex gap-2">
                   <button onclick="saveAndExit('game1')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
@@ -2068,7 +2429,10 @@
               <div class="grid grid-cols-4 gap-4">
                 <div class="bg-blue-50 rounded-lg p-3 text-center">
                   <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-xl font-bold" style="color: ${primaryColor};"><span id="game1-level">1</span></div>
+                  <div class="text-xl font-bold" style="color: ${primaryColor};"><span id="game1-level">1</span>/${maxLevels.game1}</div>
+                  <div class="level-progress-bar">
+                    <div class="level-progress-fill" style="width: ${(game1State.level / maxLevels.game1) * 100}%"></div>
+                  </div>
                 </div>
                 <div class="bg-purple-50 rounded-lg p-3 text-center">
                   <div class="text-xs text-gray-600">Số bước</div>
@@ -2082,6 +2446,10 @@
                   <div class="text-xs text-gray-600">Điểm</div>
                   <div class="text-xl font-bold" style="color: ${primaryColor};"><span id="game1-score">0</span></div>
                 </div>
+              </div>
+              <div class="mt-3 bg-indigo-50 rounded-lg p-3 text-center">
+                <div class="text-xs text-gray-600 mb-1">Chủ đề</div>
+                <div class="text-lg font-bold" style="color: ${textColor};" id="game1-topic">${game1State.currentTopic || 'Chung'}</div>
               </div>
             </div>
 
@@ -2097,23 +2465,26 @@
       game1State.matchedPairs = 0;
       game1State.totalScore = 0;
       game1State.flippedCards = [];
+      game1State.currentTopic = '';
       
-      // Bắt đầu auto-save
       startAutoSave('game1', () => game1State);
-      
       startGame1Level();
     }
 
     function startGame1Level() {
-      const pairCount = Math.min(2 + game1State.level - 1, 6);
+      const selectedQuestions = getQuestionsByLevelExact('game1', game1State.level);
+      
+      const pairCount = Math.min(selectedQuestions.length, 3);
       game1State.totalPairs = pairCount;
       
-      const selectedData = gameData.game1.slice().sort(() => Math.random() - 0.5).slice(0, pairCount);
+      if (selectedQuestions.length > 0 && selectedQuestions[0].topic) {
+        game1State.currentTopic = selectedQuestions[0].topic;
+      }
       
       const cards = [];
-      selectedData.forEach((item, index) => {
-        cards.push({ id: `q${index}`, content: item[0], type: 'question', pairId: index });
-        cards.push({ id: `a${index}`, content: item[1], type: 'answer', pairId: index });
+      selectedQuestions.slice(0, pairCount).forEach((item, index) => {
+        cards.push({ id: `q${index}`, content: item.question, type: 'question', pairId: index });
+        cards.push({ id: `a${index}`, content: item.correct, type: 'answer', pairId: index });
       });
 
       cards.sort(() => Math.random() - 0.5);
@@ -2126,9 +2497,10 @@
       document.getElementById('matched').textContent = game1State.matchedPairs;
       document.getElementById('total-pairs').textContent = pairCount;
       document.getElementById('game1-score').textContent = game1State.totalScore;
+      document.getElementById('game1-topic').textContent = game1State.currentTopic || 'Chung';
 
       const totalCards = pairCount * 2;
-      const cols = totalCards <= 4 ? 2 : totalCards <= 6 ? 3 : totalCards <= 8 ? 4 : totalCards <= 10 ? 5 : 6;
+      const cols = totalCards <= 4 ? 2 : totalCards <= 6 ? 3 : 4;
 
       const board = document.getElementById('game1-board');
       board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
@@ -2156,7 +2528,6 @@
         return;
       }
 
-      // Phát âm thanh lật thẻ
       SoundEffects.flipCard();
       
       cardElement.classList.add('flipped');
@@ -2171,7 +2542,6 @@
         const card2 = game1State.cards[idx2];
 
         if (card1.pairId === card2.pairId) {
-          // Phát âm thanh khớp thành công
           setTimeout(() => SoundEffects.matchSuccess(), 100);
           
           setTimeout(() => {
@@ -2186,7 +2556,6 @@
             }
           }, 500);
         } else {
-          // Phát âm thanh khớp thất bại
           setTimeout(() => SoundEffects.matchFail(), 300);
           
           setTimeout(() => {
@@ -2203,10 +2572,9 @@
       game1State.totalScore += levelScore;
       document.getElementById('game1-score').textContent = game1State.totalScore;
 
-      // Lưu điểm sau mỗi level
+      const isGameComplete = checkGameCompletion('game1', game1State.level);
+      
       updateUserScore('game1', game1State.totalScore, game1State.level, game1State.totalScore);
-
-      // Phát âm thanh hoàn thành level
       setTimeout(() => SoundEffects.levelComplete(), 200);
       
       setTimeout(() => {
@@ -2215,11 +2583,10 @@
           levelScore,
           game1State.moves,
           () => {
-            if (game1State.level >= 5) {
-              // Hiển thị certificate khi hoàn thành level 5
-              showToast(`🎉 Hoàn thành tất cả 5 level! Tổng điểm: ${game1State.totalScore}`, 'success');
+            if (isGameComplete) {
+              showToast(`🎉 Hoàn thành tất cả ${maxLevels.game1} level! Tổng điểm: ${game1State.totalScore}`, 'success');
               setTimeout(() => {
-                showCertificate('Lật Ô Ghi Nhớ', game1State.totalScore, 5);
+                showCertificate('Lật Ô Ghi Nhớ', game1State.totalScore, maxLevels.game1);
               }, 1000);
             } else {
               game1State.level++;
@@ -2234,7 +2601,6 @@
       }, 500);
     }
 
-    // ========== GAME 2: MƯA TỪ VỰNG ==========
     function renderGame2() {
       const config = window.elementSdk?.config || defaultConfig;
       const bgColor = config.background_color || defaultConfig.background_color;
@@ -2249,7 +2615,7 @@
               <div class="flex justify-between items-center mb-4">
                 <div>
                   <h2 class="text-2xl font-bold" style="color: ${textColor};">🧺 ${game2Name}</h2>
-                  <p class="text-sm text-gray-600 mt-1">Di chuyển giỏ hứng đáp án đúng</p>
+                  <p class="text-sm text-gray-600 mt-1">Di chuyển giỏ hứng đáp án đúng • Level ${game2State.level}/${maxLevels.game2}</p>
                 </div>
                 <div class="flex gap-2">
                   <button onclick="saveAndExit('game2')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
@@ -2263,7 +2629,7 @@
               <div class="grid grid-cols-5 gap-3">
                 <div class="bg-blue-50 rounded-lg p-2 text-center">
                   <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-lg font-bold" style="color: ${primaryColor};"><span id="game2-level">1</span></div>
+                  <div class="text-lg font-bold" style="color: ${primaryColor};"><span id="game2-level">1</span>/${maxLevels.game2}</div>
                 </div>
                 <div class="bg-green-50 rounded-lg p-2 text-center">
                   <div class="text-xs text-gray-600">Điểm</div>
@@ -2284,6 +2650,7 @@
               <div class="mt-3 bg-indigo-50 rounded-lg p-3 text-center">
                 <div class="text-xs text-gray-600 mb-1">Câu hỏi</div>
                 <div class="text-lg font-bold" style="color: ${textColor};" id="game2-question"></div>
+                <div class="text-xs text-gray-600 mt-1">Chủ đề: <span id="game2-topic">${game2State.currentTopic || 'Chung'}</span></div>
               </div>
             </div>
 
@@ -2311,10 +2678,10 @@
         questionIndex: 0,
         lives: 3,
         combo: 0,
-        maxCombo: 0
+        maxCombo: 0,
+        currentTopic: ''
       };
 
-      // Bắt đầu auto-save
       startAutoSave('game2', () => game2State);
 
       const canvas = document.getElementById('game2-canvas');
@@ -2352,7 +2719,6 @@
       const basket = canvas.querySelector('.basket-character');
       if (basket) basket.style.left = game2State.basketX + 'px';
       
-      // Phát âm thanh di chuyển nhẹ
       if (Math.random() > 0.8) {
         SoundEffects.basketMove();
       }
@@ -2389,16 +2755,25 @@
     }
 
     function nextQuestion2() {
-      if (game2State.questionIndex >= gameData.game2.length) {
-        game2State.questionIndex = 0;
+      const levelQuestions = getQuestionsByLevelExact('game2', game2State.level);
+      
+      if (levelQuestions.length === 0) {
+        showToast('Không có câu hỏi cho level này!', 'error');
+        return;
       }
 
-      const questionData = gameData.game2[game2State.questionIndex];
+      const questionData = levelQuestions[game2State.questionIndex % levelQuestions.length];
       game2State.currentQuestion = {
-        question: questionData[0],
-        correctAnswer: questionData[1],
-        wrongAnswers: questionData.slice(2).filter(a => a && a.trim())
+        question: questionData.question,
+        correctAnswer: questionData.correct,
+        wrongAnswers: questionData.wrongs,
+        topic: questionData.topic
       };
+
+      if (questionData.topic) {
+        game2State.currentTopic = questionData.topic;
+        document.getElementById('game2-topic').textContent = questionData.topic;
+      }
 
       document.getElementById('game2-question').textContent = game2State.currentQuestion.question;
 
@@ -2465,7 +2840,6 @@
             showToast('Bỏ lỡ đáp án đúng! -1 mạng', 'error');
             correctWordMissed = true;
             
-            // Phát âm thanh bỏ lỡ
             SoundEffects.wordMissed();
             
             if (game2State.lives <= 0) {
@@ -2477,10 +2851,7 @@
               document.removeEventListener('touchmove', handleGame2Touch);
               document.removeEventListener('keydown', handleGame2Keys);
               
-              // Phát âm thanh game over
               SoundEffects.gameOver();
-              
-              // Lưu điểm
               updateUserScore('game2', game2State.score, game2State.level, game2State.score);
               
               showGameOverModal(
@@ -2506,7 +2877,6 @@
           if (Math.abs(wordCenterX - basketCenterX) < 60) {
             word.caught = true;
             if (word.correct) {
-              // Phát âm thanh hứng đúng
               SoundEffects.wordCaught();
               
               game2State.score += 20;
@@ -2520,70 +2890,9 @@
               basket.style.animation = 'basketSquash 0.4s ease-out';
               setTimeout(() => basket.style.animation = '', 400);
               
-              for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                  const ring = document.createElement('div');
-                  ring.style.position = 'absolute';
-                  ring.style.left = (basketX + 40) + 'px';
-                  ring.style.bottom = '70px';
-                  ring.style.width = '80px';
-                  ring.style.height = '80px';
-                  ring.style.border = '3px solid #10b981';
-                  ring.style.borderRadius = '50%';
-                  ring.style.pointerEvents = 'none';
-                  ring.style.animation = 'impactRing 0.6s ease-out';
-                  canvas.appendChild(ring);
-                  setTimeout(() => ring.remove(), 600);
-                }, i * 100);
-              }
-              
               word.element.style.animation = 'wordAbsorb 0.6s ease-out forwards';
               word.element.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
               word.element.style.boxShadow = '0 0 30px rgba(251, 191, 36, 0.9)';
-              
-              for (let i = 0; i < 12; i++) {
-                const angle = (i / 12) * Math.PI * 2;
-                const star = document.createElement('div');
-                star.style.position = 'absolute';
-                star.style.left = (basketX + 40) + 'px';
-                star.style.bottom = '70px';
-                star.style.fontSize = '24px';
-                star.textContent = ['✨', '⭐', '🌟', '💫', '🎉'][Math.floor(Math.random() * 5)];
-                star.style.pointerEvents = 'none';
-                star.style.transition = 'all 0.7s ease-out';
-                star.style.opacity = '1';
-                canvas.appendChild(star);
-                
-                const distance = 60 + Math.random() * 40;
-                setTimeout(() => {
-                  star.style.left = (basketX + 40 + Math.cos(angle) * distance) + 'px';
-                  star.style.bottom = (70 + Math.sin(angle) * distance) + 'px';
-                  star.style.opacity = '0';
-                  star.style.transform = 'rotate(360deg) scale(1.8)';
-                }, 10);
-                
-                setTimeout(() => star.remove(), 700);
-              }
-              
-              const scoreText = document.createElement('div');
-              scoreText.textContent = '+20';
-              scoreText.style.position = 'absolute';
-              scoreText.style.left = (basketX + 20) + 'px';
-              scoreText.style.bottom = '90px';
-              scoreText.style.fontSize = '42px';
-              scoreText.style.fontWeight = '900';
-              scoreText.style.color = '#fbbf24';
-              scoreText.style.textShadow = '0 0 15px rgba(251, 191, 36, 1), 0 4px 8px rgba(0,0,0,0.4)';
-              scoreText.style.pointerEvents = 'none';
-              scoreText.style.transition = 'all 0.8s ease-out';
-              canvas.appendChild(scoreText);
-              
-              setTimeout(() => {
-                scoreText.style.bottom = '220px';
-                scoreText.style.opacity = '0';
-                scoreText.style.transform = 'scale(2.5)';
-              }, 10);
-              setTimeout(() => scoreText.remove(), 800);
               
               setTimeout(() => word.element.remove(), 600);
               
@@ -2599,7 +2908,6 @@
               
               return false;
             } else {
-              // Phát âm thanh hứng sai
               SoundEffects.wrongAnswerGeneral();
               
               game2State.score = Math.max(0, game2State.score - 5);
@@ -2648,25 +2956,6 @@
             setTimeout(() => explosion.remove(), 800);
           });
           
-          for (let i = 0; i < 8; i++) {
-            const particle = document.createElement('div');
-            particle.style.position = 'absolute';
-            particle.style.left = centerX + 'px';
-            particle.style.top = centerY + 'px';
-            particle.style.fontSize = '20px';
-            particle.textContent = ['💫', '✨', '⭐'][Math.floor(Math.random() * 3)];
-            particle.style.pointerEvents = 'none';
-            
-            const angle = (i / 8) * Math.PI * 2;
-            const distance = 60 + Math.random() * 40;
-            particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
-            particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
-            particle.style.animation = 'explodeParticle 0.8s ease-out forwards';
-            
-            canvas.appendChild(particle);
-            setTimeout(() => particle.remove(), 800);
-          }
-          
           word.element.style.transition = 'all 0.3s ease-out';
           word.element.style.transform = 'scale(0) rotate(180deg)';
           word.element.style.opacity = '0';
@@ -2696,10 +2985,9 @@
       game2State.score += levelBonus;
       document.getElementById('game2-score').textContent = game2State.score;
 
-      // Lưu điểm
+      const isGameComplete = checkGameCompletion('game2', game2State.level);
+      
       updateUserScore('game2', game2State.score, game2State.level, game2State.score);
-
-      // Phát âm thanh level up
       SoundEffects.levelUpGame2();
       
       showLevelCompleteModal(
@@ -2707,18 +2995,19 @@
         levelBonus,
         game2State.questionsAnswered,
         () => {
-          if (game2State.level >= 5) {
+          if (isGameComplete) {
             document.removeEventListener('mousemove', handleGame2Mouse);
             document.removeEventListener('touchmove', handleGame2Touch);
             document.removeEventListener('keydown', handleGame2Keys);
             showToast(`🎉 Hoàn thành! Tổng điểm: ${game2State.score}`, 'success');
             setTimeout(() => {
-              showCertificate('Mưa Từ Vựng', game2State.score, 5);
+              showCertificate('Mưa Từ Vựng', game2State.score, maxLevels.game2);
             }, 1000);
           } else {
             game2State.level++;
             game2State.questionsAnswered = 0;
             game2State.lives = 3;
+            game2State.currentTopic = '';
             
             document.getElementById('game2-level').textContent = game2State.level;
             document.getElementById('game2-correct').textContent = game2State.questionsAnswered;
@@ -2743,14 +3032,11 @@
       document.removeEventListener('touchmove', handleGame2Touch);
       document.removeEventListener('keydown', handleGame2Keys);
       
-      // Lưu điểm
       updateUserScore('game2', game2State.score, game2State.level, game2State.score);
-      
       showToast(`Game kết thúc! Điểm: ${game2State.score}`, 'success');
       setTimeout(() => backToMenu(), 1500);
     }
 
-    // ========== GAME 3: BẢO VỆ CỨ ĐIỂM ==========
     function renderGame3() {
       const config = window.elementSdk?.config || defaultConfig;
       const bgColor = config.background_color || defaultConfig.background_color;
@@ -2765,7 +3051,7 @@
               <div class="flex justify-between items-center mb-4">
                 <div>
                   <h2 class="text-2xl font-bold" style="color: ${textColor};">🎯 ${game3Name}</h2>
-                  <p class="text-sm text-gray-600 mt-1">Chọn đáp án đúng để tiêu diệt kẻ địch</p>
+                  <p class="text-sm text-gray-600 mt-1">Chọn đáp án đúng để tiêu diệt kẻ địch • Level ${game3State.level}/${maxLevels.game3}</p>
                 </div>
                 <div class="flex gap-2">
                   <button onclick="saveAndExit('game3')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
@@ -2779,7 +3065,7 @@
               <div class="grid grid-cols-5 gap-3">
                 <div class="bg-blue-50 rounded-lg p-2 text-center">
                   <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-lg font-bold" style="color: ${primaryColor};"><span id="game3-level">1</span></div>
+                  <div class="text-lg font-bold" style="color: ${primaryColor};"><span id="game3-level">1</span>/${maxLevels.game3}</div>
                 </div>
                 <div class="bg-green-50 rounded-lg p-2 text-center">
                   <div class="text-xs text-gray-600">Điểm</div>
@@ -2800,6 +3086,7 @@
               <div class="mt-3 bg-indigo-50 rounded-lg p-3 text-center">
                 <div class="text-xs text-gray-600 mb-1">Câu hỏi</div>
                 <div class="text-lg font-bold" style="color: ${textColor};" id="game3-question"></div>
+                <div class="text-xs text-gray-600 mt-1">Chủ đề: <span id="game3-topic">${game3State.currentTopic || 'Chung'}</span></div>
               </div>
             </div>
 
@@ -2827,10 +3114,10 @@
         questionIndex: 0,
         lives: 3,
         combo: 0,
-        maxCombo: 0
+        maxCombo: 0,
+        currentTopic: ''
       };
 
-      // Bắt đầu auto-save
       startAutoSave('game3', () => game3State);
 
       document.getElementById('game3-level').textContent = game3State.level;
@@ -2843,18 +3130,27 @@
     }
 
     function nextQuestion3() {
-      if (game3State.questionIndex >= gameData.game3.length) {
-        game3State.questionIndex = 0;
+      const levelQuestions = getQuestionsByLevelExact('game3', game3State.level);
+      
+      if (levelQuestions.length === 0) {
+        showToast('Không có câu hỏi cho level này!', 'error');
+        return;
       }
 
-      const questionData = gameData.game3[game3State.questionIndex];
+      const questionData = levelQuestions[game3State.questionIndex % levelQuestions.length];
       game3State.currentQuestion = {
-        question: questionData[0],
-        correctAnswer: questionData[1],
-        allAnswers: [questionData[1], ...questionData.slice(2).filter(a => a && a.trim())]
+        question: questionData.question,
+        correctAnswer: questionData.correct,
+        allAnswers: [questionData.correct, ...questionData.wrongs]
           .sort(() => Math.random() - 0.5)
-          .slice(0, 4)
+          .slice(0, 4),
+        topic: questionData.topic
       };
+
+      if (questionData.topic) {
+        game3State.currentTopic = questionData.topic;
+        document.getElementById('game3-topic').textContent = questionData.topic;
+      }
 
       document.getElementById('game3-question').textContent = game3State.currentQuestion.question;
 
@@ -2922,7 +3218,6 @@
           updateGame3Lives();
           showToast('Kẻ địch xâm nhập! -1 mạng', 'error');
           
-          // Phát âm thanh kẻ địch vượt qua
           SoundEffects.enemyPass();
           
           if (game3State.lives <= 0) {
@@ -2931,10 +3226,7 @@
               game3State.gameLoop = null;
             }
             
-            // Phát âm thanh game over
             SoundEffects.gameOver();
-            
-            // Lưu điểm
             updateUserScore('game3', game3State.score, game3State.level, game3State.score);
             
             showGameOverModal(
@@ -2970,7 +3262,6 @@
       const canvas = document.getElementById('game3-canvas');
       if (game3State.enemies.length === 0) return;
 
-      // Phát âm thanh nút bấm
       SoundEffects.buttonClick();
       
       button.classList.add('pulse');
@@ -3010,37 +3301,7 @@
           clearInterval(flyInterval);
           arrow.remove();
           
-          const hitEffect = document.createElement('div');
-          hitEffect.style.position = 'absolute';
-          hitEffect.style.left = endX + 'px';
-          hitEffect.style.top = endY + 'px';
-          hitEffect.style.fontSize = '32px';
-          hitEffect.textContent = '💥';
-          hitEffect.style.animation = 'explode 0.6s ease-out forwards';
-          hitEffect.style.pointerEvents = 'none';
-          canvas.appendChild(hitEffect);
-          setTimeout(() => hitEffect.remove(), 600);
-
-          for (let i = 0; i < 2; i++) {
-            setTimeout(() => {
-              const ring = document.createElement('div');
-              ring.style.position = 'absolute';
-              ring.style.left = endX + 'px';
-              ring.style.top = endY + 'px';
-              ring.style.width = '40px';
-              ring.style.height = '40px';
-              ring.style.border = '3px solid #ef4444';
-              ring.style.borderRadius = '50%';
-              ring.style.pointerEvents = 'none';
-              ring.style.transform = 'translate(-50%, -50%)';
-              ring.style.animation = 'impactRing 0.5s ease-out';
-              canvas.appendChild(ring);
-              setTimeout(() => ring.remove(), 500);
-            }, i * 100);
-          }
-
           if (answer === game3State.currentQuestion.correctAnswer) {
-            // Phát âm thanh bắn trúng
             SoundEffects.enemyHit();
             
             enemy.health -= 50;
@@ -3054,7 +3315,6 @@
             setTimeout(() => enemy.element.classList.remove('shake'), 300);
 
             if (enemy.health <= 0) {
-              // Phát âm thanh tiêu diệt
               SoundEffects.enemyDestroy();
               
               game3State.score += 30;
@@ -3062,25 +3322,6 @@
               document.getElementById('game3-score').textContent = game3State.score;
               document.getElementById('game3-kills').textContent = game3State.questionsAnswered;
               
-              for (let i = 0; i < 8; i++) {
-                const explosion = document.createElement('div');
-                explosion.textContent = ['💥', '✨', '⭐', '🔥'][Math.floor(Math.random() * 4)];
-                explosion.style.position = 'absolute';
-                explosion.style.left = endX + 'px';
-                explosion.style.top = endY + 'px';
-                explosion.style.fontSize = '40px';
-                explosion.style.pointerEvents = 'none';
-                
-                const explosionAngle = (i / 8) * Math.PI * 2;
-                const explosionDistance = 50 + Math.random() * 30;
-                explosion.style.setProperty('--tx', Math.cos(explosionAngle) * explosionDistance + 'px');
-                explosion.style.setProperty('--ty', Math.sin(explosionAngle) * explosionDistance + 'px');
-                explosion.style.animation = 'explodeParticle 0.8s ease-out forwards';
-                
-                canvas.appendChild(explosion);
-                setTimeout(() => explosion.remove(), 800);
-              }
-
               enemy.element.style.transition = 'all 0.3s ease-out';
               enemy.element.style.transform = 'scale(0) rotate(180deg)';
               enemy.element.style.opacity = '0';
@@ -3099,7 +3340,6 @@
               showToast(`Trúng mục tiêu! Còn ${enemy.health}% máu`, 'success');
             }
           } else {
-            // Phát âm thanh bắn trượt
             SoundEffects.wrongAnswerGeneral();
             
             game3State.score = Math.max(0, game3State.score - 10);
@@ -3114,15 +3354,6 @@
         
         arrow.style.left = newX + 'px';
         arrow.style.top = newY + 'px';
-        
-        if (Math.random() > 0.5) {
-          const trail = document.createElement('div');
-          trail.className = 'arrow-trail';
-          trail.style.left = (newX + 7) + 'px';
-          trail.style.top = (newY + 7) + 'px';
-          canvas.appendChild(trail);
-          setTimeout(() => trail.remove(), 500);
-        }
       }, 20);
     }
 
@@ -3136,10 +3367,9 @@
       game3State.score += levelBonus;
       document.getElementById('game3-score').textContent = game3State.score;
 
-      // Lưu điểm
+      const isGameComplete = checkGameCompletion('game3', game3State.level);
+      
       updateUserScore('game3', game3State.score, game3State.level, game3State.score);
-
-      // Phát âm thanh hoàn thành level
       SoundEffects.levelComplete();
       
       showLevelCompleteModal(
@@ -3147,15 +3377,16 @@
         levelBonus,
         game3State.questionsAnswered,
         () => {
-          if (game3State.level >= 5) {
+          if (isGameComplete) {
             showToast(`🎉 Hoàn thành! Tổng điểm: ${game3State.score}`, 'success');
             setTimeout(() => {
-              showCertificate('Bảo Vệ Cứ Điểm', game3State.score, 5);
+              showCertificate('Bảo Vệ Cứ Điểm', game3State.score, maxLevels.game3);
             }, 1000);
           } else {
             game3State.level++;
             game3State.questionsAnswered = 0;
             game3State.lives = 3;
+            game3State.currentTopic = '';
             
             document.getElementById('game3-level').textContent = game3State.level;
             document.getElementById('game3-kills').textContent = game3State.questionsAnswered;
@@ -3177,14 +3408,11 @@
         clearInterval(game3State.gameLoop);
       }
       
-      // Lưu điểm
       updateUserScore('game3', game3State.score, game3State.level, game3State.score);
-      
       showToast(`Game kết thúc! Điểm: ${game3State.score}`, 'success');
       setTimeout(() => backToMenu(), 1500);
     }
 
-    // ========== GAME 4: NÔNG TRẠI SỐ - SỬA LỖI QUAN TRỌNG ==========
     function getPlotDisplay(stage) {
       const stages = [
         { icon: '🟫', text: 'Đất trống', bg: 'linear-gradient(135deg, #78350f 0%, #451a03 100%)', color: '#fef3c7', size: '48px' },
@@ -3210,7 +3438,7 @@
               <div class="flex justify-between items-start sm:items-center mb-3 sm:mb-4">
                 <div>
                   <h2 class="text-lg sm:text-2xl font-bold" style="color: ${textColor};">👨‍🌾 ${game4Name}</h2>
-                  <p class="text-xs sm:text-sm text-gray-600 mt-1 hidden sm:block">Nhấp ô để trả lời câu hỏi</p>
+                  <p class="text-xs sm:text-sm text-gray-600 mt-1 hidden sm:block">Nhấp ô để trả lời câu hỏi • Level ${game4State.level}/${maxLevels.game4}</p>
                 </div>
                 <div class="flex gap-2">
                   <button onclick="saveAndExit('game4')" class="px-3 sm:px-4 py-2 text-sm sm:text-base bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
@@ -3224,16 +3452,20 @@
               <div class="grid grid-cols-3 gap-2 sm:gap-3">
                 <div class="bg-blue-50 rounded-lg p-2 sm:p-3 text-center">
                   <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-level">${game4State.level}</span></div>
+                  <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-level">${game4State.level}</span>/${maxLevels.game4}</div>
                 </div>
                 <div class="bg-green-50 rounded-lg p-2 sm:p-3 text-center">
                   <div class="text-xs text-gray-600">Thu hoạch</div>
-                  <div class="text-lg sm:text-xl font-bold" style="color: ${textColor};"><span id="game4-harvest">${game4State.harvestCount}</span>/3</div>
+                  <div class="text-lg sm:text-xl font-bold" style="color: ${textColor};"><span id="game4-harvest">${game4State.harvestCount}</span>/4</div>
                 </div>
                 <div class="bg-orange-50 rounded-lg p-2 sm:p-3 text-center">
                   <div class="text-xs text-gray-600">Điểm</div>
                   <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-score">${game4State.totalScore}</span></div>
                 </div>
+              </div>
+              <div class="mt-3 bg-indigo-50 rounded-lg p-2 sm:p-3 text-center">
+                <div class="text-xs text-gray-600">Chủ đề</div>
+                <div class="text-sm sm:text-base font-bold" style="color: ${textColor};" id="game4-topic">${game4State.currentTopic || 'Chung'}</div>
               </div>
             </div>
 
@@ -3265,7 +3497,7 @@
             </div>
 
             <div class="bg-blue-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center text-xs sm:text-sm text-gray-700">
-              <p>💡 <strong>Hướng dẫn:</strong> Đúng → Cây lớn lên • Sai → Cây lùi lại</p>
+              <p>💡 <strong>Hướng dẫn:</strong> Đúng → Cây lớn lên • Sai → Cây lùi lại • Chủ đề: <span id="game4-current-topic">${game4State.currentTopic || 'Chung'}</span></p>
             </div>
           </div>
         </div>
@@ -3276,7 +3508,6 @@
       const plot = game4State.plots[plotIndex];
       
       if (plot.stage >= 4) {
-        // Phát âm thanh thu hoạch
         SoundEffects.harvest();
         
         const score = 50 + game4State.level * 10;
@@ -3289,7 +3520,7 @@
         showToast(`🎉 Thu hoạch thành công! +${score} điểm`, 'success');
         plot.stage = 4;
         
-        if (game4State.harvestCount >= 3) {
+        if (game4State.harvestCount >= 4) {
           completeGame4Level();
         } else {
           updatePlotDisplay(plotIndex);
@@ -3301,14 +3532,28 @@
     }
 
     function showQuestion4() {
-      const questionData = gameData.game4[Math.floor(Math.random() * gameData.game4.length)];
+      const levelQuestions = getQuestionsByLevelExact('game4', game4State.level);
+      
+      if (levelQuestions.length === 0) {
+        showToast('Không có câu hỏi cho level này!', 'error');
+        return;
+      }
+
+      const questionData = levelQuestions[Math.floor(Math.random() * levelQuestions.length)];
       game4State.currentQuestion = {
-        question: questionData[0],
-        correctAnswer: questionData[1],
-        allAnswers: [questionData[1], ...questionData.slice(2).filter(a => a && a.trim())]
+        question: questionData.question,
+        correctAnswer: questionData.correct,
+        allAnswers: [questionData.correct, ...questionData.wrongs]
           .sort(() => Math.random() - 0.5)
-          .slice(0, 4)
+          .slice(0, 4),
+        topic: questionData.topic
       };
+
+      if (questionData.topic && game4State.currentTopic !== questionData.topic) {
+        game4State.currentTopic = questionData.topic;
+        document.getElementById('game4-topic').textContent = questionData.topic;
+        document.getElementById('game4-current-topic').textContent = questionData.topic;
+      }
 
       document.getElementById('q-text').textContent = game4State.currentQuestion.question;
       document.getElementById('q-answers').innerHTML = game4State.currentQuestion.allAnswers.map(answer => `
@@ -3331,7 +3576,6 @@
       button.classList.add('pulse');
 
       if (answer === game4State.currentQuestion.correctAnswer) {
-        // Phát âm thanh trả lời đúng
         SoundEffects.correctAnswer();
         
         plot.stage = Math.min(4, plot.stage + 1);
@@ -3343,7 +3587,6 @@
           '🌾 Hoàn hảo! Cây đã chín rộ!'
         ];
         
-        // Phát âm thanh cây lớn lên
         if (plot.stage === 1) {
           SoundEffects.plantSeed();
         } else if (plot.stage > 1) {
@@ -3357,7 +3600,6 @@
           updatePlotDisplay(plotIndex);
         }, 500);
       } else {
-        // Phát âm thanh trả lời sai
         SoundEffects.wrongAnswer();
         
         if (plot.stage > 0) {
@@ -3400,10 +3642,9 @@
       game4State.totalScore += levelBonus;
       document.getElementById('game4-score').textContent = game4State.totalScore;
 
-      // Lưu điểm
+      const isGameComplete = checkGameCompletion('game4', game4State.level);
+      
       updateUserScore('game4', game4State.totalScore, game4State.level, game4State.totalScore);
-
-      // Phát âm thanh hoàn thành level
       SoundEffects.levelComplete();
       
       showLevelCompleteModal(
@@ -3411,23 +3652,25 @@
         levelBonus,
         game4State.harvestCount,
         () => {
-          if (game4State.level >= 5) {
+          if (isGameComplete) {
             showToast(`🎉 Hoàn thành tất cả! Tổng điểm: ${game4State.totalScore}`, 'success');
             setTimeout(() => {
-              showCertificate('Nông Trại Số', game4State.totalScore, 5);
+              showCertificate('Nông Trại Số', game4State.totalScore, maxLevels.game4);
             }, 1000);
           } else {
             game4State.level++;
             game4State.harvestCount = 0;
+            game4State.currentTopic = '';
             
             document.getElementById('game4-level').textContent = game4State.level;
             document.getElementById('game4-harvest').textContent = game4State.harvestCount;
+            document.getElementById('game4-topic').textContent = 'Chung';
+            document.getElementById('game4-current-topic').textContent = 'Chung';
             
             game4State.plots.forEach(plot => {
               plot.stage = 0;
             });
             
-            // QUAN TRỌNG: Chỉ cập nhật UI, không gọi render() để không reset state
             updateGame4UI();
             updateAllPlotsDisplay();
           }
@@ -3435,7 +3678,6 @@
       );
     }
 
-    // ========== MODAL HOÀN THÀNH LEVEL ==========
     function showLevelCompleteModal(level, score, stat, onNext) {
       const modal = document.createElement('div');
       modal.className = 'level-complete-modal';
@@ -3452,7 +3694,7 @@
               class="w-full py-3 bg-blue-500 text-white rounded-xl font-bold text-base sm:text-lg hover:bg-blue-600 transition active:scale-95"
               onclick="SoundEffects.buttonClick()"
             >
-              ${level >= 5 ? '🎊 Hoàn thành tất cả' : '➡️ Level tiếp theo'}
+              ${level >= maxLevels[currentScreen] ? '🎊 Hoàn thành tất cả' : '➡️ Level tiếp theo'}
             </button>
           </div>
         </div>
@@ -3466,7 +3708,6 @@
       };
     }
 
-    // ========== MODAL GAME OVER ==========
     function showGameOverModal(finalScore, level, onRestart, onMenu) {
       const modal = document.createElement('div');
       modal.className = 'level-complete-modal';
@@ -3513,11 +3754,9 @@
       };
     }
 
-    // ========== CHỨNG NHẬN ==========
     function showCertificate(gameName, score, level) {
       saveCertificate(gameName, score, level);
       
-      // Phát âm thanh thành tích
       SoundEffects.achievement();
       
       const config = window.elementSdk?.config || defaultConfig;
@@ -3531,7 +3770,6 @@
       modal.innerHTML = `
         <div class="certificate-container bg-white rounded-3xl p-8 max-w-3xl mx-4 shadow-2xl border-8 border-amber-400" id="certificate-content">
           <div class="text-center relative">
-            <!-- Dấu mộc/con dấu góc phải -->
             <div class="certificate-seal absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center transform rotate-12 shadow-lg border-4 border-red-900">
               <div class="text-center">
                 <div class="text-2xl">🏆</div>
@@ -3539,7 +3777,6 @@
               </div>
             </div>
 
-            <!-- Header với viền trang trí -->
             <div class="mb-6 pb-4 border-b-4 border-amber-400">
               <div class="text-6xl mb-3">🎓</div>
               <h2 class="text-4xl font-bold mb-2" style="color: ${textColor};">${certTitle}</h2>
@@ -3550,7 +3787,6 @@
               </div>
             </div>
 
-            <!-- Nội dung chính -->
             <div class="mb-6">
               <p class="text-lg text-gray-700 mb-4">${certText}</p>
               <div class="text-5xl font-bold mb-3" style="color: ${primaryColor};">${gameName}</div>
@@ -3559,7 +3795,6 @@
               <p class="text-sm text-gray-500 italic">Vì đã hoàn thành xuất sắc ${level} cấp độ</p>
             </div>
 
-            <!-- Thông tin điểm -->
             <div class="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-6 mb-6 border-2 border-amber-200">
               <div class="grid grid-cols-3 gap-4">
                 <div>
@@ -3577,7 +3812,6 @@
               </div>
             </div>
 
-            <!-- Chữ ký và dấu -->
             <div class="flex justify-between items-end mb-6 px-8">
               <div class="text-center">
                 <div class="text-sm text-gray-500 mb-2">Giảng viên</div>
@@ -3587,7 +3821,6 @@
               <div class="text-6xl opacity-20 transform -rotate-12">🏅</div>
             </div>
 
-            <!-- Buttons -->
             <div class="space-y-3">
               <button 
                 onclick="downloadCertificate()"
@@ -3702,10 +3935,8 @@
       const certificate = document.getElementById('certificate-content');
       if (!certificate) return;
 
-      // Phát âm thanh tải xuống
       SoundEffects.buttonClick();
       
-      // Sử dụng html2canvas để chụp màn hình chứng nhận
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
       script.onload = () => {
@@ -3714,18 +3945,14 @@
           backgroundColor: '#ffffff',
           logging: false
         }).then(canvas => {
-          // Chuyển canvas thành blob
           canvas.toBlob(blob => {
-            // Tạo URL từ blob
             const url = URL.createObjectURL(blob);
             
-            // Tạo link download
             const link = document.createElement('a');
             link.download = `Chung-Nhan-${currentUser.name}-${Date.now()}.png`;
             link.href = url;
             link.click();
             
-            // Dọn dẹp
             URL.revokeObjectURL(url);
             showToast('✅ Đã tải xuống chứng nhận!', 'success');
           });
@@ -3740,7 +3967,6 @@
       backToMenu();
     }
 
-    // ========== NAVIGATION ==========
     function handleLogin(e) {
       e.preventDefault();
       const username = document.getElementById('username').value.trim();
@@ -3748,7 +3974,6 @@
         showToast('Vui lòng nhập tên của bạn', 'error');
         return;
       }
-      // Phát âm thanh đăng nhập
       SoundEffects.buttonClick();
       saveUser(username);
       currentScreen = 'menu';
@@ -3756,7 +3981,6 @@
     }
 
     function backToMenu() {
-      // Dừng auto-save
       stopAutoSave();
       
       if (game2State.gameLoop) {
@@ -3773,7 +3997,6 @@
     }
 
     function logout() {
-      // Dừng auto-save
       stopAutoSave();
       
       localStorage.removeItem('xedang_current_user');
@@ -3799,14 +4022,33 @@
 
     function startGame(gameId) {
       currentScreen = gameId;
-      // QUAN TRỌNG: Khi vào game từ menu, đánh dấu game 4 chưa khởi tạo
       if (gameId === 'game4') {
         isGame4Initialized = false;
       }
       render();
     }
 
-    // ========== ELEMENT SDK ==========
+    window.addEventListener('beforeunload', function() {
+      if (currentScreen.includes('game')) {
+        const gameType = currentScreen.replace('game', 'game');
+        let state;
+        
+        switch(gameType) {
+          case 'game1': state = game1State; break;
+          case 'game2': state = game2State; break;
+          case 'game3': state = game3State; break;
+          case 'game4': state = game4State; break;
+        }
+        
+        localStorage.setItem('xedang_last_game_state', JSON.stringify({
+          gameType: gameType,
+          state: state,
+          timestamp: Date.now(),
+          level: state.level
+        }));
+      }
+    });
+
     async function onConfigChange(config) {
       render();
     }
@@ -3870,21 +4112,13 @@
       });
     }
 
-    // ========== KHỞI ĐỘNG ỨNG DỤNG ==========
     window.addEventListener('DOMContentLoaded', async function() {
       try {
-        // Khởi tạo hệ thống âm thanh
         initAudio();
         
-        // Tải cấu hình đồng bộ
-        loadSyncConfig();
+        initWithCache();
         
         await fetchData();
-        
-        // Đồng bộ điểm đang chờ nếu có mạng
-        if (isOnline) {
-          syncPendingScores();
-        }
         
         if (loadUser()) {
           currentScreen = 'menu';
@@ -3895,16 +4129,24 @@
         render();
         updateOfflineIndicator();
         
-        // Thêm sự kiện cho nút điều khiển âm thanh
         document.getElementById('bgm-toggle')?.addEventListener('click', toggleBGM);
         document.getElementById('sfx-toggle')?.addEventListener('click', toggleSFX);
         
+        console.log('🎮 Ứng dụng Học Tiếng Xê Đăng đã khởi động!');
+        console.log('📊 Cấu hình level:', AUTO_LEVEL_CONFIG);
+        console.log('🎯 Max levels:', maxLevels);
+        console.log('📝 Dữ liệu game1:', gameData.game1.length, 'câu hỏi');
+        console.log('📝 Dữ liệu game2:', gameData.game2.length, 'câu hỏi');
+        console.log('📝 Dữ liệu game3:', gameData.game3.length, 'câu hỏi');
+        console.log('📝 Dữ liệu game4:', gameData.game4.length, 'câu hỏi');
+        
       } catch (error) {
-        console.error('Init error:', error);
+        console.error('Lỗi khởi động ứng dụng:', error);
         currentScreen = 'login';
         render();
+        showToast('⚠️ Có lỗi xảy ra khi khởi động ứng dụng', 'error');
       }
     });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b37d4e405924625',t:'MTc2NjY2MDM5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
