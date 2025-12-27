@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Học Tiếng Xê Đăng</title>
+  <title>Học tiếng xơ đăng qua trò chơi tương tác</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -561,6 +561,40 @@
       color: white;
       border-color: #dc2626;
     }
+
+    /* Leaderboard improvements */
+    .leaderboard-entry {
+      transition: all 0.3s ease;
+    }
+    
+    .leaderboard-entry:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+    
+    .rank-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    
+    .score-progress {
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      background: #e5e7eb;
+    }
+    
+    .score-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
@@ -576,7 +610,7 @@
   </div>
 
   <script>
-    // Cấu hình Google Sheets
+    // Cấu hình Google Sheets - CHỈ dùng cho câu hỏi, không dùng cho điểm số
     const API_KEY = 'AIzaSyD757jS4SLR7-EzrPgrW9WrLQeD2DQExHw';
     const SPREADSHEET_ID = '1Z59pDBu_tGwlYqUeS1-VJLpcHozp7LbxnC_-qhT3iHs';
     const RANGE = 'Game!A3:T';
@@ -697,6 +731,9 @@
       combo: 0,
       maxCombo: 0
     };
+
+    // ========== BIẾN CỜ QUAN TRỌNG: Theo dõi trạng thái khởi tạo game ==========
+    let isGame4Initialized = false; // QUAN TRỌNG: Theo dõi xem game 4 đã được khởi tạo chưa
 
     // ========== HỆ THỐNG ÂM THANH ==========
     let audioContext;
@@ -1103,6 +1140,8 @@
       }, 3000);
     }
 
+    // ========== HỆ THỐNG LƯU ĐIỂM CẢI THIỆN ==========
+    
     // LocalStorage helpers
     function saveUser(username) {
       const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
@@ -1111,8 +1150,17 @@
           name: username,
           level: 1,
           totalScore: 0,
+          bestScore: 0,
           gamesPlayed: 0,
-          certificates: []
+          certificates: [],
+          gameScores: {
+            game1: [],
+            game2: [],
+            game3: [],
+            game4: []
+          },
+          lastPlayed: Date.now(),
+          joinedDate: new Date().toISOString()
         };
       }
       currentUser = users[username];
@@ -1125,22 +1173,188 @@
       if (username) {
         const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
         currentUser = users[username];
+        
+        // Nếu user cũ không có cấu trúc mới, nâng cấp cấu trúc
+        if (currentUser && !currentUser.gameScores) {
+          currentUser.gameScores = {
+            game1: [],
+            game2: [],
+            game3: [],
+            game4: []
+          };
+          currentUser.bestScore = currentUser.totalScore || 0;
+          currentUser.lastPlayed = Date.now();
+          currentUser.joinedDate = currentUser.joinedDate || new Date().toISOString();
+          
+          // Lưu lại
+          users[username] = currentUser;
+          localStorage.setItem('xedang_users', JSON.stringify(users));
+        }
+        
         return true;
       }
       return false;
     }
 
-    function updateUserScore(score) {
+    // Hàm cập nhật điểm - SỬA LỖI: Xóa hàm cũ, chỉ giữ hàm mới
+    function updateUserScore(gameType, score, levelCompleted, sessionScore = 0) {
       const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
+      
       if (currentUser && users[currentUser.name]) {
-        users[currentUser.name].totalScore += score;
-        users[currentUser.name].gamesPlayed += 1;
-        if (score > 80) {
-          users[currentUser.name].level = Math.min(5, users[currentUser.name].level + 1);
+        const user = users[currentUser.name];
+        
+        // Tạo cấu trúc lưu điểm theo game nếu chưa có
+        if (!user.gameScores) user.gameScores = {};
+        if (!user.gameScores[gameType]) user.gameScores[gameType] = [];
+        
+        // Lưu điểm của session hiện tại
+        const gameSession = {
+          score: score,
+          level: levelCompleted,
+          timestamp: Date.now(),
+          date: new Date().toLocaleDateString('vi-VN'),
+          time: new Date().toLocaleTimeString('vi-VN'),
+          sessionScore: sessionScore,
+          isFinal: levelCompleted >= 5
+        };
+        
+        user.gameScores[gameType].push(gameSession);
+        
+        // Giữ tối đa 20 session mỗi game
+        if (user.gameScores[gameType].length > 20) {
+          user.gameScores[gameType] = user.gameScores[gameType].slice(-20);
         }
-        currentUser = users[currentUser.name];
+        
+        // Tính điểm cao nhất cho game này
+        const gameBestScore = Math.max(...user.gameScores[gameType].map(s => s.score));
+        
+        // Tính tổng điểm tất cả game
+        let totalAllGames = 0;
+        Object.values(user.gameScores).forEach(gameScores => {
+          if (Array.isArray(gameScores) && gameScores.length > 0) {
+            const gameTotal = gameScores.reduce((sum, session) => sum + session.score, 0);
+            totalAllGames += gameTotal;
+          }
+        });
+        
+        // Cập nhật thông tin user
+        user.totalScore = totalAllGames;
+        user.bestScore = Math.max(user.bestScore || 0, gameBestScore);
+        user.gamesPlayed += 1;
+        user.lastPlayed = Date.now();
+        
+        // Tính level dựa trên tổng điểm
+        user.level = Math.min(10, Math.floor(user.totalScore / 500) + 1);
+        
+        // Lưu lại
         localStorage.setItem('xedang_users', JSON.stringify(users));
+        currentUser = user;
+        
+        console.log(`Đã lưu điểm: ${score} cho game ${gameType}, Tổng điểm: ${user.totalScore}`);
+        
+        // Đồng bộ lên Google Sheets nếu được bật
+        if (SCORE_SYNC_CONFIG.enabled && SCORE_SYNC_CONFIG.sheetId && SCORE_SYNC_CONFIG.apiKey) {
+          syncScoreToGoogleSheet(currentUser.name, score, gameType, levelCompleted);
+        }
+        
+        return user;
       }
+      return null;
+    }
+
+    // Hàm lấy bảng xếp hạng
+    function getLeaderboard() {
+      const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
+      
+      const leaderboard = Object.values(users).map(user => {
+        // Tính điểm trung bình mỗi game
+        let avgScorePerGame = 0;
+        let gamesWithScores = 0;
+        
+        if (user.gameScores) {
+          Object.values(user.gameScores).forEach(gameSessions => {
+            if (Array.isArray(gameSessions) && gameSessions.length > 0) {
+              const gameTotal = gameSessions.reduce((sum, session) => sum + session.score, 0);
+              avgScorePerGame += gameTotal / gameSessions.length;
+              gamesWithScores++;
+            }
+          });
+        }
+        
+        avgScorePerGame = gamesWithScores > 0 ? avgScorePerGame / gamesWithScores : 0;
+        
+        return {
+          name: user.name,
+          totalScore: user.totalScore || 0,
+          bestScore: user.bestScore || 0,
+          level: user.level || 1,
+          gamesPlayed: user.gamesPlayed || 0,
+          avgScorePerGame: avgScorePerGame,
+          lastPlayed: user.lastPlayed || 0,
+          joinedDate: user.joinedDate || new Date().toISOString()
+        };
+      });
+      
+      // Sắp xếp theo tiêu chí: totalScore > bestScore > level > lastPlayed
+      leaderboard.sort((a, b) => {
+        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+        if (b.bestScore !== a.bestScore) return b.bestScore - a.bestScore;
+        if (b.level !== a.level) return b.level - a.level;
+        return b.lastPlayed - a.lastPlayed;
+      });
+      
+      return leaderboard.slice(0, 10); // Top 10
+    }
+
+    // Hàm lấy rank của người chơi hiện tại
+    function getCurrentUserRank() {
+      const leaderboard = getLeaderboard();
+      const currentIndex = leaderboard.findIndex(user => user.name === currentUser.name);
+      return currentIndex >= 0 ? currentIndex + 1 : null;
+    }
+
+    // Hàm lấy thống kê chi tiết cho user
+    function getUserStats(username) {
+      const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
+      const user = users[username];
+      
+      if (!user) return null;
+      
+      const stats = {
+        name: user.name,
+        level: user.level || 1,
+        totalScore: user.totalScore || 0,
+        bestScore: user.bestScore || 0,
+        gamesPlayed: user.gamesPlayed || 0,
+        certificatesCount: (user.certificates || []).length,
+        lastPlayed: user.lastPlayed ? new Date(user.lastPlayed).toLocaleDateString('vi-VN') : 'Chưa chơi',
+        joinedDate: user.joinedDate ? new Date(user.joinedDate).toLocaleDateString('vi-VN') : 'Mới'
+      };
+      
+      // Thống kê theo game
+      if (user.gameScores) {
+        stats.gameStats = {};
+        Object.keys(user.gameScores).forEach(gameType => {
+          const sessions = user.gameScores[gameType] || [];
+          if (sessions.length > 0) {
+            const totalScore = sessions.reduce((sum, session) => sum + session.score, 0);
+            const bestScore = Math.max(...sessions.map(s => s.score));
+            const avgScore = totalScore / sessions.length;
+            const lastPlayed = sessions.length > 0 ? 
+              new Date(sessions[sessions.length - 1].timestamp).toLocaleDateString('vi-VN') : 'Chưa chơi';
+            
+            stats.gameStats[gameType] = {
+              playCount: sessions.length,
+              totalScore: totalScore,
+              bestScore: bestScore,
+              avgScore: avgScore.toFixed(1),
+              lastPlayed: lastPlayed
+            };
+          }
+        });
+      }
+      
+      return stats;
     }
 
     function saveCertificate(gameName, score, level) {
@@ -1164,14 +1378,197 @@
       }
     }
 
-    function getLeaderboard() {
-      const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
-      return Object.values(users)
-        .sort((a, b) => b.totalScore - a.totalScore)
-        .slice(0, 5);
+    // ========== CHỨC NĂNG ĐỒNG BỘ GOOGLE SHEETS ==========
+    
+    // Cấu hình cho đồng bộ điểm
+    const SCORE_SYNC_CONFIG = {
+      enabled: false,
+      sheetId: '',
+      apiKey: ''
+    };
+
+    // Hàm đồng bộ điểm lên Google Sheets
+    async function syncScoreToGoogleSheet(username, score, gameType, level) {
+      if (!SCORE_SYNC_CONFIG.enabled || !SCORE_SYNC_CONFIG.sheetId || !SCORE_SYNC_CONFIG.apiKey) {
+        return false;
+      }
+      
+      if (!isOnline) {
+        // Lưu vào queue nếu offline
+        const pendingSync = JSON.parse(localStorage.getItem('xedang_pending_sync') || '[]');
+        pendingSync.push({
+          username, score, gameType, level, timestamp: Date.now()
+        });
+        localStorage.setItem('xedang_pending_sync', JSON.stringify(pendingSync));
+        return false;
+      }
+      
+      try {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SCORE_SYNC_CONFIG.sheetId}/values/Leaderboard!A:E:append?valueInputOption=USER_ENTERED&key=${SCORE_SYNC_CONFIG.apiKey}`;
+        
+        const data = {
+          values: [[
+            new Date().toISOString(),
+            username,
+            score,
+            gameType,
+            level
+          ]]
+        };
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+          return true;
+        } else {
+          throw new Error('Lỗi đồng bộ');
+        }
+      } catch (error) {
+        console.error('Lỗi đồng bộ điểm:', error);
+        return false;
+      }
     }
 
-    // Render chính
+    // Hàm đồng bộ tất cả điểm đang chờ
+    async function syncPendingScores() {
+      if (!isOnline) return;
+      
+      const pendingSync = JSON.parse(localStorage.getItem('xedang_pending_sync') || '[]');
+      if (pendingSync.length === 0) return;
+      
+      for (const item of pendingSync) {
+        await syncScoreToGoogleSheet(item.username, item.score, item.gameType, item.level);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      // Xóa sau khi đồng bộ xong
+      localStorage.removeItem('xedang_pending_sync');
+    }
+
+    // Tải cấu hình đồng bộ khi khởi động
+    function loadSyncConfig() {
+      try {
+        const savedConfig = localStorage.getItem('xedang_sync_config');
+        if (savedConfig) {
+          const config = JSON.parse(savedConfig);
+          SCORE_SYNC_CONFIG.sheetId = config.sheetId || '';
+          SCORE_SYNC_CONFIG.apiKey = config.apiKey || '';
+          SCORE_SYNC_CONFIG.enabled = config.enabled || false;
+        }
+      } catch (error) {
+        console.error('Lỗi tải cấu hình đồng bộ:', error);
+      }
+    }
+
+    // ========== TÍNH NĂNG TỰ ĐỘNG LƯU TIẾN TRÌNH ==========
+    let autoSaveInterval = null;
+
+    function startAutoSave(gameType, getStateFunc) {
+      if (autoSaveInterval) clearInterval(autoSaveInterval);
+      
+      autoSaveInterval = setInterval(() => {
+        const state = getStateFunc();
+        const users = JSON.parse(localStorage.getItem('xedang_users') || '{}');
+        
+        if (currentUser && users[currentUser.name]) {
+          users[currentUser.name].tempProgress = {
+            gameType: gameType,
+            state: JSON.parse(JSON.stringify(state)),
+            timestamp: Date.now()
+          };
+          localStorage.setItem('xedang_users', JSON.stringify(users));
+        }
+      }, 30000);
+    }
+
+    function stopAutoSave() {
+      if (autoSaveInterval) {
+        clearInterval(autoSaveInterval);
+        autoSaveInterval = null;
+      }
+    }
+
+    // ========== HÀM LƯU VÀ THOÁT ==========
+    function saveAndExit(gameType) {
+      let score = 0;
+      let level = 1;
+      
+      switch(gameType) {
+        case 'game1':
+          score = game1State.totalScore;
+          level = game1State.level;
+          break;
+        case 'game2':
+          score = game2State.score;
+          level = game2State.level;
+          break;
+        case 'game3':
+          score = game3State.score;
+          level = game3State.level;
+          break;
+        case 'game4':
+          score = game4State.totalScore;
+          level = game4State.level;
+          break;
+      }
+      
+      // Lưu điểm
+      updateUserScore(gameType, score, level, score);
+      
+      // Phát âm thanh
+      SoundEffects.buttonClick();
+      
+      // Hiển thị thông báo
+      showToast(`✅ Đã lưu ${score} điểm!`, 'success');
+      
+      // Dừng auto-save
+      stopAutoSave();
+      
+      // Quay về menu
+      setTimeout(() => backToMenu(), 1000);
+    }
+
+    // ========== GIẢI PHÁP FIX GAME 4: TÁCH BIỆT KHỞI TẠO VÀ TIẾP TỤC ==========
+    // Hàm này chỉ được gọi khi bắt đầu game mới từ menu
+    function resetGame4ForNewGame() {
+      game4State = {
+        level: 1,
+        harvestCount: 0,
+        totalScore: 0,
+        plots: [
+          { stage: 0 },
+          { stage: 0 },
+          { stage: 0 },
+          { stage: 0 }
+        ],
+        currentQuestion: null,
+        selectedPlot: null,
+        combo: 0,
+        maxCombo: 0
+      };
+      isGame4Initialized = true;
+      startAutoSave('game4', () => game4State);
+    }
+
+    // Hàm cập nhật UI cho Game 4 (không reset state)
+    function updateGame4UI() {
+      document.getElementById('game4-level').textContent = game4State.level;
+      document.getElementById('game4-harvest').textContent = game4State.harvestCount;
+      document.getElementById('game4-score').textContent = game4State.totalScore;
+    }
+
+    // Hàm cập nhật tất cả ô đất
+    function updateAllPlotsDisplay() {
+      for (let i = 0; i < game4State.plots.length; i++) {
+        updatePlotDisplay(i);
+      }
+    }
+
+    // Render chính - SỬA QUAN TRỌNG: Xử lý riêng cho Game 4
     function render() {
       const app = document.getElementById('app');
       
@@ -1182,6 +1579,8 @@
         app.innerHTML = renderMenu();
         showSoundControls();
         stopBackgroundMusic();
+        // Khi về menu, đánh dấu game 4 chưa khởi tạo (để lần sau vào sẽ là game mới)
+        isGame4Initialized = false;
       } else if (currentScreen === 'leaderboard') {
         app.innerHTML = renderLeaderboard();
         showSoundControls();
@@ -1211,7 +1610,16 @@
         showSoundControls();
       } else if (currentScreen === 'game4') {
         app.innerHTML = renderGame4();
-        initGame4();
+        
+        // QUAN TRỌNG: Chỉ khởi tạo game nếu chưa được khởi tạo (vào từ menu)
+        if (!isGame4Initialized) {
+          resetGame4ForNewGame();
+        } else {
+          // Nếu đã khởi tạo (đang chơi, lên level), chỉ cập nhật UI
+          updateGame4UI();
+          updateAllPlotsDisplay();
+        }
+        
         playBackgroundMusic('game4');
         showSoundControls();
       }
@@ -1277,6 +1685,8 @@
       ];
 
       const certCount = (currentUser.certificates || []).length;
+      const userStats = getUserStats(currentUser.name);
+      const userRank = getCurrentUserRank();
       
       // Thông tin offline
       const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
@@ -1287,14 +1697,29 @@
         <div class="min-h-full p-4" style="background: ${bgColor};">
           <div class="max-w-6xl mx-auto">
             <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-              <div class="flex justify-between items-center">
+              <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
                   <h2 class="text-2xl font-bold" style="color: ${textColor};">Xin chào, ${currentUser.name}! 👋</h2>
-                  <p class="text-gray-600">Level ${currentUser.level} • Tổng điểm: ${currentUser.totalScore} • Đã chơi: ${currentUser.gamesPlayed} trận</p>
-                  ${certCount > 0 ? `<p class="text-sm text-amber-600 mt-1">🏆 ${certCount} chứng nhận</p>` : ''}
+                  <div class="flex flex-wrap items-center gap-3 mt-2">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                      Level ${currentUser.level || 1}
+                    </span>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                      Điểm: ${currentUser.totalScore || 0}
+                    </span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                      ${currentUser.gamesPlayed || 0} trận
+                    </span>
+                    ${userRank ? `
+                      <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                        Hạng: #${userRank}
+                      </span>
+                    ` : ''}
+                  </div>
+                  ${certCount > 0 ? `<p class="text-sm text-amber-600 mt-2">🏆 ${certCount} chứng nhận</p>` : ''}
                   <p class="text-xs text-gray-500 mt-2">${offlineStatus} • ${dataCount} câu hỏi đã lưu</p>
                 </div>
-                <div class="flex gap-3">
+                <div class="flex flex-wrap gap-3">
                   ${certCount > 0 ? `
                     <button onclick="showCertificatesList()" class="px-4 py-2 rounded-lg font-medium hover:opacity-80 transition" style="background: #f59e0b; color: white;" onclick="SoundEffects.buttonClick()">
                       📜 Chứng nhận
@@ -1320,7 +1745,7 @@
                   <h3 class="text-2xl font-bold text-center mb-2" style="color: ${textColor};">${game.name}</h3>
                   <p class="text-center text-gray-600 text-sm mb-4">${game.desc}</p>
                   <div class="h-2 rounded-full mt-4" style="background: ${game.color}20;">
-                    <div class="h-full rounded-full transition-all" style="width: ${Math.min(100, currentUser.level * 20)}%; background: ${game.color};"></div>
+                    <div class="h-full rounded-full transition-all" style="width: ${Math.min(100, currentUser.level * 10)}%; background: ${game.color};"></div>
                   </div>
                 </div>
               `).join('')}
@@ -1336,42 +1761,134 @@
       const primaryColor = config.primary_color || defaultConfig.primary_color;
       const textColor = config.text_color || defaultConfig.text_color;
       const leaderboard = getLeaderboard();
+      const currentUserRank = getCurrentUserRank();
+      const currentUserStats = currentUser ? getUserStats(currentUser.name) : null;
 
       return `
         <div class="min-h-full p-4" style="background: ${bgColor};">
-          <div class="max-w-2xl mx-auto">
+          <div class="max-w-4xl mx-auto">
             <div class="bg-white rounded-2xl shadow-2xl p-8">
-              <div class="flex items-center justify-between mb-8">
-                <h2 class="text-3xl font-bold" style="color: ${textColor};">🏆 Bảng xếp hạng</h2>
-                <button onclick="backToMenu()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
-                  ← Quay lại
-                </button>
+              <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+                <div>
+                  <h2 class="text-3xl font-bold" style="color: ${textColor};">🏆 Bảng xếp hạng</h2>
+                  <p class="text-gray-600 mt-2">Top 10 người chơi có điểm cao nhất</p>
+                </div>
+                <div class="flex gap-3">
+                  <button onclick="backToMenu()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
+                    ← Quay lại
+                  </button>
+                </div>
               </div>
 
-              <div class="space-y-4">
-                ${leaderboard.map((user, index) => `
-                  <div class="flex items-center justify-between p-4 rounded-xl ${index === 0 ? 'bg-yellow-50 border-2 border-yellow-400' : 'bg-gray-50'}">
-                    <div class="flex items-center gap-4">
-                      <div class="text-3xl font-bold ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : index === 2 ? 'text-orange-600' : 'text-gray-500'}">
-                        ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                      </div>
-                      <div>
-                        <div class="font-bold text-lg" style="color: ${textColor};">${user.name}</div>
-                        <div class="text-sm text-gray-600">Level ${user.level} • ${user.gamesPlayed} trận</div>
+              <!-- Hiển thị rank của người chơi hiện tại -->
+              ${currentUser && currentUserRank ? `
+                <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="flex items-center gap-3">
+                        <div class="rank-badge bg-blue-500 text-white">
+                          #${currentUserRank}
+                        </div>
+                        <div>
+                          <span class="font-bold text-blue-700 text-lg">${currentUser.name}</span>
+                          <div class="text-sm text-gray-600">
+                            Level ${currentUser.level || 1} • ${currentUser.gamesPlayed || 0} trận
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div class="text-2xl font-bold" style="color: ${primaryColor};">
-                      ${user.totalScore}
+                    <div class="text-right">
+                      <div class="text-2xl font-bold" style="color: ${primaryColor};">${currentUser.totalScore || 0}</div>
+                      <div class="text-xs text-gray-500">Tổng điểm</div>
                     </div>
                   </div>
-                `).join('')}
+                  <div class="mt-3">
+                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                      <span>Tiến độ level</span>
+                      <span>${currentUser.totalScore || 0}/5000</span>
+                    </div>
+                    <div class="score-progress">
+                      <div class="score-progress-fill bg-blue-500" style="width: ${Math.min(100, ((currentUser.totalScore || 0) % 500) / 5)}%"></div>
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Bảng xếp hạng chính -->
+              <div class="space-y-3">
+                ${leaderboard.map((user, index) => {
+                  const isCurrentUser = currentUser && user.name === currentUser.name;
+                  const rankColors = [
+                    { bg: 'bg-gradient-to-r from-yellow-50 to-amber-50', border: 'border-yellow-300', text: 'text-yellow-700' },
+                    { bg: 'bg-gradient-to-r from-gray-50 to-slate-50', border: 'border-gray-300', text: 'text-gray-700' },
+                    { bg: 'bg-gradient-to-r from-orange-50 to-amber-50', border: 'border-orange-300', text: 'text-orange-700' },
+                    { bg: 'bg-gradient-to-r from-blue-50 to-indigo-50', border: 'border-blue-300', text: 'text-blue-700' }
+                  ];
+                  
+                  const rankColor = index < 3 ? rankColors[index] : rankColors[3];
+                  const rankBg = isCurrentUser ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300' : rankColors.bg;
+                  const rankBorder = isCurrentUser ? 'border-blue-300 border-2' : `border ${rankColors.border}`;
+                  
+                  return `
+                    <div class="leaderboard-entry flex items-center justify-between p-4 rounded-xl ${rankBg} ${rankBorder} ${isCurrentUser ? 'ring-2 ring-blue-300' : ''}">
+                      <div class="flex items-center gap-4">
+                        <div class="rank-badge ${index === 0 ? 'bg-yellow-500 text-white' : index === 1 ? 'bg-gray-400 text-white' : index === 2 ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}">
+                          ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                        </div>
+                        <div>
+                          <div class="font-bold text-lg ${isCurrentUser ? 'text-blue-700' : rankColors.text}">
+                            ${user.name}
+                            ${isCurrentUser ? ' (Bạn)' : ''}
+                          </div>
+                          <div class="text-sm text-gray-600">
+                            Level ${user.level} • ${user.gamesPlayed} trận
+                            ${user.bestScore > 0 ? `• Cao nhất: ${user.bestScore}` : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-2xl font-bold" style="color: ${primaryColor};">${user.totalScore}</div>
+                        <div class="text-xs text-gray-500">Tổng điểm</div>
+                        <div class="text-xs text-gray-400 mt-1">
+                          ${user.lastPlayed ? 'Chơi: ' + new Date(user.lastPlayed).toLocaleDateString('vi-VN') : ''}
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
                 
                 ${leaderboard.length === 0 ? `
                   <div class="text-center py-12 text-gray-500">
-                    Chưa có người chơi nào
+                    <div class="text-6xl mb-4">🏆</div>
+                    <p class="text-lg">Chưa có người chơi nào</p>
+                    <p class="text-sm text-gray-400 mt-2">Hãy là người đầu tiên lập kỷ lục!</p>
+                    <button onclick="backToMenu()" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                      Bắt đầu chơi ngay
+                    </button>
                   </div>
                 ` : ''}
               </div>
+              
+              <!-- Thống kê bổ sung -->
+              ${leaderboard.length > 0 ? `
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="bg-blue-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-blue-600">${leaderboard[0]?.totalScore || 0}</div>
+                    <div class="text-sm text-gray-600">Điểm cao nhất</div>
+                    <div class="text-xs text-gray-500 mt-1">${leaderboard[0]?.name || 'Chưa có'}</div>
+                  </div>
+                  <div class="bg-green-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-green-600">${leaderboard.reduce((sum, user) => sum + user.gamesPlayed, 0)}</div>
+                    <div class="text-sm text-gray-600">Tổng số trận</div>
+                    <div class="text-xs text-gray-500 mt-1">Tất cả người chơi</div>
+                  </div>
+                  <div class="bg-purple-50 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-600">${leaderboard.length}</div>
+                    <div class="text-sm text-gray-600">Người chơi</div>
+                    <div class="text-xs text-gray-500 mt-1">Đang hoạt động</div>
+                  </div>
+                </div>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -1539,9 +2056,14 @@
                   <h2 class="text-2xl font-bold" style="color: ${textColor};">🎴 ${game1Name}</h2>
                   <p class="text-sm text-gray-600 mt-1">Tìm cặp thẻ khớp nhau</p>
                 </div>
-                <button onclick="backToMenu()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
-                  ← Menu
-                </button>
+                <div class="flex gap-2">
+                  <button onclick="saveAndExit('game1')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
+                    💾 Lưu & Thoát
+                  </button>
+                  <button onclick="backToMenu()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
+                    ← Menu
+                  </button>
+                </div>
               </div>
               <div class="grid grid-cols-4 gap-4">
                 <div class="bg-blue-50 rounded-lg p-3 text-center">
@@ -1575,6 +2097,9 @@
       game1State.matchedPairs = 0;
       game1State.totalScore = 0;
       game1State.flippedCards = [];
+      
+      // Bắt đầu auto-save
+      startAutoSave('game1', () => game1State);
       
       startGame1Level();
     }
@@ -1678,6 +2203,9 @@
       game1State.totalScore += levelScore;
       document.getElementById('game1-score').textContent = game1State.totalScore;
 
+      // Lưu điểm sau mỗi level
+      updateUserScore('game1', game1State.totalScore, game1State.level, game1State.totalScore);
+
       // Phát âm thanh hoàn thành level
       setTimeout(() => SoundEffects.levelComplete(), 200);
       
@@ -1688,7 +2216,7 @@
           game1State.moves,
           () => {
             if (game1State.level >= 5) {
-              updateUserScore(game1State.totalScore);
+              // Hiển thị certificate khi hoàn thành level 5
               showToast(`🎉 Hoàn thành tất cả 5 level! Tổng điểm: ${game1State.totalScore}`, 'success');
               setTimeout(() => {
                 showCertificate('Lật Ô Ghi Nhớ', game1State.totalScore, 5);
@@ -1723,9 +2251,14 @@
                   <h2 class="text-2xl font-bold" style="color: ${textColor};">🧺 ${game2Name}</h2>
                   <p class="text-sm text-gray-600 mt-1">Di chuyển giỏ hứng đáp án đúng</p>
                 </div>
-                <button onclick="endGame2()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
-                  ← Kết thúc
-                </button>
+                <div class="flex gap-2">
+                  <button onclick="saveAndExit('game2')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
+                    💾 Lưu & Thoát
+                  </button>
+                  <button onclick="endGame2()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
+                    ← Kết thúc
+                  </button>
+                </div>
               </div>
               <div class="grid grid-cols-5 gap-3">
                 <div class="bg-blue-50 rounded-lg p-2 text-center">
@@ -1776,8 +2309,13 @@
         basketX: 0,
         gameLoop: null,
         questionIndex: 0,
-        lives: 3
+        lives: 3,
+        combo: 0,
+        maxCombo: 0
       };
+
+      // Bắt đầu auto-save
+      startAutoSave('game2', () => game2State);
 
       const canvas = document.getElementById('game2-canvas');
       const basketWidth = 80;
@@ -1942,7 +2480,9 @@
               // Phát âm thanh game over
               SoundEffects.gameOver();
               
-              updateUserScore(game2State.score);
+              // Lưu điểm
+              updateUserScore('game2', game2State.score, game2State.level, game2State.score);
+              
               showGameOverModal(
                 game2State.score,
                 game2State.level,
@@ -2156,6 +2696,9 @@
       game2State.score += levelBonus;
       document.getElementById('game2-score').textContent = game2State.score;
 
+      // Lưu điểm
+      updateUserScore('game2', game2State.score, game2State.level, game2State.score);
+
       // Phát âm thanh level up
       SoundEffects.levelUpGame2();
       
@@ -2165,7 +2708,6 @@
         game2State.questionsAnswered,
         () => {
           if (game2State.level >= 5) {
-            updateUserScore(game2State.score);
             document.removeEventListener('mousemove', handleGame2Mouse);
             document.removeEventListener('touchmove', handleGame2Touch);
             document.removeEventListener('keydown', handleGame2Keys);
@@ -2201,7 +2743,9 @@
       document.removeEventListener('touchmove', handleGame2Touch);
       document.removeEventListener('keydown', handleGame2Keys);
       
-      updateUserScore(game2State.score);
+      // Lưu điểm
+      updateUserScore('game2', game2State.score, game2State.level, game2State.score);
+      
       showToast(`Game kết thúc! Điểm: ${game2State.score}`, 'success');
       setTimeout(() => backToMenu(), 1500);
     }
@@ -2223,9 +2767,14 @@
                   <h2 class="text-2xl font-bold" style="color: ${textColor};">🎯 ${game3Name}</h2>
                   <p class="text-sm text-gray-600 mt-1">Chọn đáp án đúng để tiêu diệt kẻ địch</p>
                 </div>
-                <button onclick="endGame3()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
-                  ← Kết thúc
-                </button>
+                <div class="flex gap-2">
+                  <button onclick="saveAndExit('game3')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
+                    💾 Lưu & Thoát
+                  </button>
+                  <button onclick="endGame3()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
+                    ← Kết thúc
+                  </button>
+                </div>
               </div>
               <div class="grid grid-cols-5 gap-3">
                 <div class="bg-blue-50 rounded-lg p-2 text-center">
@@ -2276,8 +2825,13 @@
         currentQuestion: null,
         gameLoop: null,
         questionIndex: 0,
-        lives: 3
+        lives: 3,
+        combo: 0,
+        maxCombo: 0
       };
+
+      // Bắt đầu auto-save
+      startAutoSave('game3', () => game3State);
 
       document.getElementById('game3-level').textContent = game3State.level;
       document.getElementById('game3-score').textContent = game3State.score;
@@ -2380,7 +2934,9 @@
             // Phát âm thanh game over
             SoundEffects.gameOver();
             
-            updateUserScore(game3State.score);
+            // Lưu điểm
+            updateUserScore('game3', game3State.score, game3State.level, game3State.score);
+            
             showGameOverModal(
               game3State.score,
               game3State.level,
@@ -2580,6 +3136,9 @@
       game3State.score += levelBonus;
       document.getElementById('game3-score').textContent = game3State.score;
 
+      // Lưu điểm
+      updateUserScore('game3', game3State.score, game3State.level, game3State.score);
+
       // Phát âm thanh hoàn thành level
       SoundEffects.levelComplete();
       
@@ -2589,7 +3148,6 @@
         game3State.questionsAnswered,
         () => {
           if (game3State.level >= 5) {
-            updateUserScore(game3State.score);
             showToast(`🎉 Hoàn thành! Tổng điểm: ${game3State.score}`, 'success');
             setTimeout(() => {
               showCertificate('Bảo Vệ Cứ Điểm', game3State.score, 5);
@@ -2618,12 +3176,15 @@
       if (game3State.gameLoop) {
         clearInterval(game3State.gameLoop);
       }
-      updateUserScore(game3State.score);
+      
+      // Lưu điểm
+      updateUserScore('game3', game3State.score, game3State.level, game3State.score);
+      
       showToast(`Game kết thúc! Điểm: ${game3State.score}`, 'success');
       setTimeout(() => backToMenu(), 1500);
     }
 
-    // ========== GAME 4: NÔNG TRẠI SỐ ==========
+    // ========== GAME 4: NÔNG TRẠI SỐ - SỬA LỖI QUAN TRỌNG ==========
     function getPlotDisplay(stage) {
       const stages = [
         { icon: '🟫', text: 'Đất trống', bg: 'linear-gradient(135deg, #78350f 0%, #451a03 100%)', color: '#fef3c7', size: '48px' },
@@ -2651,22 +3212,27 @@
                   <h2 class="text-lg sm:text-2xl font-bold" style="color: ${textColor};">👨‍🌾 ${game4Name}</h2>
                   <p class="text-xs sm:text-sm text-gray-600 mt-1 hidden sm:block">Nhấp ô để trả lời câu hỏi</p>
                 </div>
-                <button onclick="backToMenu()" class="px-3 sm:px-4 py-2 text-sm sm:text-base bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition active:scale-95" onclick="SoundEffects.buttonClick()">
-                  ← Menu
-                </button>
+                <div class="flex gap-2">
+                  <button onclick="saveAndExit('game4')" class="px-3 sm:px-4 py-2 text-sm sm:text-base bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
+                    💾 Lưu & Thoát
+                  </button>
+                  <button onclick="backToMenu()" class="px-3 sm:px-4 py-2 text-sm sm:text-base bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition active:scale-95" onclick="SoundEffects.buttonClick()">
+                    ← Menu
+                  </button>
+                </div>
               </div>
               <div class="grid grid-cols-3 gap-2 sm:gap-3">
                 <div class="bg-blue-50 rounded-lg p-2 sm:p-3 text-center">
                   <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-level">1</span></div>
+                  <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-level">${game4State.level}</span></div>
                 </div>
                 <div class="bg-green-50 rounded-lg p-2 sm:p-3 text-center">
                   <div class="text-xs text-gray-600">Thu hoạch</div>
-                  <div class="text-lg sm:text-xl font-bold" style="color: ${textColor};"><span id="game4-harvest">0</span>/3</div>
+                  <div class="text-lg sm:text-xl font-bold" style="color: ${textColor};"><span id="game4-harvest">${game4State.harvestCount}</span>/3</div>
                 </div>
                 <div class="bg-orange-50 rounded-lg p-2 sm:p-3 text-center">
                   <div class="text-xs text-gray-600">Điểm</div>
-                  <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-score">0</span></div>
+                  <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-score">${game4State.totalScore}</span></div>
                 </div>
               </div>
             </div>
@@ -2704,22 +3270,6 @@
           </div>
         </div>
       `;
-    }
-
-    function initGame4() {
-      game4State.level = 1;
-      game4State.harvestCount = 0;
-      game4State.totalScore = 0;
-      game4State.plots = [
-        { stage: 0 },
-        { stage: 0 },
-        { stage: 0 },
-        { stage: 0 }
-      ];
-      
-      document.getElementById('game4-level').textContent = game4State.level;
-      document.getElementById('game4-harvest').textContent = game4State.harvestCount;
-      document.getElementById('game4-score').textContent = game4State.totalScore;
     }
 
     function selectPlot(plotIndex) {
@@ -2850,6 +3400,9 @@
       game4State.totalScore += levelBonus;
       document.getElementById('game4-score').textContent = game4State.totalScore;
 
+      // Lưu điểm
+      updateUserScore('game4', game4State.totalScore, game4State.level, game4State.totalScore);
+
       // Phát âm thanh hoàn thành level
       SoundEffects.levelComplete();
       
@@ -2859,7 +3412,6 @@
         game4State.harvestCount,
         () => {
           if (game4State.level >= 5) {
-            updateUserScore(game4State.totalScore);
             showToast(`🎉 Hoàn thành tất cả! Tổng điểm: ${game4State.totalScore}`, 'success');
             setTimeout(() => {
               showCertificate('Nông Trại Số', game4State.totalScore, 5);
@@ -2875,7 +3427,9 @@
               plot.stage = 0;
             });
             
-            render();
+            // QUAN TRỌNG: Chỉ cập nhật UI, không gọi render() để không reset state
+            updateGame4UI();
+            updateAllPlotsDisplay();
           }
         }
       );
@@ -3202,6 +3756,9 @@
     }
 
     function backToMenu() {
+      // Dừng auto-save
+      stopAutoSave();
+      
       if (game2State.gameLoop) {
         clearInterval(game2State.gameLoop);
         document.removeEventListener('mousemove', handleGame2Mouse);
@@ -3216,6 +3773,9 @@
     }
 
     function logout() {
+      // Dừng auto-save
+      stopAutoSave();
+      
       localStorage.removeItem('xedang_current_user');
       currentUser = null;
       currentScreen = 'login';
@@ -3239,6 +3799,10 @@
 
     function startGame(gameId) {
       currentScreen = gameId;
+      // QUAN TRỌNG: Khi vào game từ menu, đánh dấu game 4 chưa khởi tạo
+      if (gameId === 'game4') {
+        isGame4Initialized = false;
+      }
       render();
     }
 
@@ -3312,7 +3876,15 @@
         // Khởi tạo hệ thống âm thanh
         initAudio();
         
+        // Tải cấu hình đồng bộ
+        loadSyncConfig();
+        
         await fetchData();
+        
+        // Đồng bộ điểm đang chờ nếu có mạng
+        if (isOnline) {
+          syncPendingScores();
+        }
         
         if (loadUser()) {
           currentScreen = 'menu';
