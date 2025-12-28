@@ -3,22 +3,27 @@
 // 1. IMPORT THƯ VIỆN IDB
 importScripts('https://cdn.jsdelivr.net/npm/idb@7/build/umd.js');
 
-const CACHE_NAME = 'tudien-xodang-v3.2';
+const CACHE_NAME = 'tudien-xodang-v3.3';
 const FONT_CACHE = 'fonts-v1';
 const OFFLINE_URL = './offline.html';
 
 const urlsToPreCache = [
   './',
   './index.html',
+  './game.html',
   OFFLINE_URL,
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js'
+  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap'
 ];
 
 const fontsToCache = [
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff2'
+  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap'
 ];
 
 // SVG placeholder cho ảnh bị lỗi
