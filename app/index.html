@@ -1443,27 +1443,25 @@
             
             // ===== START APP FUNCTION =====
             window.startApp = function() {
-                // Show exit loading
-                sliderContainer.style.opacity = '0';
-                exitLoading.style.display = 'flex';
-                
-                setTimeout(() => {
-                    exitLoading.style.opacity = '1';
-                    
-                    // In a real app, this would redirect to the main app
-                    setTimeout(() => {
-                        // Simulate app loading
-                        exitLoading.querySelector('.exit-text').textContent = 'Ứng dụng đã sẵn sàng!';
-                        
-                        // Redirect to main app (simulated)
-                        setTimeout(() => {
-                            alert('Chào mừng đến với Hệ thống học tiếng Xơ Đăng! Ứng dụng chính thức đã sẵn sàng.');
-                            // window.location.href = "app.html";
-                        }, 1000);
-                    }, 1500);
-                }, 300);
-            }
+    // Show exit loading
+    sliderContainer.style.opacity = '0';
+    exitLoading.style.display = 'flex';
+    
+    setTimeout(() => {
+        exitLoading.style.opacity = '1';
+        
+        // Simulate app loading
+        setTimeout(() => {
+            exitLoading.querySelector('.exit-text').textContent = 'Ứng dụng đã sẵn sàng!';
             
+            // Redirect to main app
+            setTimeout(() => {
+                // CHUYỂN ĐẾN TRANG CỦA BẠN
+                window.location.href = "https://tudienxedang.github.io/tudien/";
+            }, 1000);
+        }, 1500);
+    }, 300);
+}
             // ===== ADD CSS FOR SCREEN READERS =====
             const style = document.createElement('style');
             style.textContent = `
