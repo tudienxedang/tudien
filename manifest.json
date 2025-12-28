@@ -1,7 +1,7 @@
 {
-  "name": "Từ Điển Xơ Đăng (Xê Đăng) ↔ Tiếng Việt",
-  "short_name": "Từ Điển Xơ Đăng",
-  "description": "Tra cứu song ngữ Xơ Đăng - Việt với 5000+ từ vựng chuẩn xác, hỗ trợ phát âm và dịch thuật",
+  "name": "Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
+  "short_name": "Hệ thống hỗ trợ học tiếng Xơ Đăng - PWA",
+  "description": "Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
   "start_url": "/tudien/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -119,6 +119,7 @@
     "Tra cứu từ điển Xơ Đăng - Việt",
     "Phát âm chuẩn tiếng Xơ Đăng",
     "Trắc nghiệm kiến thức",
+    "Game học tập",
     "Hỗ trợ làm việc offline",
     "Trợ lý chat AI",
     "Đóng góp cộng đồng"
