@@ -3291,9 +3291,142 @@ img[loading="lazy"] {
 }
 /* === HẾT PHẦN CSS THÊM === */
 
+		
+/* ===== LOADING SCREEN STYLES ===== */
+#app-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+}
+
+.loading-content {
+    text-align: center;
+    max-width: 500px;
+    padding: 40px;
+    animation: fadeIn 0.5s ease;
+}
+
+.loading-logo {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 30px;
+    border-radius: 50%;
+    background: white;
+    border: 5px solid #27ae60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(39, 174, 96, 0.2);
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.loading-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    padding: 15px;
+}
+
+.loading-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 10px;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+}
+
+.loading-subtitle {
+    font-size: 1.1rem;
+    color: #374151;
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+.loading-progress {
+    width: 300px;
+    height: 8px;
+    background: rgba(39, 174, 96, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.loading-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    border-radius: 4px;
+    animation: loadingProgress 2s ease-in-out infinite;
+}
+
+@keyframes loadingProgress {
+    0% { width: 0%; margin-left: 0; }
+    50% { width: 100%; margin-left: 0; }
+    100% { width: 0%; margin-left: 100%; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode support */
+body.dark-mode #app-loading {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+}
+
+body.dark-mode .loading-title {
+    color: #f7fafc;
+}
+
+body.dark-mode .loading-subtitle {
+    color: #cbd5e0;
+}
+
+body.dark-mode .loading-logo {
+    background: #2d3748;
+    border-color: #27ae60;
+}
+
+
+////////////////////////////////
+
+		
  </style>
 </head>
 <body>
+	///////////////////////////////////////////////
+	<!-- Loading Screen -->
+<div id="app-loading" style="display: none;">
+    <div class="loading-content">
+        <div class="loading-logo">
+            <img src="https://raw.githubusercontent.com/tudienxedang/tudien/main/twitter-card.png" 
+                 alt="Logo Học tiếng Xơ Đăng">
+        </div>
+        <h2 class="loading-title">Hệ thống học tiếng Xơ Đăng</h2>
+        <p class="loading-subtitle">Đang tải ứng dụng...</p>
+        <div class="loading-progress">
+            <div class="loading-bar"></div>
+        </div>
+    </div>
+</div>
+	////////////////////////////////////////////////////////////
     <!-- Install App Button -->
     <button id="installButton" class="install-button" aria-label="Cài đặt ứng dụng">
         <i class="fas fa-download"></i> Cài đặt App
@@ -6506,5 +6639,177 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
     </script>
+
+///////////////
+<script>
+// ===== LOADING SCREEN MANAGEMENT =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Kiểm tra xem đã xem intro chưa
+    const hasSeenIntro = localStorage.getItem('hasSeenIntro');
+    
+    // Nếu đã xem intro rồi (lần thứ 2 trở đi)
+    if (hasSeenIntro === 'true') {
+        showAppLoading();
+    }
+    
+    // Lưu lại rằng đã vào ứng dụng (để lần sau biết là đã xem intro)
+    localStorage.setItem('hasSeenIntro', 'true');
+});
+
+function showAppLoading() {
+    const loadingScreen = document.getElementById('app-loading');
+    
+    // Hiển thị loading screen
+    loadingScreen.style.display = 'flex';
+    
+    // Giả lập thời gian loading (3 giây)
+    let progress = 0;
+    const progressBar = document.querySelector('.loading-bar');
+    const interval = setInterval(() => {
+        progress += 1;
+        progressBar.style.width = progress + '%';
+        
+        if (progress >= 100) {
+            clearInterval(interval);
+            
+            // Ẩn loading screen sau khi hoàn thành
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.transition = 'opacity 0.5s ease';
+                
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    
+                    // Thông báo loading hoàn thành (cho các script khác biết)
+                    window.dispatchEvent(new Event('appLoadingComplete'));
+                    
+                    // Hiển thị chat widget nếu có
+                    const chatToggleBtn = document.getElementById('chatToggleBtn');
+                    if (chatToggleBtn) {
+                        setTimeout(() => {
+                            chatToggleBtn.style.display = 'flex';
+                        }, 500);
+                    }
+                }, 500);
+            }, 500);
+        }
+    }, 30);
+}
+
+// Nếu muốn bỏ qua loading (cho debug)
+window.skipLoading = function() {
+    const loadingScreen = document.getElementById('app-loading');
+    loadingScreen.style.display = 'none';
+    window.dispatchEvent(new Event('appLoadingComplete'));
+};
+
+// Tự động ẩn loading nếu ứng dụng tải quá lâu (10 giây)
+setTimeout(() => {
+    const loadingScreen = document.getElementById('app-loading');
+    if (loadingScreen && loadingScreen.style.display !== 'none') {
+        loadingScreen.style.display = 'none';
+        window.dispatchEvent(new Event('appLoadingComplete'));
+    }
+}, 10000);
+
+// ===== THÊM NÚT XEM LẠI INTRO =====
+// Tạo nút xem lại intro
+setTimeout(() => {
+    // Kiểm tra xem đã có nút chưa
+    if (!document.getElementById('reintro-btn')) {
+        const reintroBtn = document.createElement('button');
+        reintroBtn.id = 'reintro-btn';
+        reintroBtn.innerHTML = '<i class="fas fa-info-circle"></i> Xem hướng dẫn';
+        reintroBtn.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9998;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            opacity: 0.9;
+        `;
+        
+        reintroBtn.addEventListener('mouseenter', function() {
+            this.style.opacity = '1';
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 6px 20px rgba(39, 174, 96, 0.4)';
+        });
+        
+        reintroBtn.addEventListener('mouseleave', function() {
+            this.style.opacity = '0.9';
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 15px rgba(39, 174, 96, 0.3)';
+        });
+        
+        reintroBtn.addEventListener('click', function() {
+            // Xóa trạng thái đã xem intro
+            localStorage.removeItem('hasSeenIntro');
+            
+            // Hiển thị thông báo
+            if (typeof showToast === 'function') {
+                showToast('Đã đặt lại hướng dẫn. Làm mới trang để xem lại intro.', 'info');
+            } else {
+                alert('Đã đặt lại hướng dẫn. Làm mới trang (F5) để xem lại intro.');
+            }
+        });
+        
+        // Chỉ thêm nút nếu không phải lần đầu
+        if (localStorage.getItem('hasSeenIntro') === 'true') {
+            // Chờ loading hoàn thành rồi mới hiển thị nút
+            setTimeout(() => {
+                document.body.appendChild(reintroBtn);
+                
+                // Ẩn nút khi cuộn
+                let lastScrollTop = 0;
+                window.addEventListener('scroll', function() {
+                    const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    if (currentScroll > lastScrollTop) {
+                        // Đang cuộn xuống - ẩn nút
+                        reintroBtn.style.opacity = '0.5';
+                        reintroBtn.style.transform = 'translateY(10px)';
+                    } else {
+                        // Đang cuộn lên - hiện nút
+                        reintroBtn.style.opacity = '0.9';
+                        reintroBtn.style.transform = 'translateY(0)';
+                    }
+                    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+                });
+            }, 3500);
+        }
+    }
+}, 1000);
+
+// ===== TÍCH HỢP VỚI CÁC TÍNH NĂNG KHÁC =====
+// Đảm bảo các tính năng chỉ chạy sau khi loading hoàn thành
+window.addEventListener('appLoadingComplete', function() {
+    console.log('Ứng dụng đã sẵn sàng!');
+    
+    // Có thể thêm các hàm khởi tạo ở đây
+    // Ví dụ: initChatWidget(), initSpeechRecognition(), v.v.
+    
+    // Hiển thị thông báo chào mừng (nếu có hàm showToast)
+    if (typeof showToast === 'function') {
+        setTimeout(() => {
+            showToast('Chào mừng trở lại với ứng dụng học tiếng Xơ Đăng!', 'success');
+        }, 1000);
+    }
+});
+</script>
+	
 </body>
+	
 </html>
