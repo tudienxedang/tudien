@@ -116,7 +116,7 @@
         "datePublished": "2025-12-26",
         "dateModified": "2025-12-26"
     }
-    </script>
+    
     
     <!-- Schema cho khóa học -->
     <script type="application/ld+json">
@@ -6564,6 +6564,14 @@ function showAppLoading() {
     }, 30);
 }
 
+
+
+
+
+
+
+	
+
 // Nếu muốn bỏ qua loading (cho debug)
 window.skipLoading = function() {
     const loadingScreen = document.getElementById('app-loading');
@@ -6579,6 +6587,73 @@ setTimeout(() => {
         window.dispatchEvent(new Event('appLoadingComplete'));
     }
 }, 10000);
+
+// ===== KIỂM TRA OFFLINE CHO GAME =====
+function checkGameAvailable() {
+    if (!navigator.onLine) {
+        // Kiểm tra nếu game.html đã được cache
+        caches.match('./game.html').then(response => {
+            if (response) {
+                console.log('Game đã được cache, có thể mở offline');
+                return true;
+            } else {
+                showToast('⚠️ Bạn đang offline. Game chỉ khả dụng khi có kết nối internet.', 'error');
+                return false;
+            }
+        }).catch(() => {
+            showToast('⚠️ Bạn đang offline. Game chỉ khả dụng khi có kết nối internet.', 'error');
+            return false;
+        });
+    }
+    return true;
+}
+
+// ===== SỬA LẠI SỰ KIỆN CLICK GAME =====
+document.addEventListener('DOMContentLoaded', function() {
+    const gameLinks = document.querySelectorAll('a[href="https://tudienxedang.github.io/tudien/game.html"]');
+    
+    gameLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Nếu đang offline, kiểm tra cache trước
+            if (!navigator.onLine) {
+                e.preventDefault();
+                
+                caches.open('tudien-xodang-v3.2').then(cache => {
+                    return cache.match('./game.html');
+                }).then(response => {
+                    if (response) {
+                        // Nếu có cache, mở game
+                        window.open(
+                            'https://tudienxedang.github.io/tudien/game.html',
+                            '_blank',
+                            'noopener,noreferrer'
+                        );
+                    } else {
+                        // Nếu không có cache, hiển thị thông báo
+                        showToast('🎮 Game chỉ khả dụng khi có internet. Vui lòng kết nối mạng để chơi game.', 'error');
+                        
+                        // Hoặc có thể mở modal với thông báo
+                        const modal = document.createElement('div');
+                        modal.innerHTML = `
+                            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+                                <div style="background: white; padding: 2rem; border-radius: 10px; max-width: 400px; text-align: center;">
+                                    <h3 style="color: #e74c3c; margin-bottom: 1rem;">📡 Cần kết nối Internet</h3>
+                                    <p>Game học tập cần tải dữ liệu từ server. Vui lòng kết nối internet để chơi game.</p>
+                                    <p style="font-size: 0.9rem; color: #666; margin-top: 1rem;">Các tính năng khác vẫn hoạt động offline.</p>
+                                    <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 1.5rem; padding: 0.5rem 2rem; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                        Đã hiểu
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(modal);
+                    }
+                });
+            }
+        });
+    });
+});
+	
 
 </body>
 	
