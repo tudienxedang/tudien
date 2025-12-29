@@ -3517,57 +3517,55 @@ body.dark-mode .no-result p:last-child {
 }
 /* ====================================================== */
 
-
-
-
 /* ========================================================= */
-/* === GIAO DIỆN "KHÔNG TÌM THẤY KẾT QUẢ" (ĐẸP & RÕ RÀNG) === */
+/* === GIAO DIỆN "KHÔNG TÌM THẤY" (TINH TẾ & GỌN GÀNG) === */
 /* ========================================================= */
 
 .no-result {
-    /* Tạo khung nổi bật */
+    /* Tạo khung nhẹ nhàng hơn */
     background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
-    border: 2px dashed #fc8181; /* Viền nét đứt màu đỏ nhạt báo hiệu */
-    border-radius: 16px;
-    padding: 3rem 1.5rem;
+    border: 1px dashed #fc8181; /* Viền mỏng hơn */
+    border-radius: 12px; /* Bo góc vừa phải */
+    padding: 2rem 1rem; /* Giảm khoảng cách thừa */
     text-align: center;
     margin-top: 1.5rem;
     
-    /* Hiệu ứng hiện ra nhẹ nhàng */
-    animation: zoomIn 0.4s ease;
-    position: relative;
-    overflow: hidden;
+    /* Hiệu ứng hiện ra */
+    animation: zoomIn 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Biểu tượng kính lúp to đùng */
+/* Biểu tượng kính lúp: Nhỏ lại và bỏ lắc lư */
 .no-result i {
-    font-size: 4rem !important; /* To gấp 4 lần chữ thường */
-    color: #e53e3e; /* Màu đỏ cam cảnh báo */
-    margin-bottom: 1.2rem !important;
-    display: inline-block;
-    
-    /* Hiệu ứng lắc nhẹ để gây chú ý */
-    animation: shake 3s infinite;
+    font-size: 2.5rem !important; /* Giảm từ 4rem xuống 2.5rem */
+    color: #e53e3e; 
+    margin-bottom: 0.8rem !important;
+    opacity: 0.8; /* Làm mờ nhẹ cho đỡ chói */
 }
 
-/* Dòng thông báo chính (Vd: Không tìm thấy...) */
+/* Dòng thông báo chính: Nhỏ lại, bỏ in hoa */
 .no-result p:nth-of-type(1) {
-    font-size: 1.3rem !important;
-    font-weight: 700;
+    font-size: 1.1rem !important; /* Giảm từ 1.3rem xuống 1.1rem */
+    font-weight: 600; /* Giảm độ đậm */
     color: #c53030;
     margin-bottom: 0.5rem;
-    text-transform: uppercase;
+    text-transform: none; /* Bỏ in hoa (Uppercase) cho thân thiện */
 }
 
-/* Dòng hướng dẫn phụ (Vd: Kiểm tra chính tả...) */
+/* Dòng hướng dẫn phụ: Gọn gàng hơn */
 .no-result p:nth-of-type(2) {
-    font-size: 1rem !important;
+    font-size: 0.9rem !important;
     color: #4a5568;
-    background: rgba(255,255,255,0.7);
-    padding: 8px 15px;
-    border-radius: 20px;
-    display: inline-block;
+    background: #fff;
+    padding: 6px 12px;
+    border-radius: 15px;
+    display: inline-flex;
+    align-items: center;
     border: 1px solid #fed7d7;
+    margin-top: 5px;
 }
 
 /* --- CHẾ ĐỘ DARK MODE (TỐI) --- */
@@ -3577,32 +3575,28 @@ body.dark-mode .no-result {
 }
 
 body.dark-mode .no-result i {
-    color: #fc8181 !important; /* Đổi icon sang màu sáng hơn */
-    text-shadow: 0 0 15px rgba(252, 129, 129, 0.4); /* Phát sáng nhẹ */
+    color: #fc8181 !important;
+    text-shadow: none; /* Bỏ bóng sáng quá đà */
 }
 
 body.dark-mode .no-result p:nth-of-type(1) {
-    color: #feb2b2 !important; /* Chữ chính màu hồng phấn */
+    color: #feb2b2 !important;
 }
 
 body.dark-mode .no-result p:nth-of-type(2) {
-    color: #cbd5e0 !important;
-    background: rgba(0,0,0,0.3);
+    color: #e2e8f0 !important;
+    background: rgba(255,255,255,0.05);
     border-color: #4a5568;
 }
 
-/* Animation lắc lư */
-@keyframes shake {
-    0%, 100% { transform: rotate(0deg); }
-    10%, 30%, 50%, 70%, 90% { transform: rotate(-5deg); }
-    20%, 40%, 60%, 80% { transform: rotate(5deg); }
-}
-
+/* Animation hiện ra nhẹ nhàng */
 @keyframes zoomIn {
-    from { opacity: 0; transform: scale(0.9); }
+    from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
 }
-/* ========================================================= */		
+/* ========================================================= */
+
+
 
 
 
