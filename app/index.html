@@ -3604,6 +3604,89 @@ body.dark-mode .no-result p:nth-of-type(2) {
 }
 /* ========================================================= */		
 
+
+
+
+/* ======================================================== */
+/* === FIX GIAO DIỆN Ô CHỌN HƯỚNG DỊCH (ĐẸP & RÕ RÀNG) === */
+/* ======================================================== */
+
+/* 1. Thiết kế lại khung nhập liệu chung (bao gồm cả ô nhập từ) */
+.input-group {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* 2. Tùy biến lại ô chọn hướng dịch (Select Box) */
+select#direction {
+    /* Xóa giao diện mặc định xấu xí của trình duyệt */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    
+    /* Kích thước rộng rãi */
+    width: 100% !important;
+    padding: 12px 20px !important;
+    padding-right: 40px !important; /* Chừa chỗ cho mũi tên */
+    
+    /* Màu sắc và Viền */
+    background-color: #fff !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    
+    /* Font chữ */
+    font-size: 1rem !important;
+    color: #2c3e50 !important; /* Chữ màu xanh đen đậm rõ nét */
+    font-weight: 600 !important;
+    text-shadow: none !important; /* BỎ ĐỔ BÓNG CHỮ GÂY NHÒE */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important; /* Bóng mờ nhẹ cho khung */
+    
+    /* Tạo mũi tên tùy chỉnh đẹp mắt (Thay vì mũi tên đen xì mặc định) */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2327ae60' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+    
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* 3. Hiệu ứng khi di chuột vào hoặc bấm vào */
+select#direction:focus, select#direction:hover {
+    border-color: #27ae60 !important; /* Viền xanh lá khi chọn */
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2) !important; /* Hào quang xanh */
+}
+
+/* 4. Nhãn (Label) phía trên - Làm rõ nét hơn */
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2c3e50 !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem;
+    text-shadow: none !important; /* Bỏ bóng chữ */
+}
+
+/* --- CHẾ ĐỘ DARK MODE (TỐI) --- */
+body.dark-mode select#direction {
+    background-color: #34495e !important; /* Nền tối */
+    border-color: #4a6278 !important;
+    color: #ecf0f1 !important; /* Chữ trắng sáng */
+}
+
+body.dark-mode .form-label {
+    color: #ecf0f1 !important;
+}
+
+/* Fix lỗi trên điện thoại (đảm bảo full width) */
+@media (max-width: 768px) {
+    select#direction {
+        font-size: 16px !important; /* Chữ to hơn trên điện thoại để dễ đọc */
+    }
+}
+/* ======================================================== */
+
 		
 	
 </style>
