@@ -3321,7 +3321,7 @@ img[loading="lazy"] {
         .install-modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10000;
+            z-index: 30000 !important;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -3338,6 +3338,7 @@ img[loading="lazy"] {
         .install-modal-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
+			z-index: 30000 !important;
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(4px);
         }
@@ -3353,7 +3354,7 @@ img[loading="lazy"] {
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             transform: translateY(20px);
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 10001;
+            z-index: 30001 !important;
         }
 
         .install-modal[style*="display: flex"] .install-modal-card {
@@ -7005,25 +7006,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const gameSpinner = document.getElementById('gameLoadingSpinner');
 
     // Hàm mở game
-    window.openGameOverlay = function() {
-        // Kiểm tra offline trước khi mở
-        if (!navigator.onLine) {
-             // Kiểm tra cache (nếu bạn có cài đặt cache cho game.html)
-             caches.match('./game.html').then(response => {
-                if (!response) {
-                    showToast('📡 Cần kết nối Internet để tải Game lần đầu!', 'error');
-                    return;
-                }
-                launchGame();
-             }).catch(() => {
-                 showToast('📡 Cần kết nối Internet để chơi Game!', 'error');
-             });
-             return; // Dừng lại nếu offline và không check được cache
-        }
-        
-        launchGame();
-    };
+   // Thay thế hàm window.openGameOverlay cũ bằng hàm này
+window.openGameOverlay = function() {
+    // 1. KIỂM TRA MÔI TRƯỜNG ZALO / FACEBOOK TRƯỚC
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isInApp = /Zalo|FBAN|FBAV|Instagram|Line|Kakaotalk|Twitter/i.test(ua);
 
+    if (isInApp) {
+        // Nếu đang ở trong Zalo/FB -> Gọi nút click cài đặt để kích hoạt Modal Cảnh báo
+        const installBtn = document.getElementById('installButton');
+        if (installBtn) {
+            installBtn.click(); // Giả lập click để hiện popup hướng dẫn mở Chrome
+        } else {
+            // Trường hợp nút bị ẩn, ta hiện modal thủ công
+            const modal = document.getElementById('installGuideModal');
+            const warningSection = document.getElementById('inAppBrowserWarning');
+            if (modal && warningSection) {
+                document.getElementById('iosInstallGuide').style.display = 'none';
+                warningSection.style.display = 'block';
+                modal.style.display = 'flex';
+            }
+        }
+        // DỪNG LẠI, KHÔNG MỞ GAME ĐỂ TRÁNH LỖI VÀ CHE KHUẤT
+        return; 
+    }
+
+    // 2. KIỂM TRA OFFLINE
+    if (!navigator.onLine) {
+         caches.match('./game.html').then(response => {
+            if (!response) {
+                showToast('📡 Cần kết nối Internet để tải Game lần đầu!', 'error');
+                return;
+            }
+            launchGame();
+         }).catch(() => {
+             showToast('📡 Cần kết nối Internet để chơi Game!', 'error');
+         });
+         return;
+    }
+    
+    // 3. NẾU ỔN THÌ MỞ GAME
+    launchGame();
+};
+
+
+
+
+
+
+	
     function launchGame() {
         // Hiển thị loading
         gameSpinner.style.display = 'block';
