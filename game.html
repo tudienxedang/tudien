@@ -2838,70 +2838,65 @@ function renderGame1() {
       }, 500);
     }
 
-    function renderGame2() {
-      const config = window.elementSdk?.config || defaultConfig;
-      const bgColor = config.background_color || defaultConfig.background_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const primaryColor = config.primary_color || defaultConfig.primary_color;
-      const game2Name = config.game2_name || defaultConfig.game2_name;
-      
-      return `
-        <div class="min-h-full p-4" style="background: ${bgColor};">
-          <div class="max-w-4xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
-              <div class="flex justify-between items-center mb-4">
-                <div>
-                  <h2 class="text-2xl font-bold" style="color: ${textColor};">🧺 ${game2Name}</h2>
-                  <p class="text-sm text-gray-600 mt-1">Di chuyển giỏ hứng đáp án đúng • Level ${game2State.level}/${maxLevels.game2}</p>
+   function renderGame2() {
+    const config = window.elementSdk?.config || defaultConfig;
+    const game2Name = config.game2_name || defaultConfig.game2_name;
+    
+    return `
+    <div class="min-h-full p-3 sm:p-4" style="background: #f0f9ff;">
+        <div class="max-w-4xl mx-auto">
+            
+            <div class="game-header-compact">
+                <div class="game-title-mobile">
+                    <span>🧺 ${game2Name}</span>
+                    <span class="game-subtitle">Level ${game2State.level}</span>
                 </div>
-                <div class="flex gap-2">
-                  <button onclick="saveAndExit('game2')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
-                    💾 Lưu & Thoát
-                  </button>
-                  <button onclick="endGame2()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
-                    ← Kết thúc
-                  </button>
+                <div class="flex">
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game2'); SoundEffects.buttonClick()">❓</button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game2')">💾</button>
+                    <button class="btn-icon-circle btn-exit" onclick="endGame2()">🚪</button>
                 </div>
-              </div>
-              <div class="grid grid-cols-5 gap-3">
-                <div class="bg-blue-50 rounded-lg p-2 text-center">
-                  <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-lg font-bold" style="color: ${primaryColor};"><span id="game2-level">1</span>/${maxLevels.game2}</div>
-                </div>
-                <div class="bg-green-50 rounded-lg p-2 text-center">
-                  <div class="text-xs text-gray-600">Điểm</div>
-                  <div class="text-lg font-bold" style="color: ${textColor};"><span id="game2-score">0</span></div>
-                </div>
-                <div class="bg-purple-50 rounded-lg p-2 text-center">
-                  <div class="text-xs text-gray-600">Đúng</div>
-                  <div class="text-lg font-bold" style="color: ${textColor};"><span id="game2-correct">0</span>/5</div>
-                </div>
-                <div class="bg-red-50 rounded-lg p-2 text-center">
-                  <div class="text-xs text-gray-600">Mạng</div>
-                  <div class="text-lg font-bold text-red-500"><span id="game2-lives">❤️❤️❤️</span></div>
-                </div>
-                <div class="col-span-1 bg-yellow-50 rounded-lg p-2 flex items-center justify-center">
-                  <div class="text-2xl" aria-hidden="true">🧺</div>
-                </div>
-              </div>
-              <div class="mt-3 bg-indigo-50 rounded-lg p-3 text-center">
-                <div class="text-xs text-gray-600 mb-1">Câu hỏi</div>
-                <div class="text-lg font-bold" style="color: ${textColor};" id="game2-question"></div>
-                <div class="text-xs text-gray-600 mt-1">Chủ đề: <span id="game2-topic">${game2State.currentTopic || 'Chung'}</span></div>
-              </div>
             </div>
 
-            <div id="game2-canvas" class="bg-gradient-to-b from-sky-200 to-sky-50 rounded-2xl shadow-lg relative" style="height: 500px; overflow: hidden;">
-              <div class="absolute bottom-0 w-full h-1 bg-green-600"></div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Cấp độ</div>
+                    <div class="stat-value"><span id="game2-level">${game2State.level}</span>/${maxLevels.game2}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Điểm số</div>
+                    <div class="stat-value highlight"><span id="game2-score">${game2State.score}</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Đã đúng</div>
+                    <div class="stat-value"><span id="game2-correct">${game2State.questionsAnswered}</span>/5</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Mạng sống</div>
+                    <div class="stat-value text-red-500" id="game2-lives">
+                        ${Array(game2State.lives).fill('❤️').join('')}
+                    </div>
+                </div>
             </div>
 
-            <div class="mt-3 text-center text-sm text-gray-600">
-              💡 Di chuyển chuột hoặc phím ← → để điều khiển giỏ
+            <div class="bg-white rounded-xl shadow-sm p-3 mb-3 text-center border border-blue-100">
+                <div class="text-xs text-gray-400 uppercase font-bold mb-1">Câu hỏi</div>
+                <div class="text-lg font-bold text-blue-800" id="game2-question"></div>
+                <div class="text-xs text-gray-500 mt-1 bg-gray-100 inline-block px-2 py-1 rounded">
+                    Chủ đề: <span id="game2-topic">${game2State.currentTopic || 'Chung'}</span>
+                </div>
             </div>
-          </div>
+
+            <div id="game2-canvas" class="bg-gradient-to-b from-sky-200 to-sky-50 rounded-xl shadow-inner relative overflow-hidden" style="height: 60vh; max-height: 500px;">
+                <div class="absolute bottom-0 w-full h-2 bg-green-600"></div>
+                <div class="absolute bottom-2 left-0 w-full text-center text-xs text-gray-500 opacity-70 pointer-events-none">
+                    Vuốt màn hình để di chuyển giỏ
+                </div>
+            </div>
         </div>
-      `;
-    }
+    </div>
+    `;
+}
 
     function initGame2() {
       game2State = {
@@ -3338,72 +3333,66 @@ function renderGame1() {
       setTimeout(() => backToMenu(), 1500);
     }
 
-    function renderGame3() {
-      const config = window.elementSdk?.config || defaultConfig;
-      const bgColor = config.background_color || defaultConfig.background_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const primaryColor = config.primary_color || defaultConfig.primary_color;
-      const game3Name = config.game3_name || defaultConfig.game3_name;
-      
-      return `
-        <div class="min-h-full p-4" style="background: ${bgColor};">
-          <div class="max-w-4xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
-              <div class="flex justify-between items-center mb-4">
-                <div>
-                  <h2 class="text-2xl font-bold" style="color: ${textColor};">🎯 ${game3Name}</h2>
-                  <p class="text-sm text-gray-600 mt-1">Chọn đáp án đúng để tiêu diệt kẻ địch • Level ${game3State.level}/${maxLevels.game3}</p>
+function renderGame3() {
+    const config = window.elementSdk?.config || defaultConfig;
+    const game3Name = config.game3_name || defaultConfig.game3_name;
+    
+    return `
+    <div class="min-h-full p-3 sm:p-4" style="background: #f5f3ff;">
+        <div class="max-w-4xl mx-auto">
+            
+            <div class="game-header-compact">
+                <div class="game-title-mobile">
+                    <span>🎯 ${game3Name}</span>
+                    <span class="game-subtitle">Level ${game3State.level}</span>
                 </div>
-                <div class="flex gap-2">
-                  <button onclick="saveAndExit('game3')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
-                    💾 Lưu & Thoát
-                  </button>
-                  <button onclick="endGame3()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
-                    ← Kết thúc
-                  </button>
+                <div class="flex">
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game3'); SoundEffects.buttonClick()">❓</button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game3')">💾</button>
+                    <button class="btn-icon-circle btn-exit" onclick="endGame3()">🚪</button>
                 </div>
-              </div>
-              <div class="grid grid-cols-5 gap-3">
-                <div class="bg-blue-50 rounded-lg p-2 text-center">
-                  <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-lg font-bold" style="color: ${primaryColor};"><span id="game3-level">1</span>/${maxLevels.game3}</div>
-                </div>
-                <div class="bg-green-50 rounded-lg p-2 text-center">
-                  <div class="text-xs text-gray-600">Điểm</div>
-                  <div class="text-lg font-bold" style="color: ${textColor};"><span id="game3-score">0</span></div>
-                </div>
-                <div class="bg-purple-50 rounded-lg p-2 text-center">
-                  <div class="text-xs text-gray-600">Tiêu diệt</div>
-                  <div class="text-lg font-bold" style="color: ${textColor};"><span id="game3-kills">0</span>/5</div>
-                </div>
-                <div class="bg-red-50 rounded-lg p-2 text-center">
-                  <div class="text-xs text-gray-600">Mạng</div>
-                  <div class="text-lg font-bold text-red-500"><span id="game3-lives">❤️❤️❤️</span></div>
-                </div>
-                <div class="col-span-1 bg-yellow-50 rounded-lg p-2 flex items-center justify-center">
-                  <div class="text-2xl" aria-hidden="true">🎯</div>
-                </div>
-              </div>
-              <div class="mt-3 bg-indigo-50 rounded-lg p-3 text-center">
-                <div class="text-xs text-gray-600 mb-1">Câu hỏi</div>
-                <div class="text-lg font-bold" style="color: ${textColor};" id="game3-question"></div>
-                <div class="text-xs text-gray-600 mt-1">Chủ đề: <span id="game3-topic">${game3State.currentTopic || 'Chung'}</span></div>
-              </div>
             </div>
 
-            <div id="game3-canvas" class="bg-gradient-to-b from-indigo-900 via-purple-900 to-indigo-800 rounded-2xl shadow-lg relative" style="height: 400px; overflow: hidden;">
-              <div class="player-turret" aria-label="Súng bắn kẻ địch">
-                <div class="turret-head">🔫</div>
-                <div class="turret-base"></div>
-              </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Cấp độ</div>
+                    <div class="stat-value"><span id="game3-level">${game3State.level}</span>/${maxLevels.game3}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Điểm số</div>
+                    <div class="stat-value highlight"><span id="game3-score">${game3State.score}</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Tiêu diệt</div>
+                    <div class="stat-value"><span id="game3-kills">${game3State.questionsAnswered}</span>/5</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Mạng sống</div>
+                    <div class="stat-value text-red-500" id="game3-lives">
+                        ${Array(game3State.lives).fill('❤️').join('')}
+                    </div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mt-4" id="game3-answers"></div>
-          </div>
+            <div class="bg-white rounded-xl shadow-sm p-3 mb-3 text-center border border-purple-100">
+                <div class="text-xs text-gray-400 uppercase font-bold mb-1">Kẻ địch đang hỏi:</div>
+                <div class="text-xl font-bold text-purple-800" id="game3-question"></div>
+                <div class="text-xs text-gray-500 mt-1">Chủ đề: <span id="game3-topic">${game3State.currentTopic || 'Chung'}</span></div>
+            </div>
+
+            <div id="game3-canvas" class="bg-gradient-to-b from-indigo-900 via-purple-900 to-indigo-800 rounded-xl shadow-inner relative overflow-hidden mb-3" style="height: 40vh; min-height: 300px;">
+                <div class="player-turret">
+                    <div class="turret-head">🔫</div>
+                    <div class="turret-base"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3" id="game3-answers"></div>
         </div>
-      `;
-    }
-
+    </div>
+    `;
+}
+    
     function initGame3() {
       game3State = {
         score: 0,
@@ -3750,87 +3739,91 @@ function renderGame1() {
       setTimeout(() => backToMenu(), 1500);
     }
 
-    function renderGame4() {
-      const config = window.elementSdk?.config || defaultConfig;
-      const bgColor = config.background_color || defaultConfig.background_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const primaryColor = config.primary_color || defaultConfig.primary_color;
-      const game4Name = config.game4_name || defaultConfig.game4_name;
-      
-      return `
-        <div class="min-h-full p-3 sm:p-4" style="background: ${bgColor};">
-          <div class="max-w-4xl mx-auto">
-            <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-3 sm:mb-4">
-              <div class="flex justify-between items-start sm:items-center mb-3 sm:mb-4">
-                <div>
-                  <h2 class="text-lg sm:text-2xl font-bold" style="color: ${textColor};">👨‍🌾 ${game4Name}</h2>
-                  <p class="text-xs sm:text-sm text-gray-600 mt-1 hidden sm:block">Nhấp ô để trả lời câu hỏi • Level ${game4State.level}/${maxLevels.game4}</p>
+function renderGame4() {
+    const config = window.elementSdk?.config || defaultConfig;
+    const game4Name = config.game4_name || defaultConfig.game4_name;
+    
+    // Giữ nguyên logic vòng lặp hiển thị các ô đất
+    const plotsHtml = game4State.plots.map((plot, i) => {
+        const plotInfo = getPlotDisplay(plot.stage);
+        return `
+        <div onclick="selectPlot(${i})" 
+             class="rounded-xl shadow-md cursor-pointer relative overflow-hidden transition-transform active:scale-95"
+             style="height: 140px; background: ${plotInfo.bg};"
+             data-plot-index="${i}">
+             
+             <div class="plant-plot">
+                <div class="text-center mb-1" style="font-size: ${plotInfo.size}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                    <div class="${plot.stage === 4 ? 'sparkle grow' : 'grow'}">${plotInfo.icon}</div>
                 </div>
-                <div class="flex gap-2">
-                  <button onclick="saveAndExit('game4')" class="px-3 sm:px-4 py-2 text-sm sm:text-base bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
-                    💾 Lưu & Thoát
-                  </button>
-                  <button onclick="backToMenu()" class="px-3 sm:px-4 py-2 text-sm sm:text-base bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition active:scale-95" onclick="SoundEffects.buttonClick()">
-                    ← Menu
-                  </button>
-                </div>
-              </div>
-              <div class="grid grid-cols-3 gap-2 sm:gap-3">
-                <div class="bg-blue-50 rounded-lg p-2 sm:p-3 text-center">
-                  <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-level">${game4State.level}</span>/${maxLevels.game4}</div>
-                </div>
-                <div class="bg-green-50 rounded-lg p-2 sm:p-3 text-center">
-                  <div class="text-xs text-gray-600">Thu hoạch</div>
-                  <div class="text-lg sm:text-xl font-bold" style="color: ${textColor};"><span id="game4-harvest">${game4State.harvestCount}</span>/4</div>
-                </div>
-                <div class="bg-orange-50 rounded-lg p-2 sm:p-3 text-center">
-                  <div class="text-xs text-gray-600">Điểm</div>
-                  <div class="text-lg sm:text-xl font-bold" style="color: ${primaryColor};"><span id="game4-score">${game4State.totalScore}</span></div>
-                </div>
-              </div>
-              <div class="mt-3 bg-indigo-50 rounded-lg p-2 sm:p-3 text-center">
-                <div class="text-xs text-gray-600">Chủ đề</div>
-                <div class="text-sm sm:text-base font-bold" style="color: ${textColor};" id="game4-topic">${game4State.currentTopic || 'Chung'}</div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-              ${game4State.plots.map((plot, i) => {
-                const plotInfo = getPlotDisplay(plot.stage);
-                return `
-                <div 
-                  onclick="selectPlot(${i})" 
-                  class="rounded-xl sm:rounded-2xl shadow-lg cursor-pointer hover:shadow-2xl transition transform active:scale-95 sm:hover:-translate-y-1 relative overflow-hidden"
-                  style="height: 160px; background: ${plotInfo.bg};"
-                  data-plot-index="${i}"
-                  role="button"
-                  aria-label="Ô đất số ${i + 1}, ${plotInfo.text}, nhấn để ${plot.stage === 4 ? 'thu hoạch' : 'trả lời câu hỏi'}"
-                >
-                  <div class="plant-plot">
-                    <div class="text-center mb-2" style="font-size: ${plotInfo.size}; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));">
-                      <div class="${plot.stage === 4 ? 'sparkle' : ''}">${plotInfo.icon}</div>
-                    </div>
-                    <div class="text-sm sm:text-base font-bold text-center" style="color: ${plotInfo.color};">${plotInfo.text}</div>
-                    ${plot.stage > 0 ? '<div class="absolute bottom-2 right-2 text-2xl sm:text-3xl" aria-hidden="true">👨‍🌾</div>' : ''}
-                  </div>
-                  ${plot.stage === 4 ? '<div class="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-semibold opacity-0 active:opacity-100 sm:hover:opacity-100 transition bg-black bg-opacity-40 rounded-xl sm:rounded-2xl">Nhấn để thu hoạch</div>' : '<div class="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-semibold opacity-0 active:opacity-100 sm:hover:opacity-100 transition bg-black bg-opacity-40 rounded-xl sm:rounded-2xl">Nhấn để trả lời</div>'}
-                </div>
-              `}).join('')}
-            </div>
-
-            <div id="game4-question" class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6" style="display: none;">
-              <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center" style="color: ${textColor};" id="q-text"></h3>
-              <div class="grid grid-cols-2 gap-2 sm:gap-3" id="q-answers"></div>
-            </div>
-
-            <div class="bg-blue-50 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center text-xs sm:text-sm text-gray-700">
-              <p>💡 <strong>Hướng dẫn:</strong> Đúng → Cây lớn lên • Sai → Cây lùi lại • Chủ đề: <span id="game4-current-topic">${game4State.currentTopic || 'Chung'}</span></p>
-            </div>
-          </div>
+                <div class="text-sm font-bold text-center text-white drop-shadow-md">${plotInfo.text}</div>
+             </div>
+             
+             ${plot.stage === 4 
+                ? '<div class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm backdrop-blur-sm">Thu hoạch! 🌾</div>' 
+                : '<div class="absolute inset-0 flex items-center justify-center bg-black/20 text-white text-xs font-semibold opacity-0 active:opacity-100 transition">Chạm để trả lời</div>'}
         </div>
-      `;
-    }
+        `;
+    }).join('');
+
+    return `
+    <div class="min-h-full p-3 sm:p-4" style="background: #ecfdf5;">
+        <div class="max-w-4xl mx-auto">
+            
+            <div class="game-header-compact">
+                <div class="game-title-mobile">
+                    <span>👨‍🌾 ${game4Name}</span>
+                    <span class="game-subtitle">Level ${game4State.level}</span>
+                </div>
+                <div class="flex">
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game4'); SoundEffects.buttonClick()">❓</button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game4')">💾</button>
+                    <button class="btn-icon-circle btn-exit" onclick="backToMenu()">🚪</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Cấp độ</div>
+                    <div class="stat-value"><span id="game4-level">${game4State.level}</span>/${maxLevels.game4}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Điểm số</div>
+                    <div class="stat-value highlight"><span id="game4-score">${game4State.totalScore}</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Thu hoạch</div>
+                    <div class="stat-value"><span id="game4-harvest">${game4State.harvestCount}</span>/4</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Chủ đề</div>
+                    <div class="stat-value text-green-600 text-sm truncate px-1" id="game4-topic">${game4State.currentTopic || 'Chung'}</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                ${plotsHtml}
+            </div>
+
+            <div id="game4-question" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" style="display: none;">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform scale-100 transition-all">
+                    <h3 class="text-xl font-bold mb-4 text-center text-green-800" id="q-text">Câu hỏi ở đây</h3>
+                    <div class="grid grid-cols-1 gap-3" id="q-answers">
+                        </div>
+                    <div class="text-center mt-4">
+                        <span class="text-xs text-gray-400">Chọn đáp án đúng để cây lớn lên!</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center text-xs text-gray-500 bg-white/50 py-2 rounded-lg">
+                Chủ đề hiện tại: <span id="game4-current-topic" class="font-bold text-green-700">${game4State.currentTopic || 'Chung'}</span>
+            </div>
+        </div>
+    </div>
+    `;
+}
+    
 
     // ========== GAME 4 LOGIC - ĐÃ SỬA LỖI ==========
     function selectPlot(plotIndex) {
