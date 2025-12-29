@@ -756,6 +756,97 @@
         min-width: 44px;
       }
     }
+
+/* === UI MỚI: HEADER GAME MOBILE === */
+.game-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.game-title-mobile {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e3a8a;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-subtitle {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+}
+
+/* Nút bấm tròn (Icon Only trên mobile) */
+.btn-icon-circle {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.btn-save { background: #dcfce7; color: #16a34a; }
+.btn-exit { background: #fee2e2; color: #dc2626; margin-left: 8px; }
+.btn-help { background: #dbeafe; color: #2563eb; margin-left: 8px; }
+
+.btn-icon-circle:active { transform: scale(0.9); }
+
+/* Thanh chỉ số dạng lưới thông minh (2x2 trên mobile, 4x1 trên PC) */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Mặc định 2 cột (Mobile) */
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+@media (min-width: 640px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); } /* PC: 4 cột */
+}
+
+.stat-card {
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+}
+
+.stat-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.stat-value { font-size: 1.1rem; font-weight: 700; color: #334155; }
+.stat-value.highlight { color: #3b82f6; } /* Màu xanh nổi bật cho điểm */
+
+/* Modal Hướng Dẫn */
+.tutorial-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 3000;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.3s;
+}
+.tutorial-card {
+    background: white; width: 90%; max-width: 400px;
+    padding: 25px; border-radius: 20px; text-align: center;
+    position: relative;
+    animation: slideUp 0.3s;
+}
+.tutorial-icon { font-size: 3rem; margin-bottom: 15px; }
+.tutorial-step { text-align: left; margin-bottom: 10px; display: flex; gap: 10px; font-size: 0.95rem; color: #475569; }
+.step-num { 
+    background: #3b82f6; color: white; width: 24px; height: 24px; 
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+    font-size: 0.8rem; font-weight: bold; flex-shrink: 0;
+}
+
+
+    
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
@@ -2579,64 +2670,64 @@
         </div>
       `;
     }
-
-    function renderGame1() {
-      const config = window.elementSdk?.config || defaultConfig;
-      const bgColor = config.background_color || defaultConfig.background_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const primaryColor = config.primary_color || defaultConfig.primary_color;
-      const game1Name = config.game1_name || defaultConfig.game1_name;
-      
-      return `
-        <div class="min-h-full p-4" style="background: ${bgColor};">
-          <div class="max-w-4xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-              <div class="flex justify-between items-center mb-4">
-                <div>
-                  <h2 class="text-2xl font-bold" style="color: ${textColor};">🎴 ${game1Name}</h2>
-                  <p class="text-sm text-gray-600 mt-1">Tìm cặp thẻ khớp nhau • Level ${game1State.level}/${maxLevels.game1}</p>
+function renderGame1() {
+    const gameName = "Lật Ô Ghi Nhớ"; // Hoặc lấy từ config
+    
+    // Nút hướng dẫn gọi hàm showTutorial
+    return `
+    <div class="min-h-full p-3 sm:p-4" style="background: #f8fafc;">
+        <div class="max-w-4xl mx-auto">
+            
+            <div class="game-header-compact">
+                <div class="game-title-mobile">
+                    <span>${gameName}</span>
+                    <span class="game-subtitle">Level ${game1State.level}</span>
                 </div>
-                <div class="flex gap-2">
-                  <button onclick="saveAndExit('game1')" class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition" onclick="SoundEffects.buttonClick()">
-                    💾 Lưu & Thoát
-                  </button>
-                  <button onclick="backToMenu()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
-                    ← Menu
-                  </button>
+                <div class="flex">
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game1')" title="Hướng dẫn">
+                        ❓
+                    </button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game1')" title="Lưu">
+                        💾
+                    </button>
+                    <button class="btn-icon-circle btn-exit" onclick="backToMenu()" title="Thoát">
+                        🚪
+                    </button>
                 </div>
-              </div>
-              <div class="grid grid-cols-4 gap-4">
-                <div class="bg-blue-50 rounded-lg p-3 text-center">
-                  <div class="text-xs text-gray-600">Level</div>
-                  <div class="text-xl font-bold" style="color: ${primaryColor};"><span id="game1-level">1</span>/${maxLevels.game1}</div>
-                  <div class="level-progress-bar">
-                    <div class="level-progress-fill" style="width: ${(game1State.level / maxLevels.game1) * 100}%"></div>
-                  </div>
-                </div>
-                <div class="bg-purple-50 rounded-lg p-3 text-center">
-                  <div class="text-xs text-gray-600">Số bước</div>
-                  <div class="text-xl font-bold" style="color: ${textColor};"><span id="moves">0</span></div>
-                </div>
-                <div class="bg-green-50 rounded-lg p-3 text-center">
-                  <div class="text-xs text-gray-600">Đã ghép</div>
-                  <div class="text-xl font-bold" style="color: ${textColor};"><span id="matched">0</span>/<span id="total-pairs">0</span></div>
-                </div>
-                <div class="bg-orange-50 rounded-lg p-3 text-center">
-                  <div class="text-xs text-gray-600">Điểm</div>
-                  <div class="text-xl font-bold" style="color: ${primaryColor};"><span id="game1-score">0</span></div>
-                </div>
-              </div>
-              <div class="mt-3 bg-indigo-50 rounded-lg p-3 text-center">
-                <div class="text-xs text-gray-600 mb-1">Chủ đề</div>
-                <div class="text-lg font-bold" style="color: ${textColor};" id="game1-topic">${game1State.currentTopic || 'Chung'}</div>
-              </div>
             </div>
 
-            <div id="game1-board" class="grid gap-4"></div>
-          </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Cấp độ</div>
+                    <div class="stat-value highlight"><span id="game1-level">${game1State.level}</span>/${maxLevels.game1}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Số bước</div>
+                    <div class="stat-value"><span id="moves">${game1State.moves}</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Đã ghép</div>
+                    <div class="stat-value"><span id="matched">${game1State.matchedPairs}</span>/<span id="total-pairs">${game1State.totalPairs}</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Điểm số</div>
+                    <div class="stat-value highlight"><span id="game1-score">${game1State.totalScore}</span></div>
+                </div>
+            </div>
+
+            <div class="text-center mb-4 text-sm text-gray-500 bg-white py-1 px-3 rounded-full inline-block mx-auto border border-gray-200">
+                Chủ đề: <strong id="game1-topic" class="text-blue-600">${game1State.currentTopic || 'Chung'}</strong>
+            </div>
+
+            <div id="game1-board" class="grid gap-3"></div>
         </div>
-      `;
-    }
+    </div>
+    `;
+}
+
+
+
+    
 
     function initGame1() {
       game1State.level = 1;
@@ -4494,6 +4585,85 @@
         showToast('⚠️ Có lỗi xảy ra khi khởi động ứng dụng', 'error');
       }
     });
+
+
+// Hàm hiển thị hướng dẫn chơi game
+function showTutorial(gameType) {
+    const tutorials = {
+        'game1': {
+            title: 'Cách chơi Lật Ô',
+            icon: '🎴',
+            steps: [
+                'Chạm vào các thẻ để lật chúng lên.',
+                'Tìm 2 thẻ có nội dung giống nhau (Tiếng Việt - Tiếng Xơ Đăng).',
+                'Ghép hết các cặp để qua màn!',
+                'Cố gắng dùng ít bước nhất để đạt điểm cao.'
+            ]
+        },
+        'game2': {
+            title: 'Cách chơi Mưa Từ Vựng',
+            icon: '🧺',
+            steps: [
+                'Đọc câu hỏi ở phía trên.',
+                'Di chuyển cái giỏ sang trái/phải bằng cách vuốt màn hình.',
+                'Hứng các từ rơi xuống là ĐÁP ÁN ĐÚNG.',
+                'Tránh hứng nhầm từ sai, bạn sẽ bị trừ mạng!'
+            ]
+        },
+        'game3': {
+            title: 'Bảo Vệ Cứ Điểm',
+            icon: '🔫',
+            steps: [
+                'Kẻ địch đang tấn công! Đọc câu hỏi hiện ra.',
+                'Bấm vào nút ĐÁP ÁN ĐÚNG bên dưới để bắn đạn.',
+                'Tiêu diệt hết kẻ địch trước khi chúng chạm vào bạn.',
+                'Trả lời sai sẽ bị trừ điểm.'
+            ]
+        },
+        'game4': {
+            title: 'Nông Trại Số',
+            icon: '🌾',
+            steps: [
+                'Nhấn vào các ô đất để trả lời câu hỏi.',
+                'Trả lời đúng: Cây sẽ lớn lên 1 giai đoạn.',
+                'Trả lời sai: Cây sẽ héo và nhỏ lại.',
+                'Khi cây chín vàng, nhấn vào để thu hoạch và ghi điểm.'
+            ]
+        }
+    };
+
+    const data = tutorials[gameType];
+    if(!data) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'tutorial-overlay';
+    modal.innerHTML = `
+        <div class="tutorial-card">
+            <div class="tutorial-icon">${data.icon}</div>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">${data.title}</h2>
+            <div class="mb-6">
+                ${data.steps.map((step, index) => `
+                    <div class="tutorial-step">
+                        <div class="step-num">${index + 1}</div>
+                        <div>${step}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <button onclick="this.closest('.tutorial-overlay').remove()" 
+                class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 transition">
+                Đã hiểu, Chơi ngay! 🚀
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Tự động hiện hướng dẫn khi vào game lần đầu (Mỗi phiên làm việc)
+// Bạn có thể gọi hàm này ở cuối các hàm initGame1(), initGame2()...
+// Ví dụ: if(!sessionStorage.getItem('tutorial_shown_' + currentScreen)) { showTutorial(currentScreen); sessionStorage.setItem('tutorial_shown_' + currentScreen, 'true'); }
+
+
+    
   </script>
 </body>
 </html>
