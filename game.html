@@ -823,6 +823,142 @@
 }
 
 
+
+
+/* === UI MENU MOBILE (PROFILE CARD) === */
+.profile-header-card {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.15);
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hiệu ứng nền trang trí */
+.profile-header-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.user-info-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+
+.user-details h2 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.user-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    background: #eff6ff;
+    color: #3b82f6;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+/* Lưới thống kê 3 cột */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding-top: 15px;
+    border-top: 1px dashed #e2e8f0;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-item-compact {
+    text-align: center;
+}
+
+.stat-label-c {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.stat-value-c {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+/* Thanh công cụ (Action Bar) */
+.action-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-action {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: transform 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-action:active { transform: scale(0.95); }
+
+.btn-primary-soft { background: #eff6ff; color: #2563eb; }
+.btn-danger-soft { background: #fef2f2; color: #ef4444; }
+.btn-rank { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; flex: 2; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+
+/* Thông báo nhỏ */
+.mini-alert {
+    background: #fff7ed;
+    color: #c2410c;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 5px;
+    border: 1px solid #ffedd5;
+}
+
+
+
+
+    
     
     
   </style>
@@ -2243,134 +2379,131 @@
       `;
     }
 
-    function renderMenu() {
-      const config = window.elementSdk?.config || defaultConfig;
-      const bgColor = config.background_color || defaultConfig.background_color;
-      const primaryColor = config.primary_color || defaultConfig.primary_color;
-      const secondaryColor = config.secondary_color || defaultConfig.secondary_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const game1Name = config.game1_name || defaultConfig.game1_name;
-      const game2Name = config.game2_name || defaultConfig.game2_name;
-      const game3Name = config.game3_name || defaultConfig.game3_name;
-      const game4Name = config.game4_name || defaultConfig.game4_name;
-      
-      const games = [
-        { id: 'game1', name: game1Name, icon: '🎴', color: primaryColor, desc: 'Lật thẻ tìm cặp từ khớp', maxLevel: maxLevels.game1 },
-        { id: 'game2', name: game2Name, icon: '🧺', color: secondaryColor, desc: 'Hứng đáp án đúng rơi xuống', maxLevel: maxLevels.game2 },
-        { id: 'game3', name: game3Name, icon: '🎯', color: '#8b5cf6', desc: 'Bắn kẻ địch bằng đáp án đúng', maxLevel: maxLevels.game3 },
-        { id: 'game4', name: game4Name, icon: '🌾', color: '#10b981', desc: 'Trồng cây bằng kiến thức', maxLevel: maxLevels.game4 }
-      ];
+function renderMenu() {
+    const config = window.elementSdk?.config || defaultConfig;
+    const bgColor = config.background_color || defaultConfig.background_color;
+    
+    // Lấy thông tin game và user
+    const game1Name = config.game1_name || defaultConfig.game1_name;
+    const game2Name = config.game2_name || defaultConfig.game2_name;
+    const game3Name = config.game3_name || defaultConfig.game3_name;
+    const game4Name = config.game4_name || defaultConfig.game4_name;
+    
+    const games = [
+        { id: 'game1', name: game1Name, icon: '🎴', color: '#3b82f6', desc: 'Lật thẻ', maxLevel: maxLevels.game1 },
+        { id: 'game2', name: game2Name, icon: '🧺', color: '#8b5cf6', desc: 'Hứng từ', maxLevel: maxLevels.game2 },
+        { id: 'game3', name: game3Name, icon: '🎯', color: '#f59e0b', desc: 'Bắn súng', maxLevel: maxLevels.game3 },
+        { id: 'game4', name: game4Name, icon: '🌾', color: '#10b981', desc: 'Nông trại', maxLevel: maxLevels.game4 }
+    ];
 
-      const certCount = (currentUser.certificates || []).length;
-      const userStats = getUserStats(currentUser.name);
-      const userRank = getCurrentUserRank();
-      
-      const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
-      const offlineStatus = !isOnline ? '📵 Offline' : '📶 Online';
-      const dataCount = gameData.game1.length + gameData.game2.length + gameData.game3.length + gameData.game4.length;
+    const userStats = getUserStats(currentUser.name);
+    const userRank = getCurrentUserRank();
+    const dataCount = gameData.game1.length + gameData.game2.length + gameData.game3.length + gameData.game4.length;
+    
+    // Lấy chữ cái đầu của tên để làm Avatar
+    const avatarLetter = currentUser.name.charAt(0).toUpperCase();
 
-      let hasNewLevels = false;
-      if (userStats && userStats.highestLevels) {
+    // Kiểm tra level mới
+    let hasNewLevels = false;
+    if (userStats && userStats.highestLevels) {
         Object.keys(userStats.highestLevels).forEach(gameKey => {
-          if (maxLevels[gameKey] > userStats.highestLevels[gameKey]) {
-            hasNewLevels = true;
-          }
+            if (maxLevels[gameKey] > userStats.highestLevels[gameKey]) hasNewLevels = true;
         });
-      }
-
-      return `
-        <div class="min-h-full p-4" style="background: ${bgColor};">
-          <div class="max-w-6xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-              <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div>
-                  <h2 class="text-2xl font-bold" style="color: ${textColor};">Xin chào, ${currentUser.name}! 👋</h2>
-                  <div class="flex flex-wrap items-center gap-3 mt-2">
-                    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                      Level ${currentUser.level || 1}
-                    </span>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                      Điểm: ${currentUser.totalScore || 0}
-                    </span>
-                    <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                      ${currentUser.gamesPlayed || 0} trận
-                    </span>
-                    ${userRank ? `
-                      <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
-                        Hạng: #${userRank}
-                      </span>
-                    ` : ''}
-                    ${hasNewLevels ? `
-                      <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium animate-pulse">
-                        ✨ Có level mới!
-                      </span>
-                    ` : ''}
-                  </div>
-                  ${certCount > 0 ? `<p class="text-sm text-amber-600 mt-2">🏆 ${certCount} chứng nhận</p>` : ''}
-                  <p class="text-xs text-gray-500 mt-2">${offlineStatus} • ${dataCount} câu hỏi • Tự động Level</p>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                  ${certCount > 0 ? `
-                    <button onclick="showCertificatesList()" class="px-4 py-2 rounded-lg font-medium hover:opacity-80 transition" style="background: #f59e0b; color: white;" onclick="SoundEffects.buttonClick()">
-                      📜 Chứng nhận
-                    </button>
-                  ` : ''}
-                  <button onclick="showLeaderboard()" class="px-4 py-2 rounded-lg font-medium hover:opacity-80 transition" style="background: ${secondaryColor}; color: white;" onclick="SoundEffects.buttonClick()">
-                    🏆 Bảng xếp hạng
-                  </button>
-                  <button onclick="forceRefreshData()" class="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition" onclick="SoundEffects.buttonClick()">
-                    🔄 Làm mới
-                  </button>
-                  <button onclick="logout()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" style="color: ${textColor};" onclick="SoundEffects.buttonClick()">
-                    Đăng xuất
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              ${games.map(game => {
-                const userHighestLevel = userStats?.highestLevels?.[game.id] || 0;
-                const hasNewLevel = maxLevels[game.id] > userHighestLevel;
-                const progressPercent = maxLevels[game.id] > 0 ? Math.min(100, (userHighestLevel / maxLevels[game.id]) * 100) : 0;
-                
-                return `
-                <div 
-                  onclick="startGame('${game.id}'); SoundEffects.buttonClick()" 
-                  class="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition transform hover:-translate-y-1 relative"
-                  role="button"
-                  tabindex="0"
-                  aria-label="Chơi game ${game.name}"
-                >
-                  ${hasNewLevel ? '<div class="new-level-badge">NEW</div>' : ''}
-                  <div class="text-6xl mb-4 text-center" aria-hidden="true">${game.icon}</div>
-                  <h3 class="text-2xl font-bold text-center mb-2" style="color: ${textColor};">${game.name}</h3>
-                  <p class="text-center text-gray-600 text-sm mb-2">${game.desc}</p>
-                  <div class="flex items-center justify-center gap-2 mb-4">
-                    <span class="level-indicator">
-                      ${game.maxLevel} Level
-                      ${hasNewLevel ? '✨' : ''}
-                    </span>
-                  </div>
-                  <div class="mb-2">
-                    <div class="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>Tiến độ của bạn</span>
-                      <span>${userHighestLevel}/${game.maxLevel}</span>
-                    </div>
-                    <div class="level-progress-bar">
-                      <div class="level-progress-fill" style="width: ${progressPercent}%"></div>
-                    </div>
-                  </div>
-                  <div class="text-center text-xs text-gray-500">
-                    ${hasNewLevel ? `Có ${game.maxLevel - userHighestLevel} level mới!` : 'Tự động mở level mới khi thêm câu hỏi'}
-                  </div>
-                </div>
-              `}).join('')}
-            </div>
-          </div>
-        </div>
-      `;
     }
+
+    return `
+    <div class="min-h-full p-4" style="background: ${bgColor};">
+        <div class="max-w-md mx-auto">
+            
+            <div class="profile-header-card">
+                
+                <div class="user-info-row">
+                    <div class="user-avatar">${avatarLetter}</div>
+                    <div class="user-details">
+                        <div class="text-xs text-gray-400 font-medium">Xin chào,</div>
+                        <h2>${currentUser.name}</h2>
+                        <div class="user-badge">
+                            <span class="mr-1">📶</span> ${isOnline ? 'Online' : 'Offline'}
+                        </div>
+                    </div>
+                </div>
+
+                ${hasNewLevels ? `
+                <div class="mini-alert animate-pulse">
+                    <span>✨</span> <strong>Tin mới:</strong> Có level mới vừa được mở khóa!
+                </div>` : ''}
+
+                <div class="stats-row">
+                    <div class="stat-item-compact">
+                        <div class="stat-label-c">Cấp độ</div>
+                        <div class="stat-value-c text-blue-600">${currentUser.level || 1}</div>
+                    </div>
+                    <div class="stat-item-compact">
+                        <div class="stat-label-c">Tổng điểm</div>
+                        <div class="stat-value-c text-orange-500">${currentUser.totalScore || 0}</div>
+                    </div>
+                    <div class="stat-item-compact">
+                        <div class="stat-label-c">Xếp hạng</div>
+                        <div class="stat-value-c text-purple-600">#${userRank || '-'}</div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button onclick="showLeaderboard(); SoundEffects.buttonClick()" class="btn-action btn-rank">
+                        🏆 Xếp hạng
+                    </button>
+                    <button onclick="forceRefreshData(); SoundEffects.buttonClick()" class="btn-action btn-primary-soft" title="Làm mới dữ liệu">
+                        🔄
+                    </button>
+                    <button onclick="logout(); SoundEffects.buttonClick()" class="btn-action btn-danger-soft" title="Đăng xuất">
+                        🚪
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                ${games.map(game => {
+                    const userHighestLevel = userStats?.highestLevels?.[game.id] || 0;
+                    const hasNew = maxLevels[game.id] > userHighestLevel;
+                    const percent = maxLevels[game.id] > 0 ? Math.min(100, (userHighestLevel / maxLevels[game.id]) * 100) : 0;
+
+                    return `
+                    <div onclick="startGame('${game.id}'); SoundEffects.buttonClick()" 
+                         class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer relative overflow-hidden active:scale-95 border border-gray-100">
+                        
+                        ${hasNew ? '<div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">NEW</div>' : ''}
+                        
+                        <div class="text-4xl mb-3 text-center transition-transform hover:scale-110">${game.icon}</div>
+                        
+                        <h3 class="text-base font-bold text-gray-800 text-center mb-1 truncate">${game.name}</h3>
+                        <p class="text-[10px] text-gray-400 text-center mb-3 line-clamp-1">${game.desc}</p>
+                        
+                        <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1 overflow-hidden">
+                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-500 font-medium">
+                            <span>Lv.${userHighestLevel}</span>
+                            <span>Max.${game.maxLevel}</span>
+                        </div>
+                    </div>
+                    `;
+                }).join('')}
+            </div>
+
+            <div class="text-center text-xs text-gray-400 pb-4">
+                <p>Kho dữ liệu: ${dataCount} câu hỏi • Tự động cập nhật</p>
+                <p class="mt-1 opacity-50">© 2024 HocTiengXeDang</p>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+
+
+
+
+    
 
     function renderLeaderboard() {
       const config = window.elementSdk?.config || defaultConfig;
