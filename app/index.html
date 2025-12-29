@@ -1095,25 +1095,28 @@
       maxCombo: 0,
       currentTopic: '',
       lastShotTime: 0,
-      shotCooldown: 800, // Tăng từ 500 lên 800ms để game học tập dễ hơn
+      shotCooldown: 800,
       animationFrameId: null
     };
 
+    // ========== GAME 4 STATE - ĐÃ SỬA LỖI LOGIC ==========
     let game4State = {
       level: 1,
       harvestCount: 0,
       totalScore: 0,
       plots: [
-        { stage: 0 },
-        { stage: 0 },
-        { stage: 0 },
-        { stage: 0 }
+        { stage: 0, askedQuestions: [] },
+        { stage: 0, askedQuestions: [] },
+        { stage: 0, askedQuestions: [] },
+        { stage: 0, askedQuestions: [] }
       ],
       currentQuestion: null,
       selectedPlot: null,
       combo: 0,
       maxCombo: 0,
-      currentTopic: ''
+      currentTopic: '',
+      levelQuestions: [],
+      askedQuestionIds: []
     };
 
     let isGame4Initialized = false;
@@ -1996,16 +1999,18 @@
         harvestCount: 0,
         totalScore: 0,
         plots: [
-          { stage: 0 },
-          { stage: 0 },
-          { stage: 0 },
-          { stage: 0 }
+          { stage: 0, askedQuestions: [] },
+          { stage: 0, askedQuestions: [] },
+          { stage: 0, askedQuestions: [] },
+          { stage: 0, askedQuestions: [] }
         ],
         currentQuestion: null,
         selectedPlot: null,
         combo: 0,
         maxCombo: 0,
-        currentTopic: ''
+        currentTopic: '',
+        levelQuestions: [],
+        askedQuestionIds: []
       };
       isGame4Initialized = true;
       startAutoSave('game4', () => game4State);
@@ -2027,6 +2032,17 @@
       for (let i = 0; i < game4State.plots.length; i++) {
         updatePlotDisplay(i);
       }
+    }
+
+    function getPlotDisplay(stage) {
+      const stages = [
+        { icon: '🟫', text: 'Đất trống', bg: 'linear-gradient(135deg, #78350f 0%, #451a03 100%)', color: '#fef3c7', size: '48px' },
+        { icon: '🌰', text: 'Hạt giống', bg: 'linear-gradient(135deg, #65a30d 0%, #3f6212 100%)', color: '#ecfccb', size: '40px' },
+        { icon: '🌱', text: 'Mầm non', bg: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', color: '#dcfce7', size: '52px' },
+        { icon: '🌿', text: 'Cây lớn', bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: '#d1fae5', size: '56px' },
+        { icon: '🌾', text: 'Chín rộ ✨', bg: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', color: '#fef9c3', size: '60px' }
+      ];
+      return stages[stage] || stages[0];
     }
 
     function render() {
@@ -2622,7 +2638,6 @@
       `;
     }
 
-    // ========== GAME 1: LẬT Ô GHI NHỚ - ĐÃ SỬA LỖI ==========
     function initGame1() {
       game1State.level = 1;
       game1State.moves = 0;
@@ -2684,9 +2699,7 @@
       `).join('');
     }
 
-    // ĐÃ SỬA: Logic lật thẻ và xử lý khi 2 thẻ giống nhau
     function flipCard(index) {
-      // Kiểm tra nếu thẻ đã được lật hoặc đã khớp
       const cardElement = document.querySelector(`[data-index="${index}"]`);
       if (game1State.flippedCards.length >= 2 || 
           game1State.flippedCards.includes(index) || 
@@ -2695,28 +2708,24 @@
         return;
       }
       
-      // Lật thẻ
       SoundEffects.flipCard();
       cardElement.classList.add('flipped');
       game1State.flippedCards.push(index);
       
-      // Nếu đã lật đủ 2 thẻ
       if (game1State.flippedCards.length === 2) {
         game1State.moves++;
         document.getElementById('moves').textContent = game1State.moves;
-        game1State.canFlip = false;  // Tạm khóa lật
+        game1State.canFlip = false;
         
         const [idx1, idx2] = game1State.flippedCards;
         const card1 = game1State.cards[idx1];
         const card2 = game1State.cards[idx2];
         
         if (card1.pairId === card2.pairId) {
-          // THẺ GIỐNG NHAU - SỬA QUAN TRỌNG
           setTimeout(() => {
             document.querySelector(`[data-index="${idx1}"]`).classList.add('matched');
             document.querySelector(`[data-index="${idx2}"]`).classList.add('matched');
             
-            // Giữ thẻ lật để hiển thị
             document.querySelector(`[data-index="${idx1}"]`).classList.add('flipped');
             document.querySelector(`[data-index="${idx2}"]`).classList.add('flipped');
             
@@ -2724,7 +2733,6 @@
             game1State.matchedPairs++;
             document.getElementById('matched').textContent = game1State.matchedPairs;
             
-            // Reset mà không mất hiệu ứng
             game1State.flippedCards = [];
             game1State.canFlip = true;
             
@@ -2733,7 +2741,6 @@
             }
           }, 500);
         } else {
-          // THẺ KHÁC NHAU
           setTimeout(() => {
             document.querySelector(`[data-index="${idx1}"]`).classList.remove('flipped');
             document.querySelector(`[data-index="${idx2}"]`).classList.remove('flipped');
@@ -2845,7 +2852,6 @@
       `;
     }
 
-    // ========== GAME 2: MƯA TỪ VỰNG - ĐÃ SỬA LỖI TỐC ĐỘ VÀ MOBILE ==========
     function initGame2() {
       game2State = {
         score: 0,
@@ -2878,7 +2884,6 @@
         </div>
       `;
 
-      // Điều chỉnh kích thước basket cho mobile
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       if (isMobile) {
         const basket = canvas.querySelector('.basket-character');
@@ -2935,9 +2940,8 @@
       }
     }
 
-    // ĐÃ SỬA: Cải thiện xử lý touch cho mobile
     let lastTouchTime = 0;
-    const TOUCH_THROTTLE = 16; // ~60fps
+    const TOUCH_THROTTLE = 16;
 
     function handleGame2Touch(e) {
       if (currentScreen !== 'game2') return;
@@ -2954,14 +2958,12 @@
       const rect = canvas.getBoundingClientRect();
       const x = touch.clientX - rect.left;
       
-      // Thêm smoothing cho di chuyển
       const targetX = Math.max(0, Math.min(x - 40, canvas.offsetWidth - 80));
-      game2State.basketX += (targetX - game2State.basketX) * 0.3; // Linear interpolation
+      game2State.basketX += (targetX - game2State.basketX) * 0.3;
       
       const basket = canvas.querySelector('.basket-character');
       if (basket) basket.style.left = game2State.basketX + 'px';
       
-      // Giảm tần suất âm thanh di chuyển
       if (Math.random() > 0.9) {
         SoundEffects.basketMove();
       }
@@ -2983,7 +2985,6 @@
       if (basket) basket.style.left = game2State.basketX + 'px';
     }
 
-    // ĐÃ SỬA: Giảm tốc độ rơi của từ cho game học tập
     function nextQuestion2() {
       if (game2State.isProcessing) return;
       game2State.isProcessing = true;
@@ -3016,9 +3017,8 @@
         .sort(() => Math.random() - 0.5)
         .slice(0, 4);
 
-      // GIẢM TỐC ĐỘ XUỐNG - quan trọng cho game học tập
-      const baseSpeed = 0.8;  // Giảm từ 1.5 xuống 0.8
-      const levelFactor = 0.15;  // Giảm từ 0.3 xuống 0.15
+      const baseSpeed = 0.8;
+      const levelFactor = 0.15;
       const speed = baseSpeed + game2State.level * levelFactor;
 
       game2State.fallingWords.forEach(w => {
@@ -3050,7 +3050,7 @@
             caught: false,
             answer: answer
           });
-        }, i * 1200); // Tăng thời gian delay giữa các từ
+        }, i * 1200);
       });
 
       game2State.questionIndex++;
@@ -3353,7 +3353,6 @@
       `;
     }
 
-    // ========== GAME 3: BẢO VỆ CỨ ĐIỂM - ĐÃ SỬA LỖI TỐC ĐỘ ==========
     function initGame3() {
       game3State = {
         score: 0,
@@ -3368,7 +3367,7 @@
         maxCombo: 0,
         currentTopic: '',
         lastShotTime: 0,
-        shotCooldown: 800, // Tăng từ 500 lên 800ms để game học tập dễ hơn
+        shotCooldown: 800,
         animationFrameId: null
       };
 
@@ -3438,7 +3437,6 @@
       game3State.questionIndex++;
     }
 
-    // ĐÃ SỬA: Giảm tốc độ enemy cho game học tập
     function spawnEnemy() {
       const canvas = document.getElementById('game3-canvas');
       if (!canvas) return;
@@ -3457,11 +3455,10 @@
       
       canvas.appendChild(enemy);
       
-      // GIẢM TỐC ĐỘ ENEMY - quan trọng cho game học tập
-      const baseSpeed = 0.3;  // Giảm mạnh từ 0.8 xuống 0.3
-      const levelFactor = 0.08;  // Giảm từ 0.2 xuống 0.08
+      const baseSpeed = 0.3;
+      const levelFactor = 0.08;
       const speed = baseSpeed + game3State.level * levelFactor;
-      const finalSpeed = speed * (0.9 + Math.random() * 0.2); // Thêm random variation nhẹ
+      const finalSpeed = speed * (0.9 + Math.random() * 0.2);
       
       game3State.enemies.push({
         element: enemy,
@@ -3500,7 +3497,7 @@
             endGame3WithGameOver();
             return false;
           } else {
-            setTimeout(() => spawnEnemy(), 1500); // Tăng thời gian delay spawn enemy
+            setTimeout(() => spawnEnemy(), 1500);
           }
           
           return false;
@@ -3702,17 +3699,6 @@
       setTimeout(() => backToMenu(), 1500);
     }
 
-    function getPlotDisplay(stage) {
-      const stages = [
-        { icon: '🟫', text: 'Đất trống', bg: 'linear-gradient(135deg, #78350f 0%, #451a03 100%)', color: '#fef3c7', size: '48px' },
-        { icon: '🌰', text: 'Hạt giống', bg: 'linear-gradient(135deg, #65a30d 0%, #3f6212 100%)', color: '#ecfccb', size: '40px' },
-        { icon: '🌱', text: 'Mầm non', bg: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', color: '#dcfce7', size: '52px' },
-        { icon: '🌿', text: 'Cây lớn', bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: '#d1fae5', size: '56px' },
-        { icon: '🌾', text: 'Chín rộ ✨', bg: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', color: '#fef9c3', size: '60px' }
-      ];
-      return stages[stage] || stages[0];
-    }
-
     function renderGame4() {
       const config = window.elementSdk?.config || defaultConfig;
       const bgColor = config.background_color || defaultConfig.background_color;
@@ -3795,6 +3781,7 @@
       `;
     }
 
+    // ========== GAME 4 LOGIC - ĐÃ SỬA LỖI ==========
     function selectPlot(plotIndex) {
       const plot = game4State.plots[plotIndex];
       
@@ -3809,7 +3796,6 @@
         document.getElementById('game4-harvest').textContent = game4State.harvestCount;
         
         showToast(`🎉 Thu hoạch thành công! +${score} điểm`, 'success');
-        plot.stage = 4;
         
         if (game4State.harvestCount >= 4) {
           completeGame4Level();
@@ -3823,14 +3809,38 @@
     }
 
     function showQuestion4() {
-      const levelQuestions = getQuestionsByLevelExact('game4', game4State.level);
+      const plotIndex = game4State.selectedPlot;
+      const plot = game4State.plots[plotIndex];
       
-      if (levelQuestions.length === 0) {
-        showToast('Không có câu hỏi cho level này!', 'error');
+      if (plot.stage >= 4) {
         return;
       }
-
-      const questionData = levelQuestions[Math.floor(Math.random() * levelQuestions.length)];
+      
+      if (game4State.levelQuestions.length === 0) {
+        game4State.levelQuestions = getQuestionsByLevelExact('game4', game4State.level);
+      }
+      
+      const availableQuestions = game4State.levelQuestions.filter(q => {
+        const notAskedInThisPlot = !plot.askedQuestions.includes(q.question);
+        const askCount = game4State.askedQuestionIds.filter(id => id === q.question).length;
+        return notAskedInThisPlot && askCount < 2;
+      });
+      
+      let questionData;
+      if (availableQuestions.length === 0) {
+        plot.askedQuestions = [];
+        questionData = game4State.levelQuestions[
+          Math.floor(Math.random() * game4State.levelQuestions.length)
+        ];
+      } else {
+        questionData = availableQuestions[
+          Math.floor(Math.random() * availableQuestions.length)
+        ];
+      }
+      
+      plot.askedQuestions.push(questionData.question);
+      game4State.askedQuestionIds.push(questionData.question);
+      
       game4State.currentQuestion = {
         question: questionData.question,
         correctAnswer: questionData.correct,
@@ -3961,7 +3971,10 @@
             
             game4State.plots.forEach(plot => {
               plot.stage = 0;
+              plot.askedQuestions = [];
             });
+            game4State.levelQuestions = [];
+            game4State.askedQuestionIds = [];
             
             updateGame4UI();
             updateAllPlotsDisplay();
@@ -4466,7 +4479,6 @@
         console.log('📝 Dữ liệu game3:', gameData.game3.length, 'câu hỏi');
         console.log('📝 Dữ liệu game4:', gameData.game4.length, 'câu hỏi');
         
-        // Hiển thị tutorial cho người dùng mới
         const isNewUser = !localStorage.getItem('xedang_tutorial_shown');
         if (isNewUser && currentScreen === 'menu') {
           setTimeout(() => {
