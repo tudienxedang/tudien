@@ -957,7 +957,132 @@
 
 
 
+/* === UI MENU MOBILE (PHIÊN BẢN MỚI - TỐI GIẢN & NỔI BẬT) === */
 
+/* 1. Khung Profile: Thêm viền đậm, bỏ Avatar */
+.profile-header-card {
+    background: white;
+    border-radius: 20px;
+    padding: 15px 20px;
+    /* Viền màu xanh nhạt tạo điểm nhấn */
+    border: 2px solid #bfdbfe; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Header chỉ còn Tên và Trạng thái */
+.user-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 10px;
+}
+
+.user-name-display {
+    font-size: 1.4rem; /* Chữ to */
+    font-weight: 800;
+    color: #1e3a8a;
+    line-height: 1;
+}
+
+.user-status-badge {
+    font-size: 0.75rem;
+    background: #ecfdf5;
+    color: #059669;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: 1px solid #a7f3d0;
+}
+
+/* Lưới thống kê */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.stat-item-compact { text-align: center; }
+.stat-label-c { font-size: 0.7rem; color: #64748b; font-weight: 600; }
+.stat-value-c { font-size: 1.2rem; font-weight: 800; color: #334155; }
+
+/* 2. Thanh công cụ (Action Bar) - Đã chỉnh sửa kích thước */
+.action-bar {
+    display: flex;
+    gap: 8px;
+    align-items: stretch; /* Để các nút cao bằng nhau */
+}
+
+/* Nút chung */
+.btn-action-new {
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.1s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 5px;
+}
+.btn-action-new:active { transform: scale(0.95); }
+
+/* Nút Xếp hạng (Nhỏ lại một chút, màu Cam) */
+.btn-rank-new {
+    flex: 1.2; /* Chiếm ít chỗ hơn trước */
+    background: #fff7ed;
+    border: 2px solid #fdba74;
+    color: #c2410c;
+    flex-direction: row; /* Icon và chữ nằm ngang */
+    gap: 5px;
+}
+.btn-rank-new i { font-size: 1.2rem; }
+.btn-rank-new span { font-weight: 700; font-size: 0.9rem; }
+
+/* Nút Làm mới & Thoát (Icon To, Có chữ nhỏ bên dưới) */
+.btn-icon-new {
+    flex: 1;
+    background: #f8fafc;
+    border: 2px solid #cbd5e1;
+    color: #475569;
+}
+/* Icon to lên */
+.btn-icon-new div.icon { font-size: 1.5rem; margin-bottom: 2px; } 
+/* Chữ chú thích nhỏ */
+.btn-icon-new div.label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; }
+
+/* 3. Thẻ Game: Thêm viền nổi bật theo màu game */
+.game-card-new {
+    background: white;
+    border-radius: 16px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+    
+    /* Viền mặc định */
+    border: 2px solid #e2e8f0; 
+}
+.game-card-new:active { transform: scale(0.98); }
+
+/* Viền riêng cho từng loại game để dễ phân biệt */
+.game-card-new.border-blue { border-color: #93c5fd; }
+.game-card-new.border-purple { border-color: #c4b5fd; }
+.game-card-new.border-orange { border-color: #fdba74; }
+.game-card-new.border-green { border-color: #86efac; }
+
+.game-icon-new { font-size: 2.5rem; text-align: center; margin-bottom: 5px; }
+.game-title-new { font-size: 1rem; font-weight: 800; text-align: center; color: #1e293b; margin-bottom: 2px; }
+.game-desc-new { font-size: 0.7rem; text-align: center; color: #64748b; margin-bottom: 8px; }
+
+/* Thanh tiến độ trong thẻ game */
+.progress-container { background: #f1f5f9; height: 6px; border-radius: 3px; width: 100%; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 3px; }
     
     
     
@@ -2383,26 +2508,23 @@ function renderMenu() {
     const config = window.elementSdk?.config || defaultConfig;
     const bgColor = config.background_color || defaultConfig.background_color;
     
-    // Lấy thông tin game và user
+    // Lấy tên các game
     const game1Name = config.game1_name || defaultConfig.game1_name;
     const game2Name = config.game2_name || defaultConfig.game2_name;
     const game3Name = config.game3_name || defaultConfig.game3_name;
     const game4Name = config.game4_name || defaultConfig.game4_name;
     
+    // Cấu hình danh sách game (Thêm thuộc tính màu viền)
     const games = [
-        { id: 'game1', name: game1Name, icon: '🎴', color: '#3b82f6', desc: 'Lật thẻ', maxLevel: maxLevels.game1 },
-        { id: 'game2', name: game2Name, icon: '🧺', color: '#8b5cf6', desc: 'Hứng từ', maxLevel: maxLevels.game2 },
-        { id: 'game3', name: game3Name, icon: '🎯', color: '#f59e0b', desc: 'Bắn súng', maxLevel: maxLevels.game3 },
-        { id: 'game4', name: game4Name, icon: '🌾', color: '#10b981', desc: 'Nông trại', maxLevel: maxLevels.game4 }
+        { id: 'game1', name: game1Name, icon: '🎴', borderColor: 'border-blue', barColor: '#3b82f6', desc: 'Lật thẻ', maxLevel: maxLevels.game1 },
+        { id: 'game2', name: game2Name, icon: '🧺', borderColor: 'border-purple', barColor: '#8b5cf6', desc: 'Hứng từ', maxLevel: maxLevels.game2 },
+        { id: 'game3', name: game3Name, icon: '🎯', borderColor: 'border-orange', barColor: '#f97316', desc: 'Bắn súng', maxLevel: maxLevels.game3 },
+        { id: 'game4', name: game4Name, icon: '🌾', borderColor: 'border-green', barColor: '#10b981', desc: 'Nông trại', maxLevel: maxLevels.game4 }
     ];
 
     const userStats = getUserStats(currentUser.name);
     const userRank = getCurrentUserRank();
-    const dataCount = gameData.game1.length + gameData.game2.length + gameData.game3.length + gameData.game4.length;
     
-    // Lấy chữ cái đầu của tên để làm Avatar
-    const avatarLetter = currentUser.name.charAt(0).toUpperCase();
-
     // Kiểm tra level mới
     let hasNewLevels = false;
     if (userStats && userStats.highestLevels) {
@@ -2417,20 +2539,16 @@ function renderMenu() {
             
             <div class="profile-header-card">
                 
-                <div class="user-info-row">
-                    <div class="user-avatar">${avatarLetter}</div>
-                    <div class="user-details">
-                        <div class="text-xs text-gray-400 font-medium">Xin chào,</div>
-                        <h2>${currentUser.name}</h2>
-                        <div class="user-badge">
-                            <span class="mr-1">📶</span> ${isOnline ? 'Online' : 'Offline'}
-                        </div>
+                <div class="user-header-row">
+                    <div class="user-name-display">👋 Xin chào, ${currentUser.name}</div>
+                    <div class="user-status-badge">
+                        ${isOnline ? '🟢 Online' : '⚫ Offline'}
                     </div>
                 </div>
 
                 ${hasNewLevels ? `
-                <div class="mini-alert animate-pulse">
-                    <span>✨</span> <strong>Tin mới:</strong> Có level mới vừa được mở khóa!
+                <div class="mb-3 text-center text-xs font-bold text-orange-600 bg-orange-50 py-1 rounded border border-orange-200 animate-pulse">
+                    ✨ Có level mới vừa mở khóa!
                 </div>` : ''}
 
                 <div class="stats-row">
@@ -2449,14 +2567,18 @@ function renderMenu() {
                 </div>
 
                 <div class="action-bar">
-                    <button onclick="showLeaderboard(); SoundEffects.buttonClick()" class="btn-action btn-rank">
-                        🏆 Xếp hạng
+                    <button onclick="showLeaderboard(); SoundEffects.buttonClick()" class="btn-action-new btn-rank-new">
+                        <i>🏆</i> <span>Bảng Xếp Hạng</span>
                     </button>
-                    <button onclick="forceRefreshData(); SoundEffects.buttonClick()" class="btn-action btn-primary-soft" title="Làm mới dữ liệu">
-                        🔄
+                    
+                    <button onclick="forceRefreshData(); SoundEffects.buttonClick()" class="btn-action-new btn-icon-new">
+                        <div class="icon">🔄</div>
+                        <div class="label">Tải lại</div>
                     </button>
-                    <button onclick="logout(); SoundEffects.buttonClick()" class="btn-action btn-danger-soft" title="Đăng xuất">
-                        🚪
+                    
+                    <button onclick="logout(); SoundEffects.buttonClick()" class="btn-action-new btn-icon-new" style="border-color: #fca5a5; background: #fef2f2; color: #dc2626;">
+                        <div class="icon">🚪</div>
+                        <div class="label">Thoát</div>
                     </button>
                 </div>
             </div>
@@ -2469,19 +2591,19 @@ function renderMenu() {
 
                     return `
                     <div onclick="startGame('${game.id}'); SoundEffects.buttonClick()" 
-                         class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer relative overflow-hidden active:scale-95 border border-gray-100">
+                         class="game-card-new ${game.borderColor}">
                         
-                        ${hasNew ? '<div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">NEW</div>' : ''}
+                        ${hasNew ? '<div class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg z-10">NEW</div>' : ''}
                         
-                        <div class="text-4xl mb-3 text-center transition-transform hover:scale-110">${game.icon}</div>
+                        <div class="game-icon-new transition-transform hover:scale-110">${game.icon}</div>
                         
-                        <h3 class="text-base font-bold text-gray-800 text-center mb-1 truncate">${game.name}</h3>
-                        <p class="text-[10px] text-gray-400 text-center mb-3 line-clamp-1">${game.desc}</p>
+                        <h3 class="game-title-new truncate">${game.name}</h3>
+                        <p class="game-desc-new line-clamp-1">${game.desc}</p>
                         
-                        <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1 overflow-hidden">
-                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${percent}%"></div>
+                        <div class="progress-container">
+                            <div class="progress-bar-fill" style="width: ${percent}%; background-color: ${game.barColor};"></div>
                         </div>
-                        <div class="flex justify-between text-[10px] text-gray-500 font-medium">
+                        <div class="flex justify-between text-[10px] text-gray-500 font-medium mt-1">
                             <span>Lv.${userHighestLevel}</span>
                             <span>Max.${game.maxLevel}</span>
                         </div>
@@ -2491,8 +2613,7 @@ function renderMenu() {
             </div>
 
             <div class="text-center text-xs text-gray-400 pb-4">
-                <p>Kho dữ liệu: ${dataCount} câu hỏi • Tự động cập nhật</p>
-                <p class="mt-1 opacity-50">© 2024 HocTiengXeDang</p>
+                © 2024 HocTiengXeDang
             </div>
         </div>
     </div>
