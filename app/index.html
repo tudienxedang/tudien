@@ -2895,115 +2895,160 @@
         }
 
         /* Install App Button */
+
+
+
+/* === 1. NÚT CÀI ĐẶT (CHUYỂN SANG TRÁI) === */
         .install-button {
             position: fixed;
-            bottom: 90px;
-            right: 20px;
+            bottom: 20px;
+            left: 20px; /* ĐỔI TỪ RIGHT SANG LEFT */
             z-index: 9997;
-            background: var(--secondary-color);
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); /* Gradient đẹp hơn */
             color: white;
             border: none;
             border-radius: 50px;
             padding: 12px 24px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.95rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-            transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: none;
-        }
-        
-        .install-button.show {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: all;
-        }
-
-
-.install-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9997;
-            background: var(--secondary-color);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 10px 20px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
-            transition: all 0.3s ease;
-            /* YÊU CẦU 1: Luôn hiện (ẩn bằng JS nếu đã cài) */
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Hiệu ứng nảy */
             opacity: 1; 
-            transform: translateY(0);
             pointer-events: all;
-            animation: pulse-btn 2s infinite;
+            animation: float-btn 3s ease-in-out infinite;
         }
 
-        @keyframes pulse-btn {
-            0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+        @keyframes float-btn {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
-        /* YÊU CẦU 2: Responsive trên điện thoại */
+        .install-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.6);
+        }
+
+        /* Responsive trên mobile */
         @media (max-width: 768px) {
             .install-button {
-                bottom: 85px; /* Tránh chat widget */
-                right: auto;
-                left: 50%;
-                transform: translateX(-50%); /* Căn giữa */
-                width: auto; /* Tự co giãn theo nội dung */
-                max-width: 80%; /* Không bao giờ chiếm hết màn hình */
+                bottom: 90px; /* Tránh bị che bởi chat widget hoặc footer */
+                left: 15px;
+                padding: 10px 18px;
+                font-size: 0.85rem;
+                max-width: 160px; /* Giới hạn chiều rộng */
                 white-space: nowrap;
-                padding: 10px 15px;
-                font-size: 0.9rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
 
-        /* CSS cho Modal Hướng dẫn */
+        /* === 2. MODAL HƯỚNG DẪN (GIỮ NGUYÊN HOẶC TINH CHỈNH NHẸ) === */
         .install-modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.7); /* Tối hơn chút cho tập trung */
             z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(5px);
         }
         .install-modal-content {
             background: white;
-            padding: 25px;
-            border-radius: 15px;
+            padding: 30px;
+            border-radius: 20px;
             width: 90%;
             max-width: 400px;
             position: relative;
             text-align: center;
-            animation: fadeIn 0.3s ease;
+            animation: zoomIn 0.3s ease;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
         .close-modal {
             position: absolute;
-            top: 10px; right: 15px;
+            top: 15px; right: 20px;
             background: none; border: none;
-            font-size: 1.5rem; cursor: pointer; color: #999;
+            font-size: 1.8rem; cursor: pointer; color: #999;
+            transition: color 0.3s;
         }
-        .install-modal h3 { color: var(--secondary-color); margin-bottom: 10px; }
-        .install-modal ol { text-align: left; margin: 10px 0 10px 20px; }
-        .install-modal li { margin-bottom: 8px; }
+        .close-modal:hover { color: #e74c3c; }
+
+        /* === 3. GIAO DIỆN CẢNH BÁO FOOTER (ĐẸP MẮT) === */
+        .pwa-status-card {
+            margin: 20px auto 10px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 90%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            text-align: left;
+            border-left: 5px solid; /* Viền màu bên trái */
+        }
+
+        /* Style cho trạng thái TỐT (Chrome/Safari) */
+        .pwa-status-card.good {
+            background-color: #f0fdf4; /* Xanh nhạt */
+            border-left-color: #27ae60;
+            color: #1e4620;
+        }
+
+        /* Style cho trạng thái CẢNH BÁO (Samsung/Xiaomi) */
+        .pwa-status-card.warning {
+            background-color: #fff7ed; /* Cam nhạt */
+            border-left-color: #f39c12;
+            color: #9a6603;
+        }
+
+        /* Style cho trạng thái LỖI/KHÔNG HỖ TRỢ (Zalo/Facebook) */
+        .pwa-status-card.error {
+            background-color: #fef2f2; /* Đỏ nhạt */
+            border-left-color: #e74c3c;
+            color: #991b1b;
+        }
+
+        .pwa-icon-box {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.8);
+            flex-shrink: 0;
+        }
+
+        .pwa-text-content strong {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 0.95rem;
+        }
+        
+        /* Dark mode cho card */
+        body.dark-mode .pwa-status-card.good { background: #1e3a2a; color: #a7f3d0; }
+        body.dark-mode .pwa-status-card.warning { background: #3f2e18; color: #fde68a; }
+        body.dark-mode .pwa-status-card.error { background: #451a1a; color: #fecaca; }
+        body.dark-mode .pwa-icon-box { background: rgba(0,0,0,0.2); }
 
 
 
+
+
+		
+
+/*Hết*/
 		
         
         .install-button:hover {
