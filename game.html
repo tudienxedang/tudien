@@ -54,7 +54,7 @@
     .card-front {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      font-size: 36px;
+      font-size: clamp(24px, 4vw, 36px);
     }
 
     .card-back {
@@ -62,7 +62,7 @@
       color: #1e3a8a;
       transform: rotateY(180deg);
       border: 3px solid #3b82f6;
-      font-size: 14px;
+      font-size: clamp(12px, 2vw, 14px);
     }
 
     .card.matched .card-back {
@@ -83,6 +83,8 @@
       color: white;
       min-width: 80px;
       text-align: center;
+      user-select: none;
+      pointer-events: none;
     }
 
     .falling-word:hover {
@@ -276,7 +278,7 @@
       position: absolute;
       bottom: 10px;
       right: 10px;
-      font-size: 40px;
+      font-size: clamp(30px, 6vw, 40px);
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
     }
 
@@ -319,6 +321,8 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       z-index: 1000;
       animation: slideIn 0.3s ease-out;
+      max-width: 90vw;
+      word-wrap: break-word;
     }
 
     @keyframes slideIn {
@@ -363,7 +367,7 @@
 
     .explosion {
       position: absolute;
-      font-size: 48px;
+      font-size: clamp(32px, 6vw, 48px);
       pointer-events: none;
       animation: explode 0.6s ease-out forwards;
     }
@@ -379,17 +383,6 @@
       }
       100% {
         transform: scale(3) rotate(360deg);
-        opacity: 0;
-      }
-    }
-
-    @keyframes explodeParticle {
-      0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-      }
-      100% {
-        transform: translate(var(--tx), var(--ty)) scale(0);
         opacity: 0;
       }
     }
@@ -442,20 +435,9 @@
       }
     }
 
-    @keyframes impactRing {
-      0% {
-        transform: scale(0.5);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(2.5);
-        opacity: 0;
-      }
-    }
-
     .certificate-signature {
       font-family: 'Great Vibes', cursive;
-      font-size: 36px;
+      font-size: clamp(28px, 4vw, 36px);
       color: #1e3a8a;
     }
 
@@ -472,6 +454,22 @@
 
     .certificate-container {
       animation: certificateFadeIn 0.6s ease-out;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: auto;
+      width: 100%;
+      padding: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .certificate-container {
+        max-width: 95vw;
+        padding: 0.5rem;
+      }
+      
+      .certificate-signature {
+        font-size: 1.5rem;
+      }
     }
 
     @keyframes sealRotate {
@@ -500,6 +498,7 @@
       align-items: center;
       gap: 8px;
       animation: slideInLeft 0.3s ease-out;
+      max-width: calc(100vw - 40px);
     }
 
     @keyframes slideInLeft {
@@ -598,7 +597,7 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      font-size: 14px;
+      font-size: clamp(12px, 2vw, 14px);
       font-weight: 600;
       padding: 4px 12px;
       border-radius: 20px;
@@ -638,6 +637,125 @@
       animation: pulse 1.5s infinite;
       box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
     }
+
+    /* Game 1 - Sửa lỗi lật thẻ */
+    .card.disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    /* Game 2 - Cải thiện responsive và tốc độ */
+    @media (max-width: 640px) {
+      .basket-character {
+        width: 60px;
+        height: 80px;
+      }
+      
+      .basket-body {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+      
+      .basket-base {
+        width: 60px;
+      }
+      
+      .falling-word {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-width: 60px;
+      }
+    }
+
+    /* Game 3 - Cải thiện responsive và tốc độ */
+    @media (max-width: 640px) {
+      .player-turret {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .turret-head {
+        width: 80px;
+        height: 80px;
+        font-size: 48px;
+      }
+      
+      .enemy {
+        width: 50px;
+        height: 70px;
+      }
+      
+      .enemy-body {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+    }
+
+    /* Game 4 - Cải thiện responsive */
+    @media (max-width: 640px) {
+      .plant-plot {
+        padding: 8px;
+      }
+    }
+
+    /* Focus styles cho accessibility */
+    button:focus, input:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+
+    /* Loading state */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Certificate close button */
+    .certificate-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      background: #ef4444;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s;
+      border: 2px solid white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .certificate-close-btn:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+    
+    /* Touch optimization for mobile */
+    @media (hover: none) and (pointer: coarse) {
+      button, .card, [role="button"] {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
@@ -648,8 +766,8 @@
   
   <!-- Sound Controls -->
   <div class="sound-controls" id="sound-controls" style="display: none;">
-    <button class="sound-btn active" id="bgm-toggle" title="Nhạc nền">🎵</button>
-    <button class="sound-btn active" id="sfx-toggle" title="Hiệu ứng âm thanh">🔊</button>
+    <button class="sound-btn active" id="bgm-toggle" title="Nhạc nền" aria-label="Bật/tắt nhạc nền">🎵</button>
+    <button class="sound-btn active" id="sfx-toggle" title="Hiệu ứng âm thanh" aria-label="Bật/tắt hiệu ứng âm thanh">🔊</button>
   </div>
 
   <script>
@@ -837,10 +955,12 @@
     }
 
     function getQuestionsByLevelExact(gameKey, currentLevel) {
-      const questions = gameData[gameKey];
+      const questions = gameData[gameKey] || [];
       if (!questions || questions.length === 0) {
         return getFallbackQuestions(gameKey, currentLevel);
       }
+      
+      currentLevel = Math.max(1, Math.min(currentLevel, maxLevels[gameKey] || 1));
       
       let levelQuestions = questions.filter(q => q.level === currentLevel);
       
@@ -931,6 +1051,7 @@
     let currentScreen = 'login';
     let isOnline = navigator.onLine;
 
+    // ========== GAME STATE OBJECTS ==========
     let game1State = {
       level: 1,
       cards: [],
@@ -939,7 +1060,8 @@
       moves: 0,
       totalPairs: 0,
       totalScore: 0,
-      currentTopic: ''
+      currentTopic: '',
+      canFlip: true
     };
 
     let game2State = {
@@ -954,7 +1076,10 @@
       lives: 3,
       combo: 0,
       maxCombo: 0,
-      currentTopic: ''
+      currentTopic: '',
+      animationFrameId: null,
+      lastLifeLostTime: 0,
+      isProcessing: false
     };
 
     let game3State = {
@@ -968,24 +1093,30 @@
       lives: 3,
       combo: 0,
       maxCombo: 0,
-      currentTopic: ''
+      currentTopic: '',
+      lastShotTime: 0,
+      shotCooldown: 800,
+      animationFrameId: null
     };
 
+    // ========== GAME 4 STATE - ĐÃ SỬA LỖI LOGIC ==========
     let game4State = {
       level: 1,
       harvestCount: 0,
       totalScore: 0,
       plots: [
-        { stage: 0 },
-        { stage: 0 },
-        { stage: 0 },
-        { stage: 0 }
+        { stage: 0, askedQuestions: [] },
+        { stage: 0, askedQuestions: [] },
+        { stage: 0, askedQuestions: [] },
+        { stage: 0, askedQuestions: [] }
       ],
       currentQuestion: null,
       selectedPlot: null,
       combo: 0,
       maxCombo: 0,
-      currentTopic: ''
+      currentTopic: '',
+      levelQuestions: [],
+      askedQuestionIds: []
     };
 
     let isGame4Initialized = false;
@@ -1573,6 +1704,8 @@
       const toast = document.createElement('div');
       toast.className = `toast ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : type === 'info' ? 'bg-blue-500' : 'bg-yellow-500'}`;
       toast.textContent = message;
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
       document.body.appendChild(toast);
       
       setTimeout(() => {
@@ -1866,16 +1999,18 @@
         harvestCount: 0,
         totalScore: 0,
         plots: [
-          { stage: 0 },
-          { stage: 0 },
-          { stage: 0 },
-          { stage: 0 }
+          { stage: 0, askedQuestions: [] },
+          { stage: 0, askedQuestions: [] },
+          { stage: 0, askedQuestions: [] },
+          { stage: 0, askedQuestions: [] }
         ],
         currentQuestion: null,
         selectedPlot: null,
         combo: 0,
         maxCombo: 0,
-        currentTopic: ''
+        currentTopic: '',
+        levelQuestions: [],
+        askedQuestionIds: []
       };
       isGame4Initialized = true;
       startAutoSave('game4', () => game4State);
@@ -1897,6 +2032,17 @@
       for (let i = 0; i < game4State.plots.length; i++) {
         updatePlotDisplay(i);
       }
+    }
+
+    function getPlotDisplay(stage) {
+      const stages = [
+        { icon: '🟫', text: 'Đất trống', bg: 'linear-gradient(135deg, #78350f 0%, #451a03 100%)', color: '#fef3c7', size: '48px' },
+        { icon: '🌰', text: 'Hạt giống', bg: 'linear-gradient(135deg, #65a30d 0%, #3f6212 100%)', color: '#ecfccb', size: '40px' },
+        { icon: '🌱', text: 'Mầm non', bg: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', color: '#dcfce7', size: '52px' },
+        { icon: '🌿', text: 'Cây lớn', bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: '#d1fae5', size: '56px' },
+        { icon: '🌾', text: 'Chín rộ ✨', bg: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', color: '#fef9c3', size: '60px' }
+      ];
+      return stages[stage] || stages[0];
     }
 
     function render() {
@@ -1954,49 +2100,79 @@
 
     function renderLogin() {
       const config = window.elementSdk?.config || defaultConfig;
-      const bgColor = config.background_color || defaultConfig.background_color;
-      const primaryColor = config.primary_color || defaultConfig.primary_color;
-      const textColor = config.text_color || defaultConfig.text_color;
       const appTitle = config.app_title || defaultConfig.app_title;
       const welcomeMsg = config.welcome_message || defaultConfig.welcome_message;
       
       return `
-        <div class="min-h-full flex items-center justify-center p-4" style="background: ${bgColor};">
-          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-            <div class="text-center mb-8">
-              <div class="text-6xl mb-4">🎮</div>
-              <h1 class="text-3xl font-bold mb-2" style="color: ${textColor};">${appTitle}</h1>
-              <p class="text-gray-600">${welcomeMsg}</p>
+        <div class="min-h-screen flex flex-col items-center justify-center p-4 md:p-8" 
+             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          
+          <div class="w-full max-w-md mb-8 text-center">
+            <div class="text-6xl md:text-7xl mb-4 animate-bounce" aria-hidden="true">🎮</div>
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">${appTitle}</h1>
+            <p class="text-blue-100 text-lg">${welcomeMsg}</p>
+          </div>
+
+          <div class="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 transform transition-all duration-300 hover:scale-[1.02]">
+            <div class="text-center mb-6">
+              <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl text-white">👤</span>
+              </div>
+              <h2 class="text-xl font-bold text-gray-800">Đăng nhập để bắt đầu</h2>
+              <p class="text-gray-600 text-sm mt-1">Nhập tên của bạn để lưu tiến độ</p>
             </div>
-            
-            <form onsubmit="handleLogin(event)" class="mb-6">
-              <label for="username" class="block text-sm font-medium mb-2" style="color: ${textColor};">Nhập tên của bạn</label>
-              <input 
-                type="text" 
-                id="username" 
-                class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-blue-500 transition"
-                placeholder="Tên người chơi"
-                style="border-color: ${primaryColor}40;"
-                required
-              />
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+              <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                  Tên người chơi
+                </label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-gray-400">👤</span>
+                  </div>
+                  <input 
+                    type="text" 
+                    id="username" 
+                    class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+                    placeholder="Nhập tên của bạn"
+                    required
+                    autocomplete="username"
+                    autofocus
+                  />
+                </div>
+              </div>
+
               <button 
                 type="submit"
-                class="w-full mt-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition"
-                style="background: ${primaryColor};"
+                class="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 shadow-lg hover:shadow-xl"
                 onclick="SoundEffects.buttonClick()"
               >
-                Bắt đầu học
+                <span class="flex items-center justify-center gap-2">
+                  <span>🚀</span>
+                  <span>Bắt đầu học ngay</span>
+                </span>
               </button>
             </form>
-            
-            <div class="text-center">
-              <button 
-                onclick="forceRefreshData()"
-                class="text-sm text-blue-500 hover:text-blue-700 underline"
-              >
-                🔄 Làm mới dữ liệu từ server
-              </button>
+
+            <div class="mt-6 pt-6 border-t border-gray-200">
+              <div class="text-center">
+                <button 
+                  onclick="forceRefreshData()"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  <span class="animate-spin">🔄</span>
+                  <span>Làm mới dữ liệu</span>
+                </button>
+              </div>
+              <p class="text-xs text-gray-500 text-center mt-4">
+                Dữ liệu sẽ được đồng bộ tự động khi có kết nối internet
+              </p>
             </div>
+          </div>
+
+          <div class="mt-8 text-center text-white/80">
+            <p class="text-sm">© 2024 Học Tiếng Xê Đăng - Phiên bản 1.0</p>
           </div>
         </div>
       `;
@@ -2097,9 +2273,12 @@
                 <div 
                   onclick="startGame('${game.id}'); SoundEffects.buttonClick()" 
                   class="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition transform hover:-translate-y-1 relative"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Chơi game ${game.name}"
                 >
                   ${hasNewLevel ? '<div class="new-level-badge">NEW</div>' : ''}
-                  <div class="text-6xl mb-4 text-center">${game.icon}</div>
+                  <div class="text-6xl mb-4 text-center" aria-hidden="true">${game.icon}</div>
                   <h3 class="text-2xl font-bold text-center mb-2" style="color: ${textColor};">${game.name}</h3>
                   <p class="text-center text-gray-600 text-sm mb-2">${game.desc}</p>
                   <div class="flex items-center justify-center gap-2 mb-4">
@@ -2230,7 +2409,7 @@
                 
                 ${leaderboard.length === 0 ? `
                   <div class="text-center py-12 text-gray-500">
-                    <div class="text-6xl mb-4">🏆</div>
+                    <div class="text-6xl mb-4" aria-hidden="true">🏆</div>
                     <p class="text-lg">Chưa có người chơi nào</p>
                     <p class="text-sm text-gray-400 mt-2">Hãy là người đầu tiên lập kỷ lục!</p>
                     <button onclick="backToMenu()" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
@@ -2284,7 +2463,7 @@
 
               ${certificates.length === 0 ? `
                 <div class="text-center py-16">
-                  <div class="text-7xl mb-4">📜</div>
+                  <div class="text-7xl mb-4" aria-hidden="true">📜</div>
                   <p class="text-gray-500 text-lg">Chưa có chứng nhận nào</p>
                   <p class="text-gray-400 text-sm mt-2">Hoàn thành các game để nhận chứng nhận!</p>
                 </div>
@@ -2297,7 +2476,7 @@
                           <h3 class="text-xl font-bold" style="color: ${textColor};">${cert.gameName}</h3>
                           <p class="text-sm text-gray-600">Ngày: ${cert.date}</p>
                         </div>
-                        <div class="text-3xl">🏆</div>
+                        <div class="text-3xl" aria-hidden="true">🏆</div>
                       </div>
                       <div class="bg-white rounded-lg p-4 mb-4">
                         <div class="grid grid-cols-2 gap-3 text-center">
@@ -2379,7 +2558,7 @@
                         
                         return `
                           <div class="relative bg-gradient-to-br ${earned ? 'from-yellow-50 to-amber-100 border-amber-300' : 'from-gray-50 to-gray-100 border-gray-300'} rounded-xl p-6 border-2 text-center ${earned ? '' : 'opacity-50'}">
-                            <div class="text-5xl mb-3 ${earned ? '' : 'grayscale'}">${badge.name.split(' ')[0]}</div>
+                            <div class="text-5xl mb-3 ${earned ? '' : 'grayscale'}" aria-hidden="true">${badge.name.split(' ')[0]}</div>
                             <div class="text-sm font-bold ${earned ? 'text-amber-800' : 'text-gray-600'} mb-2">${badge.name}</div>
                             <div class="text-xs ${earned ? 'text-amber-600' : 'text-gray-500'} mb-2">${badge.desc}</div>
                             ${earned ? `
@@ -2466,6 +2645,7 @@
       game1State.totalScore = 0;
       game1State.flippedCards = [];
       game1State.currentTopic = '';
+      game1State.canFlip = true;
       
       startAutoSave('game1', () => game1State);
       startGame1Level();
@@ -2491,6 +2671,7 @@
       game1State.cards = cards;
       game1State.flippedCards = [];
       game1State.matchedPairs = 0;
+      game1State.canFlip = true;
 
       document.getElementById('game1-level').textContent = game1State.level;
       document.getElementById('moves').textContent = game1State.moves;
@@ -2505,9 +2686,9 @@
       const board = document.getElementById('game1-board');
       board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       board.innerHTML = cards.map((card, index) => `
-        <div class="card" data-index="${index}" onclick="flipCard(${index})" style="height: 120px;">
+        <div class="card" data-index="${index}" onclick="flipCard(${index})" style="height: 120px;" aria-label="Thẻ số ${index + 1}, nhấn để lật">
           <div class="card-inner">
-            <div class="card-front">
+            <div class="card-front" aria-hidden="true">
               <span>🎴</span>
             </div>
             <div class="card-back">
@@ -2519,49 +2700,53 @@
     }
 
     function flipCard(index) {
-      const card = game1State.cards[index];
       const cardElement = document.querySelector(`[data-index="${index}"]`);
-
       if (game1State.flippedCards.length >= 2 || 
           game1State.flippedCards.includes(index) || 
-          cardElement.classList.contains('matched')) {
+          cardElement.classList.contains('matched') ||
+          !game1State.canFlip) {
         return;
       }
-
-      SoundEffects.flipCard();
       
+      SoundEffects.flipCard();
       cardElement.classList.add('flipped');
       game1State.flippedCards.push(index);
-
+      
       if (game1State.flippedCards.length === 2) {
         game1State.moves++;
         document.getElementById('moves').textContent = game1State.moves;
-
+        game1State.canFlip = false;
+        
         const [idx1, idx2] = game1State.flippedCards;
         const card1 = game1State.cards[idx1];
         const card2 = game1State.cards[idx2];
-
+        
         if (card1.pairId === card2.pairId) {
-          setTimeout(() => SoundEffects.matchSuccess(), 100);
-          
           setTimeout(() => {
             document.querySelector(`[data-index="${idx1}"]`).classList.add('matched');
             document.querySelector(`[data-index="${idx2}"]`).classList.add('matched');
+            
+            document.querySelector(`[data-index="${idx1}"]`).classList.add('flipped');
+            document.querySelector(`[data-index="${idx2}"]`).classList.add('flipped');
+            
+            SoundEffects.matchSuccess();
             game1State.matchedPairs++;
             document.getElementById('matched').textContent = game1State.matchedPairs;
+            
             game1State.flippedCards = [];
-
+            game1State.canFlip = true;
+            
             if (game1State.matchedPairs === game1State.totalPairs) {
               completeGame1Level();
             }
           }, 500);
         } else {
-          setTimeout(() => SoundEffects.matchFail(), 300);
-          
           setTimeout(() => {
             document.querySelector(`[data-index="${idx1}"]`).classList.remove('flipped');
             document.querySelector(`[data-index="${idx2}"]`).classList.remove('flipped');
             game1State.flippedCards = [];
+            game1State.canFlip = true;
+            SoundEffects.matchFail();
           }, 1000);
         }
       }
@@ -2593,6 +2778,7 @@
               game1State.moves = 0;
               game1State.matchedPairs = 0;
               game1State.flippedCards = [];
+              game1State.canFlip = true;
               
               setTimeout(() => startGame1Level(), 300);
             }
@@ -2644,7 +2830,7 @@
                   <div class="text-lg font-bold text-red-500"><span id="game2-lives">❤️❤️❤️</span></div>
                 </div>
                 <div class="col-span-1 bg-yellow-50 rounded-lg p-2 flex items-center justify-center">
-                  <div class="text-2xl">🧺</div>
+                  <div class="text-2xl" aria-hidden="true">🧺</div>
                 </div>
               </div>
               <div class="mt-3 bg-indigo-50 rounded-lg p-3 text-center">
@@ -2679,7 +2865,10 @@
         lives: 3,
         combo: 0,
         maxCombo: 0,
-        currentTopic: ''
+        currentTopic: '',
+        animationFrameId: null,
+        lastLifeLostTime: 0,
+        isProcessing: false
       };
 
       startAutoSave('game2', () => game2State);
@@ -2689,11 +2878,23 @@
       game2State.basketX = (canvas.offsetWidth - basketWidth) / 2;
 
       canvas.innerHTML = `
-        <div class="basket-character" style="left: ${game2State.basketX}px;">
+        <div class="basket-character" style="left: ${game2State.basketX}px;" aria-label="Giỏ hứng từ">
           <div class="basket-body">🧺</div>
           <div class="basket-base"></div>
         </div>
       `;
+
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        const basket = canvas.querySelector('.basket-character');
+        if (basket) {
+          basket.style.width = '60px';
+          basket.style.height = '80px';
+          basket.querySelector('.basket-body').style.width = '45px';
+          basket.querySelector('.basket-body').style.height = '45px';
+          basket.querySelector('.basket-base').style.width = '55px';
+        }
+      }
 
       document.addEventListener('mousemove', handleGame2Mouse);
       document.addEventListener('touchmove', handleGame2Touch);
@@ -2705,7 +2906,22 @@
       updateGame2Lives();
 
       nextQuestion2();
-      game2State.gameLoop = setInterval(updateGame2, 50);
+      startGame2Loop();
+    }
+
+    function startGame2Loop() {
+      if (game2State.animationFrameId) {
+        cancelAnimationFrame(game2State.animationFrameId);
+      }
+      
+      function gameLoop() {
+        if (currentScreen === 'game2') {
+          updateGame2();
+          game2State.animationFrameId = requestAnimationFrame(gameLoop);
+        }
+      }
+      
+      game2State.animationFrameId = requestAnimationFrame(gameLoop);
     }
 
     function handleGame2Mouse(e) {
@@ -2724,18 +2940,33 @@
       }
     }
 
+    let lastTouchTime = 0;
+    const TOUCH_THROTTLE = 16;
+
     function handleGame2Touch(e) {
       if (currentScreen !== 'game2') return;
       e.preventDefault();
+      
+      const now = Date.now();
+      if (now - lastTouchTime < TOUCH_THROTTLE) return;
+      lastTouchTime = now;
+      
       const canvas = document.getElementById('game2-canvas');
-      if (!canvas) return;
+      if (!canvas || currentScreen !== 'game2') return;
       
       const touch = e.touches[0];
       const rect = canvas.getBoundingClientRect();
       const x = touch.clientX - rect.left;
-      game2State.basketX = Math.max(0, Math.min(x - 40, canvas.offsetWidth - 80));
+      
+      const targetX = Math.max(0, Math.min(x - 40, canvas.offsetWidth - 80));
+      game2State.basketX += (targetX - game2State.basketX) * 0.3;
+      
       const basket = canvas.querySelector('.basket-character');
       if (basket) basket.style.left = game2State.basketX + 'px';
+      
+      if (Math.random() > 0.9) {
+        SoundEffects.basketMove();
+      }
     }
 
     function handleGame2Keys(e) {
@@ -2755,10 +2986,14 @@
     }
 
     function nextQuestion2() {
+      if (game2State.isProcessing) return;
+      game2State.isProcessing = true;
+      
       const levelQuestions = getQuestionsByLevelExact('game2', game2State.level);
       
       if (levelQuestions.length === 0) {
         showToast('Không có câu hỏi cho level này!', 'error');
+        game2State.isProcessing = false;
         return;
       }
 
@@ -2782,7 +3017,9 @@
         .sort(() => Math.random() - 0.5)
         .slice(0, 4);
 
-      const speed = 1.5 + game2State.level * 0.3;
+      const baseSpeed = 0.8;
+      const levelFactor = 0.15;
+      const speed = baseSpeed + game2State.level * levelFactor;
 
       game2State.fallingWords.forEach(w => {
         if (w.element && w.element.parentNode) {
@@ -2813,17 +3050,22 @@
             caught: false,
             answer: answer
           });
-        }, i * 800);
+        }, i * 1200);
       });
 
       game2State.questionIndex++;
+      setTimeout(() => {
+        game2State.isProcessing = false;
+      }, 500);
     }
 
     function updateGame2() {
       const canvas = document.getElementById('game2-canvas');
       if (!canvas) return;
 
+      const now = Date.now();
       let correctWordMissed = false;
+      let missedCorrectWord = null;
 
       game2State.fallingWords = game2State.fallingWords.filter(word => {
         if (word.exploded) {
@@ -2835,36 +3077,7 @@
 
         if (word.y > canvas.offsetHeight) {
           if (word.correct && !word.caught) {
-            game2State.lives--;
-            updateGame2Lives();
-            showToast('Bỏ lỡ đáp án đúng! -1 mạng', 'error');
-            correctWordMissed = true;
-            
-            SoundEffects.wordMissed();
-            
-            if (game2State.lives <= 0) {
-              if (game2State.gameLoop) {
-                clearInterval(game2State.gameLoop);
-                game2State.gameLoop = null;
-              }
-              document.removeEventListener('mousemove', handleGame2Mouse);
-              document.removeEventListener('touchmove', handleGame2Touch);
-              document.removeEventListener('keydown', handleGame2Keys);
-              
-              SoundEffects.gameOver();
-              updateUserScore('game2', game2State.score, game2State.level, game2State.score);
-              
-              showGameOverModal(
-                game2State.score,
-                game2State.level,
-                () => {
-                  currentScreen = 'game2';
-                  render();
-                },
-                () => backToMenu()
-              );
-              return;
-            }
+            missedCorrectWord = word;
           }
           word.element.remove();
           return false;
@@ -2885,7 +3098,6 @@
               document.getElementById('game2-correct').textContent = game2State.questionsAnswered;
               
               const basket = canvas.querySelector('.basket-character');
-              const basketX = parseFloat(basket.style.left);
               
               basket.style.animation = 'basketSquash 0.4s ease-out';
               setTimeout(() => basket.style.animation = '', 400);
@@ -2921,8 +3133,19 @@
         return true;
       });
 
-      if (correctWordMissed && game2State.lives > 0 && game2State.questionsAnswered < 5) {
-        setTimeout(() => nextQuestion2(), 1000);
+      if (missedCorrectWord && now - game2State.lastLifeLostTime > 1000) {
+        game2State.lastLifeLostTime = now;
+        game2State.lives--;
+        updateGame2Lives();
+        showToast('Bỏ lỡ đáp án đúng! -1 mạng', 'error');
+        SoundEffects.wordMissed();
+        
+        if (game2State.lives <= 0) {
+          endGame2WithGameOver();
+          return;
+        } else if (game2State.questionsAnswered < 5) {
+          setTimeout(() => nextQuestion2(), 1000);
+        }
       }
     }
 
@@ -2975,10 +3198,34 @@
       document.getElementById('game2-lives').textContent = hearts.join('');
     }
 
+    function endGame2WithGameOver() {
+      if (game2State.animationFrameId) {
+        cancelAnimationFrame(game2State.animationFrameId);
+        game2State.animationFrameId = null;
+      }
+      
+      document.removeEventListener('mousemove', handleGame2Mouse);
+      document.removeEventListener('touchmove', handleGame2Touch);
+      document.removeEventListener('keydown', handleGame2Keys);
+      
+      SoundEffects.gameOver();
+      updateUserScore('game2', game2State.score, game2State.level, game2State.score);
+      
+      showGameOverModal(
+        game2State.score,
+        game2State.level,
+        () => {
+          currentScreen = 'game2';
+          render();
+        },
+        () => backToMenu()
+      );
+    }
+
     function completeGame2Level() {
-      if (game2State.gameLoop) {
-        clearInterval(game2State.gameLoop);
-        game2State.gameLoop = null;
+      if (game2State.animationFrameId) {
+        cancelAnimationFrame(game2State.animationFrameId);
+        game2State.animationFrameId = null;
       }
 
       const levelBonus = game2State.level * 50;
@@ -3008,6 +3255,8 @@
             game2State.questionsAnswered = 0;
             game2State.lives = 3;
             game2State.currentTopic = '';
+            game2State.lastLifeLostTime = 0;
+            game2State.isProcessing = false;
             
             document.getElementById('game2-level').textContent = game2State.level;
             document.getElementById('game2-correct').textContent = game2State.questionsAnswered;
@@ -3018,15 +3267,16 @@
             game2State.fallingWords = [];
             
             nextQuestion2();
-            game2State.gameLoop = setInterval(updateGame2, 50);
+            startGame2Loop();
           }
         }
       );
     }
 
     function endGame2() {
-      if (game2State.gameLoop) {
-        clearInterval(game2State.gameLoop);
+      if (game2State.animationFrameId) {
+        cancelAnimationFrame(game2State.animationFrameId);
+        game2State.animationFrameId = null;
       }
       document.removeEventListener('mousemove', handleGame2Mouse);
       document.removeEventListener('touchmove', handleGame2Touch);
@@ -3080,7 +3330,7 @@
                   <div class="text-lg font-bold text-red-500"><span id="game3-lives">❤️❤️❤️</span></div>
                 </div>
                 <div class="col-span-1 bg-yellow-50 rounded-lg p-2 flex items-center justify-center">
-                  <div class="text-2xl">🎯</div>
+                  <div class="text-2xl" aria-hidden="true">🎯</div>
                 </div>
               </div>
               <div class="mt-3 bg-indigo-50 rounded-lg p-3 text-center">
@@ -3091,7 +3341,7 @@
             </div>
 
             <div id="game3-canvas" class="bg-gradient-to-b from-indigo-900 via-purple-900 to-indigo-800 rounded-2xl shadow-lg relative" style="height: 400px; overflow: hidden;">
-              <div class="player-turret">
+              <div class="player-turret" aria-label="Súng bắn kẻ địch">
                 <div class="turret-head">🔫</div>
                 <div class="turret-base"></div>
               </div>
@@ -3115,7 +3365,10 @@
         lives: 3,
         combo: 0,
         maxCombo: 0,
-        currentTopic: ''
+        currentTopic: '',
+        lastShotTime: 0,
+        shotCooldown: 800,
+        animationFrameId: null
       };
 
       startAutoSave('game3', () => game3State);
@@ -3126,7 +3379,22 @@
       updateGame3Lives();
 
       nextQuestion3();
-      game3State.gameLoop = setInterval(updateGame3, 50);
+      startGame3Loop();
+    }
+
+    function startGame3Loop() {
+      if (game3State.animationFrameId) {
+        cancelAnimationFrame(game3State.animationFrameId);
+      }
+      
+      function gameLoop() {
+        if (currentScreen === 'game3') {
+          updateGame3();
+          game3State.animationFrameId = requestAnimationFrame(gameLoop);
+        }
+      }
+      
+      game3State.animationFrameId = requestAnimationFrame(gameLoop);
     }
 
     function nextQuestion3() {
@@ -3159,6 +3427,7 @@
         <button 
           onclick="shootAnswer('${answer.replace(/'/g, "\\'")}', this)" 
           class="py-2.5 sm:py-3 px-3 sm:px-4 text-sm sm:text-base bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition transform hover:scale-105 active:scale-95"
+          aria-label="Bắn đáp án: ${answer}"
         >
           ${answer}
         </button>
@@ -3174,6 +3443,7 @@
 
       const enemy = document.createElement('div');
       enemy.className = 'enemy';
+      enemy.setAttribute('aria-label', 'Kẻ địch cần tiêu diệt');
       enemy.innerHTML = `
         <div class="enemy-body">👾</div>
         <div class="enemy-health-bar">
@@ -3185,12 +3455,15 @@
       
       canvas.appendChild(enemy);
       
-      const speed = 0.8 + game3State.level * 0.2;
+      const baseSpeed = 0.3;
+      const levelFactor = 0.08;
+      const speed = baseSpeed + game3State.level * levelFactor;
+      const finalSpeed = speed * (0.9 + Math.random() * 0.2);
       
       game3State.enemies.push({
         element: enemy,
         x: -80,
-        speed: speed,
+        speed: finalSpeed,
         health: 100,
         maxHealth: 100
       });
@@ -3221,26 +3494,10 @@
           SoundEffects.enemyPass();
           
           if (game3State.lives <= 0) {
-            if (game3State.gameLoop) {
-              clearInterval(game3State.gameLoop);
-              game3State.gameLoop = null;
-            }
-            
-            SoundEffects.gameOver();
-            updateUserScore('game3', game3State.score, game3State.level, game3State.score);
-            
-            showGameOverModal(
-              game3State.score,
-              game3State.level,
-              () => {
-                currentScreen = 'game3';
-                render();
-              },
-              () => backToMenu()
-            );
-            return;
+            endGame3WithGameOver();
+            return false;
           } else {
-            setTimeout(() => spawnEnemy(), 500);
+            setTimeout(() => spawnEnemy(), 1500);
           }
           
           return false;
@@ -3260,8 +3517,15 @@
 
     function shootAnswer(answer, button) {
       const canvas = document.getElementById('game3-canvas');
+      const now = Date.now();
+      if (now - game3State.lastShotTime < game3State.shotCooldown) {
+        showToast('Chờ một chút rồi bắn tiếp!', 'info');
+        return;
+      }
+      
       if (game3State.enemies.length === 0) return;
 
+      game3State.lastShotTime = now;
       SoundEffects.buttonClick();
       
       button.classList.add('pulse');
@@ -3357,10 +3621,30 @@
       }, 20);
     }
 
+    function endGame3WithGameOver() {
+      if (game3State.animationFrameId) {
+        cancelAnimationFrame(game3State.animationFrameId);
+        game3State.animationFrameId = null;
+      }
+      
+      SoundEffects.gameOver();
+      updateUserScore('game3', game3State.score, game3State.level, game3State.score);
+      
+      showGameOverModal(
+        game3State.score,
+        game3State.level,
+        () => {
+          currentScreen = 'game3';
+          render();
+        },
+        () => backToMenu()
+      );
+    }
+
     function completeGame3Level() {
-      if (game3State.gameLoop) {
-        clearInterval(game3State.gameLoop);
-        game3State.gameLoop = null;
+      if (game3State.animationFrameId) {
+        cancelAnimationFrame(game3State.animationFrameId);
+        game3State.animationFrameId = null;
       }
 
       const levelBonus = game3State.level * 50;
@@ -3387,6 +3671,7 @@
             game3State.questionsAnswered = 0;
             game3State.lives = 3;
             game3State.currentTopic = '';
+            game3State.lastShotTime = 0;
             
             document.getElementById('game3-level').textContent = game3State.level;
             document.getElementById('game3-kills').textContent = game3State.questionsAnswered;
@@ -3397,31 +3682,21 @@
             game3State.enemies = [];
             
             nextQuestion3();
-            game3State.gameLoop = setInterval(updateGame3, 50);
+            startGame3Loop();
           }
         }
       );
     }
 
     function endGame3() {
-      if (game3State.gameLoop) {
-        clearInterval(game3State.gameLoop);
+      if (game3State.animationFrameId) {
+        cancelAnimationFrame(game3State.animationFrameId);
+        game3State.animationFrameId = null;
       }
       
       updateUserScore('game3', game3State.score, game3State.level, game3State.score);
       showToast(`Game kết thúc! Điểm: ${game3State.score}`, 'success');
       setTimeout(() => backToMenu(), 1500);
-    }
-
-    function getPlotDisplay(stage) {
-      const stages = [
-        { icon: '🟫', text: 'Đất trống', bg: 'linear-gradient(135deg, #78350f 0%, #451a03 100%)', color: '#fef3c7', size: '48px' },
-        { icon: '🌰', text: 'Hạt giống', bg: 'linear-gradient(135deg, #65a30d 0%, #3f6212 100%)', color: '#ecfccb', size: '40px' },
-        { icon: '🌱', text: 'Mầm non', bg: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', color: '#dcfce7', size: '52px' },
-        { icon: '🌿', text: 'Cây lớn', bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: '#d1fae5', size: '56px' },
-        { icon: '🌾', text: 'Chín rộ ✨', bg: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', color: '#fef9c3', size: '60px' }
-      ];
-      return stages[stage] || stages[0];
     }
 
     function renderGame4() {
@@ -3478,13 +3753,15 @@
                   class="rounded-xl sm:rounded-2xl shadow-lg cursor-pointer hover:shadow-2xl transition transform active:scale-95 sm:hover:-translate-y-1 relative overflow-hidden"
                   style="height: 160px; background: ${plotInfo.bg};"
                   data-plot-index="${i}"
+                  role="button"
+                  aria-label="Ô đất số ${i + 1}, ${plotInfo.text}, nhấn để ${plot.stage === 4 ? 'thu hoạch' : 'trả lời câu hỏi'}"
                 >
                   <div class="plant-plot">
                     <div class="text-center mb-2" style="font-size: ${plotInfo.size}; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));">
                       <div class="${plot.stage === 4 ? 'sparkle' : ''}">${plotInfo.icon}</div>
                     </div>
                     <div class="text-sm sm:text-base font-bold text-center" style="color: ${plotInfo.color};">${plotInfo.text}</div>
-                    ${plot.stage > 0 ? '<div class="absolute bottom-2 right-2 text-2xl sm:text-3xl">👨‍🌾</div>' : ''}
+                    ${plot.stage > 0 ? '<div class="absolute bottom-2 right-2 text-2xl sm:text-3xl" aria-hidden="true">👨‍🌾</div>' : ''}
                   </div>
                   ${plot.stage === 4 ? '<div class="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-semibold opacity-0 active:opacity-100 sm:hover:opacity-100 transition bg-black bg-opacity-40 rounded-xl sm:rounded-2xl">Nhấn để thu hoạch</div>' : '<div class="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-semibold opacity-0 active:opacity-100 sm:hover:opacity-100 transition bg-black bg-opacity-40 rounded-xl sm:rounded-2xl">Nhấn để trả lời</div>'}
                 </div>
@@ -3504,6 +3781,7 @@
       `;
     }
 
+    // ========== GAME 4 LOGIC - ĐÃ SỬA LỖI ==========
     function selectPlot(plotIndex) {
       const plot = game4State.plots[plotIndex];
       
@@ -3518,7 +3796,6 @@
         document.getElementById('game4-harvest').textContent = game4State.harvestCount;
         
         showToast(`🎉 Thu hoạch thành công! +${score} điểm`, 'success');
-        plot.stage = 4;
         
         if (game4State.harvestCount >= 4) {
           completeGame4Level();
@@ -3532,14 +3809,38 @@
     }
 
     function showQuestion4() {
-      const levelQuestions = getQuestionsByLevelExact('game4', game4State.level);
+      const plotIndex = game4State.selectedPlot;
+      const plot = game4State.plots[plotIndex];
       
-      if (levelQuestions.length === 0) {
-        showToast('Không có câu hỏi cho level này!', 'error');
+      if (plot.stage >= 4) {
         return;
       }
-
-      const questionData = levelQuestions[Math.floor(Math.random() * levelQuestions.length)];
+      
+      if (game4State.levelQuestions.length === 0) {
+        game4State.levelQuestions = getQuestionsByLevelExact('game4', game4State.level);
+      }
+      
+      const availableQuestions = game4State.levelQuestions.filter(q => {
+        const notAskedInThisPlot = !plot.askedQuestions.includes(q.question);
+        const askCount = game4State.askedQuestionIds.filter(id => id === q.question).length;
+        return notAskedInThisPlot && askCount < 2;
+      });
+      
+      let questionData;
+      if (availableQuestions.length === 0) {
+        plot.askedQuestions = [];
+        questionData = game4State.levelQuestions[
+          Math.floor(Math.random() * game4State.levelQuestions.length)
+        ];
+      } else {
+        questionData = availableQuestions[
+          Math.floor(Math.random() * availableQuestions.length)
+        ];
+      }
+      
+      plot.askedQuestions.push(questionData.question);
+      game4State.askedQuestionIds.push(questionData.question);
+      
       game4State.currentQuestion = {
         question: questionData.question,
         correctAnswer: questionData.correct,
@@ -3560,6 +3861,7 @@
         <button 
           onclick="answerQuestion4('${answer.replace(/'/g, "\\'")}', this)" 
           class="py-2.5 sm:py-3 px-3 sm:px-4 text-sm sm:text-base bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition transform hover:scale-105 active:scale-95"
+          aria-label="Chọn đáp án: ${answer}"
         >
           ${answer}
         </button>
@@ -3631,7 +3933,7 @@
             <div class="${plot.stage === 4 ? 'sparkle grow' : 'grow'}">${plotInfo.icon}</div>
           </div>
           <div class="text-sm sm:text-base font-bold text-center" style="color: ${plotInfo.color};">${plotInfo.text}</div>
-          ${plot.stage > 0 ? '<div class="absolute bottom-2 right-2 text-2xl sm:text-3xl">👨‍🌾</div>' : ''}
+          ${plot.stage > 0 ? '<div class="absolute bottom-2 right-2 text-2xl sm:text-3xl" aria-hidden="true">👨‍🌾</div>' : ''}
         </div>
         ${plot.stage === 4 ? '<div class="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-semibold opacity-0 active:opacity-100 sm:hover:opacity-100 transition bg-black bg-opacity-40 rounded-xl sm:rounded-2xl">Nhấn để thu hoạch</div>' : '<div class="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-semibold opacity-0 active:opacity-100 sm:hover:opacity-100 transition bg-black bg-opacity-40 rounded-xl sm:rounded-2xl">Nhấn để trả lời</div>'}
       `;
@@ -3669,7 +3971,10 @@
             
             game4State.plots.forEach(plot => {
               plot.stage = 0;
+              plot.askedQuestions = [];
             });
+            game4State.levelQuestions = [];
+            game4State.askedQuestionIds = [];
             
             updateGame4UI();
             updateAllPlotsDisplay();
@@ -3681,11 +3986,13 @@
     function showLevelCompleteModal(level, score, stat, onNext) {
       const modal = document.createElement('div');
       modal.className = 'level-complete-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-labelledby', 'level-complete-title');
       modal.innerHTML = `
         <div class="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-sm sm:max-w-md mx-4 shadow-2xl transform scale-0" style="animation: scaleIn 0.3s ease-out forwards;">
           <div class="text-center">
-            <div class="text-5xl sm:text-7xl mb-3 sm:mb-4">🎉</div>
-            <h3 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Level ${level} Hoàn Thành!</h3>
+            <div class="text-5xl sm:text-7xl mb-3 sm:mb-4" aria-hidden="true">🎉</div>
+            <h3 id="level-complete-title" class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Level ${level} Hoàn Thành!</h3>
             <div class="text-4xl sm:text-5xl font-bold text-green-500 mb-3 sm:mb-4">+${score}</div>
             <div class="bg-gray-100 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
               <p class="text-sm sm:text-base text-gray-600">Thành tích: ${stat}</p>
@@ -3693,6 +4000,7 @@
             <button 
               class="w-full py-3 bg-blue-500 text-white rounded-xl font-bold text-base sm:text-lg hover:bg-blue-600 transition active:scale-95"
               onclick="SoundEffects.buttonClick()"
+              autofocus
             >
               ${level >= maxLevels[currentScreen] ? '🎊 Hoàn thành tất cả' : '➡️ Level tiếp theo'}
             </button>
@@ -3711,11 +4019,13 @@
     function showGameOverModal(finalScore, level, onRestart, onMenu) {
       const modal = document.createElement('div');
       modal.className = 'level-complete-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-labelledby', 'game-over-title');
       modal.innerHTML = `
         <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-sm sm:max-w-md mx-4 shadow-2xl transform scale-0 border-4 border-red-500" style="animation: scaleIn 0.3s ease-out forwards;">
           <div class="text-center">
-            <div class="text-6xl sm:text-8xl mb-3 sm:mb-4 animate-pulse">💀</div>
-            <h3 class="text-3xl sm:text-4xl font-bold text-red-600 mb-2">GAME OVER!</h3>
+            <div class="text-6xl sm:text-8xl mb-3 sm:mb-4 animate-pulse" aria-hidden="true">💀</div>
+            <h3 id="game-over-title" class="text-3xl sm:text-4xl font-bold text-red-600 mb-2">GAME OVER!</h3>
             <p class="text-base sm:text-lg text-gray-700 mb-4">Hết mạng rồi bạn ơi!</p>
             <div class="bg-white rounded-xl p-4 mb-4 shadow-inner">
               <div class="text-sm text-gray-600 mb-2">Điểm đạt được</div>
@@ -3767,22 +4077,26 @@
       
       const modal = document.createElement('div');
       modal.className = 'level-complete-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-labelledby', 'certificate-title');
       modal.innerHTML = `
         <div class="certificate-container bg-white rounded-3xl p-8 max-w-3xl mx-4 shadow-2xl border-8 border-amber-400" id="certificate-content">
           <div class="text-center relative">
+            <div class="certificate-close-btn" onclick="closeCertificate()" title="Đóng" aria-label="Đóng chứng nhận">×</div>
+            
             <div class="certificate-seal absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center transform rotate-12 shadow-lg border-4 border-red-900">
               <div class="text-center">
-                <div class="text-2xl">🏆</div>
+                <div class="text-2xl" aria-hidden="true">🏆</div>
                 <div class="text-xs text-white font-bold">XUẤT SẮC</div>
               </div>
             </div>
 
             <div class="mb-6 pb-4 border-b-4 border-amber-400">
-              <div class="text-6xl mb-3">🎓</div>
-              <h2 class="text-4xl font-bold mb-2" style="color: ${textColor};">${certTitle}</h2>
+              <div class="text-6xl mb-3" aria-hidden="true">🎓</div>
+              <h2 id="certificate-title" class="text-4xl font-bold mb-2" style="color: ${textColor};">${certTitle}</h2>
               <div class="flex items-center justify-center gap-3 text-amber-600">
                 <div class="w-16 h-1 bg-amber-400"></div>
-                <div class="text-2xl">✦</div>
+                <div class="text-2xl" aria-hidden="true">✦</div>
                 <div class="w-16 h-1 bg-amber-400"></div>
               </div>
             </div>
@@ -3803,7 +4117,7 @@
                 </div>
                 <div>
                   <div class="text-xs text-gray-600 mb-1">Cấp độ</div>
-                  <div class="text-3xl font-bold text-amber-600">${level}/5</div>
+                  <div class="text-3xl font-bold text-amber-600">${level}/${maxLevels[gameName.includes('Lật') ? 'game1' : gameName.includes('Mưa') ? 'game2' : gameName.includes('Bảo') ? 'game3' : 'game4']}</div>
                 </div>
                 <div>
                   <div class="text-xs text-gray-600 mb-1">Ngày</div>
@@ -3818,7 +4132,7 @@
                 <div class="certificate-signature text-2xl text-gray-800">Hệ Thống</div>
                 <div class="w-32 h-0.5 bg-gray-400 mx-auto"></div>
               </div>
-              <div class="text-6xl opacity-20 transform -rotate-12">🏅</div>
+              <div class="text-6xl opacity-20 transform -rotate-12" aria-hidden="true">🏅</div>
             </div>
 
             <div class="space-y-3">
@@ -3854,22 +4168,26 @@
       
       const modal = document.createElement('div');
       modal.className = 'level-complete-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-labelledby', 'certificate-title');
       modal.innerHTML = `
         <div class="certificate-container bg-white rounded-3xl p-8 max-w-3xl mx-4 shadow-2xl border-8 border-amber-400" id="certificate-content">
           <div class="text-center relative">
+            <div class="certificate-close-btn" onclick="closeCertificate()" title="Đóng" aria-label="Đóng chứng nhận">×</div>
+            
             <div class="certificate-seal absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center transform rotate-12 shadow-lg border-4 border-red-900">
               <div class="text-center">
-                <div class="text-2xl">🏆</div>
+                <div class="text-2xl" aria-hidden="true">🏆</div>
                 <div class="text-xs text-white font-bold">XUẤT SẮC</div>
               </div>
             </div>
 
             <div class="mb-6 pb-4 border-b-4 border-amber-400">
-              <div class="text-6xl mb-3">🎓</div>
-              <h2 class="text-4xl font-bold mb-2" style="color: ${textColor};">${certTitle}</h2>
+              <div class="text-6xl mb-3" aria-hidden="true">🎓</div>
+              <h2 id="certificate-title" class="text-4xl font-bold mb-2" style="color: ${textColor};">${certTitle}</h2>
               <div class="flex items-center justify-center gap-3 text-amber-600">
                 <div class="w-16 h-1 bg-amber-400"></div>
-                <div class="text-2xl">✦</div>
+                <div class="text-2xl" aria-hidden="true">✦</div>
                 <div class="w-16 h-1 bg-amber-400"></div>
               </div>
             </div>
@@ -3890,7 +4208,7 @@
                 </div>
                 <div>
                   <div class="text-xs text-gray-600 mb-1">Cấp độ</div>
-                  <div class="text-3xl font-bold text-amber-600">${cert.level}/5</div>
+                  <div class="text-3xl font-bold text-amber-600">${cert.level}/${maxLevels[cert.gameName.includes('Lật') ? 'game1' : cert.gameName.includes('Mưa') ? 'game2' : cert.gameName.includes('Bảo') ? 'game3' : 'game4']}</div>
                 </div>
                 <div>
                   <div class="text-xs text-gray-600 mb-1">Ngày</div>
@@ -3905,7 +4223,7 @@
                 <div class="certificate-signature text-2xl text-gray-800">Hệ Thống</div>
                 <div class="w-32 h-0.5 bg-gray-400 mx-auto"></div>
               </div>
-              <div class="text-6xl opacity-20 transform -rotate-12">🏅</div>
+              <div class="text-6xl opacity-20 transform -rotate-12" aria-hidden="true">🏅</div>
             </div>
 
             <div class="space-y-3">
@@ -3983,21 +4301,38 @@
     function backToMenu() {
       stopAutoSave();
       
-      if (game2State.gameLoop) {
-        clearInterval(game2State.gameLoop);
-        document.removeEventListener('mousemove', handleGame2Mouse);
-        document.removeEventListener('touchmove', handleGame2Touch);
-        document.removeEventListener('keydown', handleGame2Keys);
+      if (game2State.animationFrameId) {
+        cancelAnimationFrame(game2State.animationFrameId);
+        game2State.animationFrameId = null;
       }
-      if (game3State.gameLoop) {
-        clearInterval(game3State.gameLoop);
+      document.removeEventListener('mousemove', handleGame2Mouse);
+      document.removeEventListener('touchmove', handleGame2Touch);
+      document.removeEventListener('keydown', handleGame2Keys);
+      
+      if (game3State.animationFrameId) {
+        cancelAnimationFrame(game3State.animationFrameId);
+        game3State.animationFrameId = null;
       }
+      
       currentScreen = 'menu';
       render();
     }
 
     function logout() {
       stopAutoSave();
+      
+      if (game2State.animationFrameId) {
+        cancelAnimationFrame(game2State.animationFrameId);
+        game2State.animationFrameId = null;
+      }
+      document.removeEventListener('mousemove', handleGame2Mouse);
+      document.removeEventListener('touchmove', handleGame2Touch);
+      document.removeEventListener('keydown', handleGame2Keys);
+      
+      if (game3State.animationFrameId) {
+        cancelAnimationFrame(game3State.animationFrameId);
+        game3State.animationFrameId = null;
+      }
       
       localStorage.removeItem('xedang_current_user');
       currentUser = null;
@@ -4046,6 +4381,10 @@
           timestamp: Date.now(),
           level: state.level
         }));
+      }
+      
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
       }
     });
 
@@ -4139,6 +4478,14 @@
         console.log('📝 Dữ liệu game2:', gameData.game2.length, 'câu hỏi');
         console.log('📝 Dữ liệu game3:', gameData.game3.length, 'câu hỏi');
         console.log('📝 Dữ liệu game4:', gameData.game4.length, 'câu hỏi');
+        
+        const isNewUser = !localStorage.getItem('xedang_tutorial_shown');
+        if (isNewUser && currentScreen === 'menu') {
+          setTimeout(() => {
+            showToast('🎮 Chào mừng! Chọn game để bắt đầu học tiếng Xê Đăng!', 'info', 5000);
+            localStorage.setItem('xedang_tutorial_shown', 'true');
+          }, 1000);
+        }
         
       } catch (error) {
         console.error('Lỗi khởi động ứng dụng:', error);
