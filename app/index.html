@@ -3897,7 +3897,7 @@ img[loading="lazy"] {
             document.getElementById('darkModeToggle').querySelector('i').className = 'fas fa-sun';
         }
 
-       // ===== PWA INSTALLATION & BROWSER DETECTION =====
+     // ===== PWA INSTALLATION & BROWSER DETECTION (GIỮ NGUYÊN TÍNH NĂNG CŨ) =====
 let deferredPrompt;
 const installButton = document.getElementById('installButton');
 const browserWarning = document.getElementById('browserWarning');
@@ -3931,10 +3931,6 @@ function detectBrowser() {
     else if (/opr/i.test(userAgent)) {
         browser = 'opera';
     }
-    // Phát hiện iOS (tất cả trình duyệt trên iOS đều dùng WebKit)
-    else if (/iphone|ipad|ipod/i.test(userAgent)) {
-        browser = 'ios';
-    }
     
     return browser;
 }
@@ -3942,11 +3938,10 @@ function detectBrowser() {
 // Kiểm tra và hiển thị cảnh báo trình duyệt
 function checkBrowserCompatibility() {
     const browser = detectBrowser();
-    const isCompatible = ['safari', 'coccoc', 'chrome', 'ios'].includes(browser);
+    const isCompatible = ['safari', 'coccoc', 'chrome'].includes(browser);
     
     if (!isCompatible) {
         browserWarning.style.display = 'flex';
-        showToast(`Trình duyệt ${browser} có thể không ổn định. Dùng Safari, Cốc Cốc hoặc Chrome để có trải nghiệm tốt nhất.`, 'info');
     } else {
         browserWarning.style.display = 'none';
     }
@@ -3954,71 +3949,46 @@ function checkBrowserCompatibility() {
     return isCompatible;
 }
 
-// Luôn hiển thị nút cài đặt
-function setupInstallButton() {
-    const browser = detectBrowser();
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    
-    // Ẩn nút nếu app đã được cài đặt
-    if (isStandalone) {
-        installButton.style.display = 'none';
-        return;
-    }
-    
-    // Luôn hiển thị nút cài đặt
-    installButton.style.display = 'flex';
-    
-    // Cập nhật text cho iOS
-    if (browser === 'ios' || /iphone|ipad|ipod/i.test(navigator.userAgent)) {
-        installButton.innerHTML = '<i class="fas fa-plus-square"></i> Thêm vào màn hình chính';
-        installButton.title = 'Hướng dẫn thêm ứng dụng vào màn hình chính';
-    } else {
-        installButton.innerHTML = '<i class="fas fa-download"></i> Cài đặt App';
-        installButton.title = 'Cài đặt ứng dụng';
-    }
-    
-    // Hiển thị với animation
-    setTimeout(() => {
-        installButton.classList.add('show');
-    }, 1000);
-}
-
-// Xử lý sự kiện cài đặt
+// ===== GIỮ NGUYÊN TÍNH NĂNG CÀI ĐẶT TỰ ĐỘNG CŨ =====
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     
-    // Chỉ cập nhật text cho các trình duyệt hỗ trợ beforeinstallprompt
-    if (!/iphone|ipad|ipod/i.test(navigator.userAgent)) {
-        installButton.innerHTML = '<i class="fas fa-download"></i> Cài đặt App';
+    // HIỂN THỊ NÚT CÀI ĐẶT LUÔN (không cần đợi show)
+    installButton.classList.add('show');
+    installButton.style.display = 'flex';
+    
+    // Cập nhật text nếu là iOS
+    if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+        installButton.innerHTML = '<i class="fas fa-plus-square"></i> Thêm vào màn hình chính';
     }
 });
 
+// Xử lý click nút cài đặt - GIỮ NGUYÊN CHỨC NĂNG CŨ
 installButton.addEventListener('click', async () => {
-    const browser = detectBrowser();
-    
     // Xử lý cho iOS (hiển thị hướng dẫn)
-    if (browser === 'ios' || /iphone|ipad|ipod/i.test(navigator.userAgent)) {
+    if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
         showIOSInstallInstructions();
         return;
     }
     
-    // Xử lý cho các trình duyệt hỗ trợ beforeinstallprompt
+    // GIỮ NGUYÊN: Xử lý cài đặt tự động như code cũ
     if (deferredPrompt) {
+        installButton.classList.remove('show');
         deferredPrompt.prompt();
+        
         const { outcome } = await deferredPrompt.userChoice;
         
         if (outcome === 'accepted') {
             console.log('User accepted the install prompt');
-            showToast('Ứng dụng đang được cài đặt...', 'success');
         } else {
             console.log('User dismissed the install prompt');
-            showToast('Cài đặt đã bị hủy. Bạn có thể cài đặt sau.', 'info');
+            // Hiển thị lại nút sau 5 giây nếu người dùng từ chối
+            setTimeout(() => {
+                installButton.classList.add('show');
+            }, 5000);
         }
         deferredPrompt = null;
-    } else {
-        // Hướng dẫn thủ công cho các trình duyệt không hỗ trợ beforeinstallprompt
-        showManualInstallInstructions(browser);
     }
 });
 
@@ -4041,63 +4011,6 @@ function showIOSInstallInstructions() {
     `;
     
     showCustomAlert('Hướng dẫn cài đặt iOS', instructions);
-}
-
-// Hướng dẫn thủ công cho các trình duyệt khác
-function showManualInstallInstructions(browser) {
-    let instructions = '';
-    let browserName = '';
-    
-    switch(browser) {
-        case 'firefox':
-            browserName = 'Firefox';
-            instructions = `
-                <ol style="margin-left: 20px;">
-                    <li>Nhấn vào menu ☰ ở góc trên bên phải</li>
-                    <li>Chọn "Cài đặt ứng dụng" hoặc "Cài đặt trang"</li>
-                    <li>Xác nhận cài đặt ứng dụng</li>
-                </ol>
-            `;
-            break;
-        case 'edge':
-            browserName = 'Microsoft Edge';
-            instructions = `
-                <ol style="margin-left: 20px;">
-                    <li>Nhấn vào menu ••• ở góc trên bên phải</li>
-                    <li>Chọn "Ứng dụng" → "Cài đặt ứng dụng này dưới dạng ứng dụng"</li>
-                    <li>Xác nhận cài đặt</li>
-                </ol>
-            `;
-            break;
-        case 'opera':
-            browserName = 'Opera';
-            instructions = `
-                <ol style="margin-left: 20px;">
-                    <li>Nhấn vào menu ≡ ở góc trên bên trái</li>
-                    <li>Chọn "Cài đặt" → "Cài đặt ứng dụng"</li>
-                    <li>Xác nhận cài đặt</li>
-                </ol>
-            `;
-            break;
-        default:
-            browserName = 'trình duyệt';
-            instructions = `
-                <p>Tìm kiếm tùy chọn <strong>"Cài đặt ứng dụng"</strong>, <strong>"Thêm vào màn hình chính"</strong> hoặc <strong>"Cài đặt trang"</strong> trong menu của trình duyệt.</p>
-            `;
-    }
-    
-    const message = `
-        <div style="text-align: left; padding: 15px;">
-            <h3 style="color: #3498db; margin-bottom: 15px;">💻 Hướng dẫn cài đặt cho ${browserName}</h3>
-            ${instructions}
-            <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; border-left: 4px solid #3498db; margin-top: 15px;">
-                <i class="fas fa-info-circle"></i> 
-                <strong>Lưu ý:</strong> Tính năng này có thể khác nhau tùy phiên bản trình duyệt.
-            </div>
-        </div>
-    `;
-    
-    showCustomAlert('Hướng dẫn cài đặt', message);
 }
 
 // Hàm hiển thị alert tùy chỉnh
@@ -4142,19 +4055,6 @@ function showCustomAlert(title, content) {
     });
 }
 
-// Khởi tạo khi trang được tải
-window.addEventListener('load', () => {
-    // Kiểm tra trình duyệt
-    checkBrowserCompatibility();
-    
-    // Thiết lập nút cài đặt
-    setupInstallButton();
-    
-    // Kiểm tra lại khi thay đổi kết nối mạng
-    window.addEventListener('online', checkBrowserCompatibility);
-    window.addEventListener('offline', checkBrowserCompatibility);
-});
-
 // Sự kiện khi app đã được cài đặt
 window.addEventListener('appinstalled', () => {
     console.log('PWA was installed');
@@ -4163,10 +4063,40 @@ window.addEventListener('appinstalled', () => {
     showToast('Ứng dụng đã được cài đặt thành công!', 'success');
 });
 
+// Kiểm tra nếu app đã được cài đặt (chạy ở chế độ standalone)
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('Running in standalone mode');
+    installButton.style.display = 'none';
+}
 
+// Khởi tạo khi trang được tải
+window.addEventListener('load', () => {
+    // Kiểm tra trình duyệt và hiển thị cảnh báo nếu cần
+    checkBrowserCompatibility();
+    
+    // LUÔN HIỂN THỊ NÚT CÀI ĐẶT (nếu app chưa được cài đặt)
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+        // Nếu là iOS, hiển thị luôn nút "Thêm vào màn hình chính"
+        if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+            installButton.innerHTML = '<i class="fas fa-plus-square"></i> Thêm vào màn hình chính';
+            installButton.classList.add('show');
+            installButton.style.display = 'flex';
+        }
+        // Nếu không phải iOS và chưa có deferredPrompt, vẫn hiển thị nút
+        else if (!deferredPrompt) {
+            setTimeout(() => {
+                installButton.classList.add('show');
+                installButton.style.display = 'flex';
+            }, 2000);
+        }
+    }
+    
+    // Kiểm tra lại khi thay đổi kết nối mạng
+    window.addEventListener('online', checkBrowserCompatibility);
+    window.addEventListener('offline', checkBrowserCompatibility);
+});
 
-
-
+		// Hết PWA
 		
         window.addEventListener('offline', () => {
             offlineIndicator.querySelector('i').className = 'fas fa-wifi-slash';
