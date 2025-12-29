@@ -1083,7 +1083,24 @@
 /* Thanh tiến độ trong thẻ game */
 .progress-container { background: #f1f5f9; height: 6px; border-radius: 3px; width: 100%; overflow: hidden; }
 .progress-bar-fill { height: 100%; border-radius: 3px; }
-    
+
+
+
+  /* Hiệu ứng Pop-up cho hộp thoại câu hỏi */
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-pop {
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Nền mờ phía sau tối hơn để tập trung */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    backdrop-filter: blur(4px);
+}  
     
     
   </style>
@@ -3982,21 +3999,33 @@ function renderGame4() {
     const bgmClass = bgmEnabled ? 'active' : '';
     const sfxClass = sfxEnabled ? 'active' : '';
     
+    // Logic hiển thị các ô đất (giữ nguyên)
     const plotsHtml = game4State.plots.map((plot, i) => {
         const plotInfo = getPlotDisplay(plot.stage);
         return `
-        <div onclick="selectPlot(${i})" class="rounded-xl shadow-md cursor-pointer relative overflow-hidden transition-transform active:scale-95" style="height: 140px; background: ${plotInfo.bg};" data-plot-index="${i}">
+        <div onclick="selectPlot(${i})" 
+             class="rounded-xl shadow-md cursor-pointer relative overflow-hidden transition-transform active:scale-95 border-2 border-white/50"
+             style="height: 140px; background: ${plotInfo.bg}; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
+             data-plot-index="${i}">
+             
              <div class="plant-plot">
-                <div class="text-center mb-1" style="font-size: ${plotInfo.size}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"><div class="${plot.stage === 4 ? 'sparkle grow' : 'grow'}">${plotInfo.icon}</div></div>
-                <div class="text-sm font-bold text-center text-white drop-shadow-md">${plotInfo.text}</div>
+                <div class="text-center mb-1" style="font-size: ${plotInfo.size}; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));">
+                    <div class="${plot.stage === 4 ? 'sparkle grow' : 'grow'} transition-all">${plotInfo.icon}</div>
+                </div>
+                <div class="text-sm font-bold text-center text-white drop-shadow-md bg-black/10 rounded-full px-2 py-0.5 mx-auto inline-block mt-1">${plotInfo.text}</div>
              </div>
-             ${plot.stage === 4 ? '<div class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm backdrop-blur-sm">Thu hoạch! 🌾</div>' : '<div class="absolute inset-0 flex items-center justify-center bg-black/20 text-white text-xs font-semibold opacity-0 active:opacity-100 transition">Chạm để trả lời</div>'}
-        </div>`;
+             
+             ${plot.stage === 4 
+                ? '<div class="absolute inset-0 flex items-center justify-center bg-green-900/60 text-white font-bold text-base backdrop-blur-[2px] animate-pulse">🌾 Thu hoạch ngay!</div>' 
+                : '<div class="absolute inset-0 flex items-center justify-center bg-black/20 text-white text-xs font-semibold opacity-0 active:opacity-100 transition">Chạm để chăm sóc</div>'}
+        </div>
+        `;
     }).join('');
 
     return `
     <div class="min-h-full p-3 sm:p-4" style="background: #ecfdf5;">
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-md mx-auto relative h-full flex flex-col">
+            
             <div class="game-header-compact">
                 <div class="game-title-mobile">
                     <span>👨‍🌾 ${game4Name}</span>
@@ -4018,22 +4047,44 @@ function renderGame4() {
                 <div class="stat-card"><div class="stat-label">Chủ đề</div><div class="stat-value text-green-600 text-sm truncate px-1" id="game4-topic">${game4State.currentTopic || 'Chung'}</div></div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-4">${plotsHtml}</div>
+            <div class="grid grid-cols-2 gap-4 mb-20 flex-grow">
+                ${plotsHtml}
+            </div>
 
-            <div id="game4-question" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" style="display: none;">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform scale-100 transition-all">
-                    <h3 class="text-xl font-bold mb-4 text-center text-green-800" id="q-text">Câu hỏi ở đây</h3>
-                    <div class="grid grid-cols-1 gap-3" id="q-answers"></div>
-                    <div class="text-center mt-4"><span class="text-xs text-gray-400">Chọn đáp án đúng để cây lớn lên!</span></div>
+            <div id="game4-question" class="fixed inset-0 z-[5000] flex items-center justify-center p-4 modal-backdrop" style="display: none;">
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden modal-pop relative">
+                    
+                    <div class="h-3 w-full bg-gradient-to-r from-green-400 to-green-600"></div>
+                    
+                    <div class="p-6">
+                        <div class="text-center mb-6">
+                            <span class="inline-block bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full mb-2">CÂU HỎI</span>
+                            <h3 class="text-xl md:text-2xl font-extrabold text-gray-800 leading-snug" id="q-text">
+                                Nội dung câu hỏi sẽ hiện ở đây?
+                            </h3>
+                        </div>
+
+                        <div class="flex flex-col gap-3" id="q-answers">
+                            </div>
+
+                        <div class="text-center mt-5 pt-4 border-t border-gray-100">
+                            <p class="text-xs text-gray-400 italic">
+                                "Chọn đúng cây sẽ lớn nhanh như thổi!"
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="text-center text-xs text-gray-500 bg-white/50 py-2 rounded-lg">Chủ đề hiện tại: <span id="game4-current-topic" class="font-bold text-green-700">${game4State.currentTopic || 'Chung'}</span></div>
+            <div class="fixed bottom-2 left-0 w-full text-center pointer-events-none">
+                <span class="text-[10px] text-gray-400 bg-white/80 px-2 py-1 rounded-full shadow-sm backdrop-blur-sm">
+                    Chủ đề: <span id="game4-current-topic" class="font-bold text-green-700">${game4State.currentTopic || 'Chung'}</span>
+                </span>
+            </div>
         </div>
     </div>
     `;
 }
-
 
     
     // ========== GAME 4 LOGIC - ĐÃ SỬA LỖI ==========
@@ -4112,15 +4163,19 @@ function renderGame4() {
       }
 
       document.getElementById('q-text').textContent = game4State.currentQuestion.question;
-      document.getElementById('q-answers').innerHTML = game4State.currentQuestion.allAnswers.map(answer => `
-        <button 
-          onclick="answerQuestion4('${answer.replace(/'/g, "\\'")}', this)" 
-          class="py-2.5 sm:py-3 px-3 sm:px-4 text-sm sm:text-base bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition transform hover:scale-105 active:scale-95"
-          aria-label="Chọn đáp án: ${answer}"
-        >
-          ${answer}
-        </button>
-      `).join('');
+     // ... bên trong hàm showQuestion4 ...
+
+document.getElementById('q-answers').innerHTML = game4State.currentQuestion.allAnswers.map(answer => `
+    <button 
+        onclick="answerQuestion4('${answer.replace(/'/g, "\\'")}', this)" 
+        class="w-full py-3.5 px-4 text-base bg-white border-2 border-gray-100 text-gray-700 rounded-xl font-bold hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-all duration-200 shadow-sm active:scale-98 flex items-center justify-center min-h-[60px]"
+        aria-label="Chọn đáp án: ${answer}"
+    >
+        ${answer}
+    </button>
+`).join('');
+
+// ...
 
       document.getElementById('game4-question').style.display = 'block';
     }
