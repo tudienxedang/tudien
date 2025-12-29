@@ -6964,13 +6964,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Hàm tạo giao diện Game đè lên trang hiện tại
+
+
+// Hàm tạo giao diện Game đè lên trang hiện tại (ĐÃ SỬA LỖI 404)
 function openGameOverlay() {
-    // Tạo khung
+    // 1. Tạo khung
     const overlay = document.createElement('div');
     overlay.id = 'game-overlay';
     
-    // Nội dung bên trong (Thanh tiêu đề + Khung Game)
+    // 2. KHẮC PHỤC LỖI 404: Dùng đường dẫn tuyệt đối chính xác
+    // Thay vì dùng "./game.html", ta dùng đường dẫn đầy đủ của GitHub Pages
+    const gameUrl = "https://tudienxedang.github.io/tudien/game.html";
+
+    // 3. Nội dung HTML (Thêm xử lý lỗi iframe)
     overlay.innerHTML = `
         <div class="game-header-bar">
             <div class="game-title"><i class="fas fa-gamepad"></i> Game Học Tập</div>
@@ -6978,13 +6984,22 @@ function openGameOverlay() {
                 <i class="fas fa-times"></i> Đóng & Quay lại
             </button>
         </div>
-        <iframe id="game-frame" src="./game.html" loading="lazy"></iframe>
+        
+        <div id="game-loading-msg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666;">
+            <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu game...
+        </div>
+
+        <iframe id="game-frame" 
+                src="${gameUrl}" 
+                loading="lazy"
+                onload="document.getElementById('game-loading-msg').style.display='none';"
+                onerror="alert('Không thể tải Game. Vui lòng kiểm tra kết nối mạng!');">
+        </iframe>
     `;
     
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden'; // Khóa cuộn trang chính
 }
-
 // Hàm đóng Game - Trả lại giao diện cũ nguyên vẹn
 window.closeGameOverlay = function() {
     const overlay = document.getElementById('game-overlay');
@@ -6999,6 +7014,9 @@ window.closeGameOverlay = function() {
         }, 300);
     }
 };
+
+
+		
     </script>
 
 
