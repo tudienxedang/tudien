@@ -806,7 +806,24 @@
     /* === UI GAME MOBILE (Code mới) === */
 
 
+/* Nút âm thanh trong Header */
+.btn-sound {
+    background: #f1f5f9; 
+    color: #64748b; 
+    margin-left: 5px; /* Khoảng cách nhỏ */
+    border: 1px solid #cbd5e1;
+}
 
+/* Khi bật âm thanh (Active) */
+.btn-sound.active {
+    background: #3b82f6; /* Màu xanh dương */
+    color: white;
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+}
+
+
+    
     
   </style>
   <style>@view-transition { navigation: auto; }</style>
@@ -816,11 +833,7 @@
   <div id="app" class="h-full w-full overflow-auto bg-gradient-to-br from-blue-50 to-indigo-100"></div>
   <div id="offline-indicator" style="display: none;"></div>
   
-  <!-- Sound Controls -->
-  <div class="sound-controls" id="sound-controls" style="display: none;">
-    <button class="sound-btn active" id="bgm-toggle" title="Nhạc nền" aria-label="Bật/tắt nhạc nền">🎵</button>
-    <button class="sound-btn active" id="sfx-toggle" title="Hiệu ứng âm thanh" aria-label="Bật/tắt hiệu ứng âm thanh">🔊</button>
-  </div>
+
 
   <script>
     // ========== CẤU HÌNH TỰ ĐỘNG LEVEL ==========
@@ -2633,60 +2646,49 @@
     }
 
 function renderGame1() {
-    const gameName = "Lật Ô Ghi Nhớ"; // Hoặc lấy từ config
+    const config = window.elementSdk?.config || defaultConfig;
+    const game1Name = config.game1_name || defaultConfig.game1_name;
     
-    // Nút hướng dẫn gọi hàm showTutorial
+    // Kiểm tra trạng thái âm thanh để tô màu nút
+    const bgmClass = bgmEnabled ? 'active' : '';
+    const sfxClass = sfxEnabled ? 'active' : '';
+
     return `
     <div class="min-h-full p-3 sm:p-4" style="background: #f8fafc;">
         <div class="max-w-4xl mx-auto">
-            
             <div class="game-header-compact">
                 <div class="game-title-mobile">
-                    <span>${gameName}</span>
-                    <span class="game-subtitle">Level ${game1State.level}</span>
+                    <span>${game1Name}</span>
+                    <span class="game-subtitle">Level <span id="header-level-display">${game1State.level}</span></span>
                 </div>
                 <div class="flex">
-                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game1')" title="Hướng dẫn">
-                        ❓
-                    </button>
-                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game1')" title="Lưu">
-                        💾
-                    </button>
-                    <button class="btn-icon-circle btn-exit" onclick="backToMenu()" title="Thoát">
-                        🚪
-                    </button>
+                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')" title="Nhạc nền">🎵</button>
+                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')" title="Hiệu ứng">🔊</button>
+                    
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game1'); SoundEffects.buttonClick()" title="Hướng dẫn">❓</button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game1')" title="Lưu">💾</button>
+                    <button class="btn-icon-circle btn-exit" onclick="backToMenu()" title="Thoát">🚪</button>
                 </div>
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Cấp độ</div>
-                    <div class="stat-value highlight"><span id="game1-level">${game1State.level}</span>/${maxLevels.game1}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Số bước</div>
-                    <div class="stat-value"><span id="moves">${game1State.moves}</span></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Đã ghép</div>
-                    <div class="stat-value"><span id="matched">${game1State.matchedPairs}</span>/<span id="total-pairs">${game1State.totalPairs}</span></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Điểm số</div>
-                    <div class="stat-value highlight"><span id="game1-score">${game1State.totalScore}</span></div>
-                </div>
+                <div class="stat-card"><div class="stat-label">Cấp độ</div><div class="stat-value highlight"><span id="game1-level">${game1State.level}</span>/${maxLevels.game1}</div></div>
+                <div class="stat-card"><div class="stat-label">Số bước</div><div class="stat-value"><span id="moves">${game1State.moves}</span></div></div>
+                <div class="stat-card"><div class="stat-label">Đã ghép</div><div class="stat-value"><span id="matched">${game1State.matchedPairs}</span>/<span id="total-pairs">${game1State.totalPairs}</span></div></div>
+                <div class="stat-card"><div class="stat-label">Điểm số</div><div class="stat-value highlight"><span id="game1-score">${game1State.totalScore}</span></div></div>
             </div>
 
             <div class="text-center mb-4 text-sm text-gray-500 bg-white py-1 px-3 rounded-full inline-block mx-auto border border-gray-200">
                 Chủ đề: <strong id="game1-topic" class="text-blue-600">${game1State.currentTopic || 'Chung'}</strong>
             </div>
-
             <div id="game1-board" class="grid gap-3"></div>
         </div>
     </div>
     `;
 }
 
+
+    
     
 
     function initGame1() {
@@ -2838,20 +2840,23 @@ function renderGame1() {
       }, 500);
     }
 
-   function renderGame2() {
+    function renderGame2() {
     const config = window.elementSdk?.config || defaultConfig;
     const game2Name = config.game2_name || defaultConfig.game2_name;
+    const bgmClass = bgmEnabled ? 'active' : '';
+    const sfxClass = sfxEnabled ? 'active' : '';
     
     return `
     <div class="min-h-full p-3 sm:p-4" style="background: #f0f9ff;">
         <div class="max-w-4xl mx-auto">
-            
             <div class="game-header-compact">
                 <div class="game-title-mobile">
                     <span>🧺 ${game2Name}</span>
                     <span class="game-subtitle">Level ${game2State.level}</span>
                 </div>
                 <div class="flex">
+                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')">🎵</button>
+                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')">🔊</button>
                     <button class="btn-icon-circle btn-help" onclick="showTutorial('game2'); SoundEffects.buttonClick()">❓</button>
                     <button class="btn-icon-circle btn-save" onclick="saveAndExit('game2')">💾</button>
                     <button class="btn-icon-circle btn-exit" onclick="endGame2()">🚪</button>
@@ -2859,44 +2864,32 @@ function renderGame1() {
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Cấp độ</div>
-                    <div class="stat-value"><span id="game2-level">${game2State.level}</span>/${maxLevels.game2}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Điểm số</div>
-                    <div class="stat-value highlight"><span id="game2-score">${game2State.score}</span></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Đã đúng</div>
-                    <div class="stat-value"><span id="game2-correct">${game2State.questionsAnswered}</span>/5</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Mạng sống</div>
-                    <div class="stat-value text-red-500" id="game2-lives">
-                        ${Array(game2State.lives).fill('❤️').join('')}
-                    </div>
-                </div>
+                <div class="stat-card"><div class="stat-label">Cấp độ</div><div class="stat-value"><span id="game2-level">${game2State.level}</span>/${maxLevels.game2}</div></div>
+                <div class="stat-card"><div class="stat-label">Điểm số</div><div class="stat-value highlight"><span id="game2-score">${game2State.score}</span></div></div>
+                <div class="stat-card"><div class="stat-label">Đã đúng</div><div class="stat-value"><span id="game2-correct">${game2State.questionsAnswered}</span>/5</div></div>
+                <div class="stat-card"><div class="stat-label">Mạng sống</div><div class="stat-value text-red-500" id="game2-lives">${Array(game2State.lives).fill('❤️').join('')}</div></div>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm p-3 mb-3 text-center border border-blue-100">
                 <div class="text-xs text-gray-400 uppercase font-bold mb-1">Câu hỏi</div>
                 <div class="text-lg font-bold text-blue-800" id="game2-question"></div>
-                <div class="text-xs text-gray-500 mt-1 bg-gray-100 inline-block px-2 py-1 rounded">
-                    Chủ đề: <span id="game2-topic">${game2State.currentTopic || 'Chung'}</span>
-                </div>
+                <div class="text-xs text-gray-500 mt-1 bg-gray-100 inline-block px-2 py-1 rounded">Chủ đề: <span id="game2-topic">${game2State.currentTopic || 'Chung'}</span></div>
             </div>
 
             <div id="game2-canvas" class="bg-gradient-to-b from-sky-200 to-sky-50 rounded-xl shadow-inner relative overflow-hidden" style="height: 60vh; max-height: 500px;">
                 <div class="absolute bottom-0 w-full h-2 bg-green-600"></div>
-                <div class="absolute bottom-2 left-0 w-full text-center text-xs text-gray-500 opacity-70 pointer-events-none">
-                    Vuốt màn hình để di chuyển giỏ
-                </div>
+                <div class="absolute bottom-2 left-0 w-full text-center text-xs text-gray-500 opacity-70 pointer-events-none">Vuốt màn hình để di chuyển giỏ</div>
             </div>
         </div>
     </div>
     `;
 }
+
+
+
+
+
+    
 
     function initGame2() {
       game2State = {
@@ -3332,21 +3325,23 @@ function renderGame1() {
       showToast(`Game kết thúc! Điểm: ${game2State.score}`, 'success');
       setTimeout(() => backToMenu(), 1500);
     }
-
 function renderGame3() {
     const config = window.elementSdk?.config || defaultConfig;
     const game3Name = config.game3_name || defaultConfig.game3_name;
+    const bgmClass = bgmEnabled ? 'active' : '';
+    const sfxClass = sfxEnabled ? 'active' : '';
     
     return `
     <div class="min-h-full p-3 sm:p-4" style="background: #f5f3ff;">
         <div class="max-w-4xl mx-auto">
-            
             <div class="game-header-compact">
                 <div class="game-title-mobile">
                     <span>🎯 ${game3Name}</span>
                     <span class="game-subtitle">Level ${game3State.level}</span>
                 </div>
                 <div class="flex">
+                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')">🎵</button>
+                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')">🔊</button>
                     <button class="btn-icon-circle btn-help" onclick="showTutorial('game3'); SoundEffects.buttonClick()">❓</button>
                     <button class="btn-icon-circle btn-save" onclick="saveAndExit('game3')">💾</button>
                     <button class="btn-icon-circle btn-exit" onclick="endGame3()">🚪</button>
@@ -3354,24 +3349,10 @@ function renderGame3() {
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Cấp độ</div>
-                    <div class="stat-value"><span id="game3-level">${game3State.level}</span>/${maxLevels.game3}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Điểm số</div>
-                    <div class="stat-value highlight"><span id="game3-score">${game3State.score}</span></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Tiêu diệt</div>
-                    <div class="stat-value"><span id="game3-kills">${game3State.questionsAnswered}</span>/5</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Mạng sống</div>
-                    <div class="stat-value text-red-500" id="game3-lives">
-                        ${Array(game3State.lives).fill('❤️').join('')}
-                    </div>
-                </div>
+                <div class="stat-card"><div class="stat-label">Cấp độ</div><div class="stat-value"><span id="game3-level">${game3State.level}</span>/${maxLevels.game3}</div></div>
+                <div class="stat-card"><div class="stat-label">Điểm số</div><div class="stat-value highlight"><span id="game3-score">${game3State.score}</span></div></div>
+                <div class="stat-card"><div class="stat-label">Tiêu diệt</div><div class="stat-value"><span id="game3-kills">${game3State.questionsAnswered}</span>/5</div></div>
+                <div class="stat-card"><div class="stat-label">Mạng sống</div><div class="stat-value text-red-500" id="game3-lives">${Array(game3State.lives).fill('❤️').join('')}</div></div>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm p-3 mb-3 text-center border border-purple-100">
@@ -3381,17 +3362,18 @@ function renderGame3() {
             </div>
 
             <div id="game3-canvas" class="bg-gradient-to-b from-indigo-900 via-purple-900 to-indigo-800 rounded-xl shadow-inner relative overflow-hidden mb-3" style="height: 40vh; min-height: 300px;">
-                <div class="player-turret">
-                    <div class="turret-head">🔫</div>
-                    <div class="turret-base"></div>
-                </div>
+                <div class="player-turret"><div class="turret-head">🔫</div><div class="turret-base"></div></div>
             </div>
-
             <div class="grid grid-cols-2 gap-3" id="game3-answers"></div>
         </div>
     </div>
     `;
 }
+
+
+
+
+    
     
     function initGame3() {
       game3State = {
@@ -3739,43 +3721,36 @@ function renderGame3() {
       setTimeout(() => backToMenu(), 1500);
     }
 
+
 function renderGame4() {
     const config = window.elementSdk?.config || defaultConfig;
     const game4Name = config.game4_name || defaultConfig.game4_name;
+    const bgmClass = bgmEnabled ? 'active' : '';
+    const sfxClass = sfxEnabled ? 'active' : '';
     
-    // Giữ nguyên logic vòng lặp hiển thị các ô đất
     const plotsHtml = game4State.plots.map((plot, i) => {
         const plotInfo = getPlotDisplay(plot.stage);
         return `
-        <div onclick="selectPlot(${i})" 
-             class="rounded-xl shadow-md cursor-pointer relative overflow-hidden transition-transform active:scale-95"
-             style="height: 140px; background: ${plotInfo.bg};"
-             data-plot-index="${i}">
-             
+        <div onclick="selectPlot(${i})" class="rounded-xl shadow-md cursor-pointer relative overflow-hidden transition-transform active:scale-95" style="height: 140px; background: ${plotInfo.bg};" data-plot-index="${i}">
              <div class="plant-plot">
-                <div class="text-center mb-1" style="font-size: ${plotInfo.size}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
-                    <div class="${plot.stage === 4 ? 'sparkle grow' : 'grow'}">${plotInfo.icon}</div>
-                </div>
+                <div class="text-center mb-1" style="font-size: ${plotInfo.size}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"><div class="${plot.stage === 4 ? 'sparkle grow' : 'grow'}">${plotInfo.icon}</div></div>
                 <div class="text-sm font-bold text-center text-white drop-shadow-md">${plotInfo.text}</div>
              </div>
-             
-             ${plot.stage === 4 
-                ? '<div class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm backdrop-blur-sm">Thu hoạch! 🌾</div>' 
-                : '<div class="absolute inset-0 flex items-center justify-center bg-black/20 text-white text-xs font-semibold opacity-0 active:opacity-100 transition">Chạm để trả lời</div>'}
-        </div>
-        `;
+             ${plot.stage === 4 ? '<div class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm backdrop-blur-sm">Thu hoạch! 🌾</div>' : '<div class="absolute inset-0 flex items-center justify-center bg-black/20 text-white text-xs font-semibold opacity-0 active:opacity-100 transition">Chạm để trả lời</div>'}
+        </div>`;
     }).join('');
 
     return `
     <div class="min-h-full p-3 sm:p-4" style="background: #ecfdf5;">
         <div class="max-w-4xl mx-auto">
-            
             <div class="game-header-compact">
                 <div class="game-title-mobile">
                     <span>👨‍🌾 ${game4Name}</span>
                     <span class="game-subtitle">Level ${game4State.level}</span>
                 </div>
                 <div class="flex">
+                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')">🎵</button>
+                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')">🔊</button>
                     <button class="btn-icon-circle btn-help" onclick="showTutorial('game4'); SoundEffects.buttonClick()">❓</button>
                     <button class="btn-icon-circle btn-save" onclick="saveAndExit('game4')">💾</button>
                     <button class="btn-icon-circle btn-exit" onclick="backToMenu()">🚪</button>
@@ -3783,48 +3758,30 @@ function renderGame4() {
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Cấp độ</div>
-                    <div class="stat-value"><span id="game4-level">${game4State.level}</span>/${maxLevels.game4}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Điểm số</div>
-                    <div class="stat-value highlight"><span id="game4-score">${game4State.totalScore}</span></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Thu hoạch</div>
-                    <div class="stat-value"><span id="game4-harvest">${game4State.harvestCount}</span>/4</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Chủ đề</div>
-                    <div class="stat-value text-green-600 text-sm truncate px-1" id="game4-topic">${game4State.currentTopic || 'Chung'}</div>
-                </div>
+                <div class="stat-card"><div class="stat-label">Cấp độ</div><div class="stat-value"><span id="game4-level">${game4State.level}</span>/${maxLevels.game4}</div></div>
+                <div class="stat-card"><div class="stat-label">Điểm số</div><div class="stat-value highlight"><span id="game4-score">${game4State.totalScore}</span></div></div>
+                <div class="stat-card"><div class="stat-label">Thu hoạch</div><div class="stat-value"><span id="game4-harvest">${game4State.harvestCount}</span>/4</div></div>
+                <div class="stat-card"><div class="stat-label">Chủ đề</div><div class="stat-value text-green-600 text-sm truncate px-1" id="game4-topic">${game4State.currentTopic || 'Chung'}</div></div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                ${plotsHtml}
-            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">${plotsHtml}</div>
 
             <div id="game4-question" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" style="display: none;">
                 <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform scale-100 transition-all">
                     <h3 class="text-xl font-bold mb-4 text-center text-green-800" id="q-text">Câu hỏi ở đây</h3>
-                    <div class="grid grid-cols-1 gap-3" id="q-answers">
-                        </div>
-                    <div class="text-center mt-4">
-                        <span class="text-xs text-gray-400">Chọn đáp án đúng để cây lớn lên!</span>
-                    </div>
+                    <div class="grid grid-cols-1 gap-3" id="q-answers"></div>
+                    <div class="text-center mt-4"><span class="text-xs text-gray-400">Chọn đáp án đúng để cây lớn lên!</span></div>
                 </div>
             </div>
-
-            <div class="text-center text-xs text-gray-500 bg-white/50 py-2 rounded-lg">
-                Chủ đề hiện tại: <span id="game4-current-topic" class="font-bold text-green-700">${game4State.currentTopic || 'Chung'}</span>
-            </div>
+            
+            <div class="text-center text-xs text-gray-500 bg-white/50 py-2 rounded-lg">Chủ đề hiện tại: <span id="game4-current-topic" class="font-bold text-green-700">${game4State.currentTopic || 'Chung'}</span></div>
         </div>
     </div>
     `;
 }
-    
 
+
+    
     // ========== GAME 4 LOGIC - ĐÃ SỬA LỖI ==========
     function selectPlot(plotIndex) {
       const plot = game4State.plots[plotIndex];
