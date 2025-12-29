@@ -757,93 +757,54 @@
       }
     }
 
-/* === UI MỚI: HEADER GAME MOBILE === */
+
+/* === UI GAME MOBILE (Code mới) === */
 .game-header-compact {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    background: white;
-    padding: 10px 15px;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; background: white; padding: 10px 15px;
+    border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
+.game-title-mobile { font-size: 1.1rem; font-weight: 800; color: #1e3a8a; display: flex; flex-direction: column; }
+.game-subtitle { font-size: 0.75rem; font-weight: 500; color: #64748b; }
 
-.game-title-mobile {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #1e3a8a;
-    display: flex;
-    flex-direction: column;
-}
-
-.game-subtitle {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #64748b;
-}
-
-/* Nút bấm tròn (Icon Only trên mobile) */
 .btn-icon-circle {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: none; cursor: pointer;
-    font-size: 1.2rem;
-    transition: transform 0.2s;
+    width: 40px; height: 40px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; border: none; cursor: pointer;
+    font-size: 1.2rem; transition: transform 0.2s; margin-left: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .btn-save { background: #dcfce7; color: #16a34a; }
-.btn-exit { background: #fee2e2; color: #dc2626; margin-left: 8px; }
-.btn-help { background: #dbeafe; color: #2563eb; margin-left: 8px; }
+.btn-exit { background: #fee2e2; color: #dc2626; }
+.btn-help { background: #dbeafe; color: #2563eb; }
 
-.btn-icon-circle:active { transform: scale(0.9); }
-
-/* Thanh chỉ số dạng lưới thông minh (2x2 trên mobile, 4x1 trên PC) */
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Mặc định 2 cột (Mobile) */
-    gap: 10px;
-    margin-bottom: 15px;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;
 }
-
-@media (min-width: 640px) {
-    .stats-grid { grid-template-columns: repeat(4, 1fr); } /* PC: 4 cột */
-}
+@media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
 
 .stat-card {
-    background: white;
-    padding: 10px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    border: 1px solid #f1f5f9;
+    background: white; padding: 10px; border-radius: 12px; text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;
 }
-
-.stat-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.stat-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
 .stat-value { font-size: 1.1rem; font-weight: 700; color: #334155; }
-.stat-value.highlight { color: #3b82f6; } /* Màu xanh nổi bật cho điểm */
+.stat-value.highlight { color: #3b82f6; }
 
 /* Modal Hướng Dẫn */
 .tutorial-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.8); z-index: 3000;
-    display: flex; align-items: center; justify-content: center;
-    animation: fadeIn 0.3s;
+    display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s;
 }
 .tutorial-card {
-    background: white; width: 90%; max-width: 400px;
-    padding: 25px; border-radius: 20px; text-align: center;
-    position: relative;
-    animation: slideUp 0.3s;
+    background: white; width: 90%; max-width: 400px; padding: 25px;
+    border-radius: 20px; text-align: center; position: relative; animation: slideUp 0.3s;
 }
-.tutorial-icon { font-size: 3rem; margin-bottom: 15px; }
 .tutorial-step { text-align: left; margin-bottom: 10px; display: flex; gap: 10px; font-size: 0.95rem; color: #475569; }
-.step-num { 
-    background: #3b82f6; color: white; width: 24px; height: 24px; 
-    border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-    font-size: 0.8rem; font-weight: bold; flex-shrink: 0;
-}
+.step-num { background: #3b82f6; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; flex-shrink: 0; }
+
+    /* === UI GAME MOBILE (Code mới) === */
+
 
 
     
@@ -2670,6 +2631,7 @@
         </div>
       `;
     }
+
 function renderGame1() {
     const gameName = "Lật Ô Ghi Nhớ"; // Hoặc lấy từ config
     
@@ -2724,8 +2686,6 @@ function renderGame1() {
     </div>
     `;
 }
-
-
 
     
 
@@ -4586,7 +4546,6 @@ function renderGame1() {
       }
     });
 
-
 // Hàm hiển thị hướng dẫn chơi game
 function showTutorial(gameType) {
     const tutorials = {
@@ -4661,8 +4620,6 @@ function showTutorial(gameType) {
 // Tự động hiện hướng dẫn khi vào game lần đầu (Mỗi phiên làm việc)
 // Bạn có thể gọi hàm này ở cuối các hàm initGame1(), initGame2()...
 // Ví dụ: if(!sessionStorage.getItem('tutorial_shown_' + currentScreen)) { showTutorial(currentScreen); sessionStorage.setItem('tutorial_shown_' + currentScreen, 'true'); }
-
-
     
   </script>
 </body>
