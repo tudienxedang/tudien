@@ -3519,6 +3519,91 @@ body.dark-mode .no-result p:last-child {
 
 
 
+
+/* ========================================================= */
+/* === GIAO DIỆN "KHÔNG TÌM THẤY KẾT QUẢ" (ĐẸP & RÕ RÀNG) === */
+/* ========================================================= */
+
+.no-result {
+    /* Tạo khung nổi bật */
+    background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+    border: 2px dashed #fc8181; /* Viền nét đứt màu đỏ nhạt báo hiệu */
+    border-radius: 16px;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    margin-top: 1.5rem;
+    
+    /* Hiệu ứng hiện ra nhẹ nhàng */
+    animation: zoomIn 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Biểu tượng kính lúp to đùng */
+.no-result i {
+    font-size: 4rem !important; /* To gấp 4 lần chữ thường */
+    color: #e53e3e; /* Màu đỏ cam cảnh báo */
+    margin-bottom: 1.2rem !important;
+    display: inline-block;
+    
+    /* Hiệu ứng lắc nhẹ để gây chú ý */
+    animation: shake 3s infinite;
+}
+
+/* Dòng thông báo chính (Vd: Không tìm thấy...) */
+.no-result p:nth-of-type(1) {
+    font-size: 1.3rem !important;
+    font-weight: 700;
+    color: #c53030;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+/* Dòng hướng dẫn phụ (Vd: Kiểm tra chính tả...) */
+.no-result p:nth-of-type(2) {
+    font-size: 1rem !important;
+    color: #4a5568;
+    background: rgba(255,255,255,0.7);
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: inline-block;
+    border: 1px solid #fed7d7;
+}
+
+/* --- CHẾ ĐỘ DARK MODE (TỐI) --- */
+body.dark-mode .no-result {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%) !important;
+    border-color: #4a5568 !important;
+}
+
+body.dark-mode .no-result i {
+    color: #fc8181 !important; /* Đổi icon sang màu sáng hơn */
+    text-shadow: 0 0 15px rgba(252, 129, 129, 0.4); /* Phát sáng nhẹ */
+}
+
+body.dark-mode .no-result p:nth-of-type(1) {
+    color: #feb2b2 !important; /* Chữ chính màu hồng phấn */
+}
+
+body.dark-mode .no-result p:nth-of-type(2) {
+    color: #cbd5e0 !important;
+    background: rgba(0,0,0,0.3);
+    border-color: #4a5568;
+}
+
+/* Animation lắc lư */
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    10%, 30%, 50%, 70%, 90% { transform: rotate(-5deg); }
+    20%, 40%, 60%, 80% { transform: rotate(5deg); }
+}
+
+@keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+/* ========================================================= */		
+
 		
 	
 </style>
@@ -4723,14 +4808,19 @@ body.dark-mode .no-result p:last-child {
             // --- HIỂN THỊ KẾT QUẢ BAN ĐẦU ---
             function renderInitialResults(results, direction) {
                 if (results.length === 0) {
-                    return `
-                        <div class="no-result">
-                            <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; color: #ccc; display: block;"></i>
-                            <p>Không tìm thấy kết quả phù hợp</p>
-                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Thử tìm kiếm với từ khóa khác hoặc kiểm tra chính tả</p>
-                        </div>
-                    `;
-                }
+    return `
+        <div class="no-result">
+            <i class="fas fa-search-minus"></i> 
+            
+            <p>Rất tiếc! Không tìm thấy từ này</p>
+            
+            <p>
+                <i class="fas fa-lightbulb" style="color: #f6ad55; margin-right: 5px;"></i>
+                Gợi ý: Hãy kiểm tra lỗi chính tả hoặc thử từ khóa ngắn hơn.
+            </p>
+        </div>
+    `;
+}
                 
                 // Chỉ hiển thị tối đa 5 kết quả - KHÔNG CÓ NÚT "HIỂN THỊ THÊM"
                 const displayResults = results.slice(0, MAX_INITIAL_RESULTS);
