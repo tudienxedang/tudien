@@ -27,22 +27,15 @@
     <meta name="copyright" content="Dự án KHKT Học sinh THCS">
     <meta name="language" content="Vietnamese">
     <meta name="revisit-after" content="7 days">
-
-	<!-- PWA Meta Tags -->
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black">
-	<meta name="apple-mobile-web-app-title" content="Tiếng Xơ Đăng">
-	<link rel="apple-touch-icon" href="https://tudienxedang.github.io/tudien/icon-192x192.png">
-	<meta name="theme-color" content="#27ae60">
     
     <!-- PWA Manifest - GIỮ NGUYÊN -->
-    <link rel="manifest" href="https://tudienxedang.github.io/tudien/manifest.json">
+    <link rel="manifest" href=""https://tudienxedang.github.io/tudien/manifest.json">
     <meta name="theme-color" content="#27ae60">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Học Tiếng Xơ Đăng THCS">
-    <link rel="apple-touch-icon" href="https://tudienxedang.github.io/tudien/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/icon-192x192.png">
 
     <!-- Open Graph - CẬP NHẬT -->
     <meta property="og:type" content="website">
@@ -257,6 +250,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+
+/* Thêm CSS cho cảnh báo trình duyệt ở footer */
+.browser-warning {
+    background: #f39c12;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin: 15px auto;
+    text-align: center;
+    max-width: 800px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    animation: slideUp 0.5s ease;
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.browser-warning i {
+    font-size: 1.2rem;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode cho browser warning */
+body.dark-mode .browser-warning {
+    background: #d68910;
+    color: #fff;
+}
+		
         /* Tất cả CSS từ phiên bản trước vẫn giữ nguyên */
         :root {
             --primary-color: #2c3e50;
@@ -3786,6 +3813,12 @@ img[loading="lazy"] {
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
+			<!-- Cảnh báo trình duyệt -->
+<div id="browserWarning" class="browser-warning" style="display: none;">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>Để trải nghiệm ổn định nhất, vui lòng sử dụng trình duyệt Safari, Cốc Cốc hoặc Chrome.</span>
+</div>
+			
             <p>© 2025@ Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS</p>
             <p>Tác giả: Minh Bảo - Hà Mi, Trường THCS Chu Văn An xã Đăk Hà tỉnh Quảng Ngãi</p>
             <div class="hashtag-container">
@@ -3864,62 +3897,277 @@ img[loading="lazy"] {
             document.getElementById('darkModeToggle').querySelector('i').className = 'fas fa-sun';
         }
 
-        // ===== PWA INSTALLATION =====
-        let deferredPrompt;
-        const installButton = document.getElementById('installButton');
+       // ===== PWA INSTALLATION & BROWSER DETECTION =====
+let deferredPrompt;
+const installButton = document.getElementById('installButton');
+const browserWarning = document.getElementById('browserWarning');
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installButton.classList.add('show');
-            
-            installButton.addEventListener('click', () => {
-                installButton.classList.remove('show');
-                deferredPrompt.prompt();
-                
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted the install prompt');
-                    } else {
-                        console.log('User dismissed the install prompt');
-                    }
-                    deferredPrompt = null;
-                });
-            });
-        });
+// Hàm phát hiện trình duyệt
+function detectBrowser() {
+    const userAgent = navigator.userAgent;
+    let browser = 'unknown';
+    
+    // Phát hiện Safari
+    if (/safari/i.test(userAgent) && !/chrome/i.test(userAgent) && !/crios/i.test(userAgent)) {
+        browser = 'safari';
+    }
+    // Phát hiện Cốc Cốc
+    else if (/coccoc/i.test(userAgent)) {
+        browser = 'coccoc';
+    }
+    // Phát hiện Chrome
+    else if (/chrome/i.test(userAgent) && !/edge/i.test(userAgent) && !/opr/i.test(userAgent)) {
+        browser = 'chrome';
+    }
+    // Phát hiện Firefox
+    else if (/firefox/i.test(userAgent)) {
+        browser = 'firefox';
+    }
+    // Phát hiện Edge
+    else if (/edge/i.test(userAgent)) {
+        browser = 'edge';
+    }
+    // Phát hiện Opera
+    else if (/opr/i.test(userAgent)) {
+        browser = 'opera';
+    }
+    // Phát hiện iOS (tất cả trình duyệt trên iOS đều dùng WebKit)
+    else if (/iphone|ipad|ipod/i.test(userAgent)) {
+        browser = 'ios';
+    }
+    
+    return browser;
+}
 
-        window.addEventListener('appinstalled', () => {
-            console.log('PWA was installed');
-            installButton.classList.remove('show');
-            deferredPrompt = null;
-            
-            // Hiển thị thông báo
-            showToast('Ứng dụng đã được cài đặt thành công!', 'success');
-        });
+// Kiểm tra và hiển thị cảnh báo trình duyệt
+function checkBrowserCompatibility() {
+    const browser = detectBrowser();
+    const isCompatible = ['safari', 'coccoc', 'chrome', 'ios'].includes(browser);
+    
+    if (!isCompatible) {
+        browserWarning.style.display = 'flex';
+        showToast(`Trình duyệt ${browser} có thể không ổn định. Dùng Safari, Cốc Cốc hoặc Chrome để có trải nghiệm tốt nhất.`, 'info');
+    } else {
+        browserWarning.style.display = 'none';
+    }
+    
+    return isCompatible;
+}
 
-        // Kiểm tra nếu app đã được cài đặt
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            console.log('Running in standalone mode');
-            installButton.style.display = 'none';
-        }
+// Luôn hiển thị nút cài đặt
+function setupInstallButton() {
+    const browser = detectBrowser();
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    
+    // Ẩn nút nếu app đã được cài đặt
+    if (isStandalone) {
+        installButton.style.display = 'none';
+        return;
+    }
+    
+    // Luôn hiển thị nút cài đặt
+    installButton.style.display = 'flex';
+    
+    // Cập nhật text cho iOS
+    if (browser === 'ios' || /iphone|ipad|ipod/i.test(navigator.userAgent)) {
+        installButton.innerHTML = '<i class="fas fa-plus-square"></i> Thêm vào màn hình chính';
+        installButton.title = 'Hướng dẫn thêm ứng dụng vào màn hình chính';
+    } else {
+        installButton.innerHTML = '<i class="fas fa-download"></i> Cài đặt App';
+        installButton.title = 'Cài đặt ứng dụng';
+    }
+    
+    // Hiển thị với animation
+    setTimeout(() => {
+        installButton.classList.add('show');
+    }, 1000);
+}
 
-        // ===== OFFLINE DETECTION =====
-        const offlineIndicator = document.getElementById('offlineIndicator');
+// Xử lý sự kiện cài đặt
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Chỉ cập nhật text cho các trình duyệt hỗ trợ beforeinstallprompt
+    if (!/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+        installButton.innerHTML = '<i class="fas fa-download"></i> Cài đặt App';
+    }
+});
+
+installButton.addEventListener('click', async () => {
+    const browser = detectBrowser();
+    
+    // Xử lý cho iOS (hiển thị hướng dẫn)
+    if (browser === 'ios' || /iphone|ipad|ipod/i.test(navigator.userAgent)) {
+        showIOSInstallInstructions();
+        return;
+    }
+    
+    // Xử lý cho các trình duyệt hỗ trợ beforeinstallprompt
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
         
-        window.addEventListener('online', () => {
-            offlineIndicator.classList.remove('show');
-            setTimeout(() => {
-                offlineIndicator.querySelector('i').className = 'fas fa-wifi';
-                offlineIndicator.querySelector('span').textContent = 'Đang online';
-                offlineIndicator.classList.add('online');
-                offlineIndicator.classList.add('show');
-                
-                setTimeout(() => {
-                    offlineIndicator.classList.remove('show');
-                }, 3000);
-            }, 100);
-        });
+        if (outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+            showToast('Ứng dụng đang được cài đặt...', 'success');
+        } else {
+            console.log('User dismissed the install prompt');
+            showToast('Cài đặt đã bị hủy. Bạn có thể cài đặt sau.', 'info');
+        }
+        deferredPrompt = null;
+    } else {
+        // Hướng dẫn thủ công cho các trình duyệt không hỗ trợ beforeinstallprompt
+        showManualInstallInstructions(browser);
+    }
+});
 
+// Hướng dẫn cài đặt cho iOS
+function showIOSInstallInstructions() {
+    const instructions = `
+        <div style="text-align: left; padding: 15px;">
+            <h3 style="color: #27ae60; margin-bottom: 15px;">📱 Hướng dẫn thêm vào màn hình chính (iOS)</h3>
+            <ol style="margin-left: 20px; margin-bottom: 15px;">
+                <li style="margin-bottom: 8px;">Nhấn vào nút <strong>Chia sẻ</strong> (hình hộp với mũi tên đi lên) trên thanh địa chỉ Safari</li>
+                <li style="margin-bottom: 8px;">Cuộn xuống và chọn <strong>"Thêm vào Màn hình chính"</strong></li>
+                <li style="margin-bottom: 8px;">Nhấn <strong>"Thêm"</strong> ở góc trên bên phải</li>
+                <li>Ứng dụng sẽ xuất hiện trên màn hình chính của bạn</li>
+            </ol>
+            <div style="background: #f0f8f0; padding: 10px; border-radius: 5px; border-left: 4px solid #27ae60;">
+                <i class="fas fa-lightbulb"></i> 
+                <strong>Mẹo:</strong> Sau khi thêm, bạn có thể sử dụng ứng dụng offline hoàn toàn.
+            </div>
+        </div>
+    `;
+    
+    showCustomAlert('Hướng dẫn cài đặt iOS', instructions);
+}
+
+// Hướng dẫn thủ công cho các trình duyệt khác
+function showManualInstallInstructions(browser) {
+    let instructions = '';
+    let browserName = '';
+    
+    switch(browser) {
+        case 'firefox':
+            browserName = 'Firefox';
+            instructions = `
+                <ol style="margin-left: 20px;">
+                    <li>Nhấn vào menu ☰ ở góc trên bên phải</li>
+                    <li>Chọn "Cài đặt ứng dụng" hoặc "Cài đặt trang"</li>
+                    <li>Xác nhận cài đặt ứng dụng</li>
+                </ol>
+            `;
+            break;
+        case 'edge':
+            browserName = 'Microsoft Edge';
+            instructions = `
+                <ol style="margin-left: 20px;">
+                    <li>Nhấn vào menu ••• ở góc trên bên phải</li>
+                    <li>Chọn "Ứng dụng" → "Cài đặt ứng dụng này dưới dạng ứng dụng"</li>
+                    <li>Xác nhận cài đặt</li>
+                </ol>
+            `;
+            break;
+        case 'opera':
+            browserName = 'Opera';
+            instructions = `
+                <ol style="margin-left: 20px;">
+                    <li>Nhấn vào menu ≡ ở góc trên bên trái</li>
+                    <li>Chọn "Cài đặt" → "Cài đặt ứng dụng"</li>
+                    <li>Xác nhận cài đặt</li>
+                </ol>
+            `;
+            break;
+        default:
+            browserName = 'trình duyệt';
+            instructions = `
+                <p>Tìm kiếm tùy chọn <strong>"Cài đặt ứng dụng"</strong>, <strong>"Thêm vào màn hình chính"</strong> hoặc <strong>"Cài đặt trang"</strong> trong menu của trình duyệt.</p>
+            `;
+    }
+    
+    const message = `
+        <div style="text-align: left; padding: 15px;">
+            <h3 style="color: #3498db; margin-bottom: 15px;">💻 Hướng dẫn cài đặt cho ${browserName}</h3>
+            ${instructions}
+            <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; border-left: 4px solid #3498db; margin-top: 15px;">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Lưu ý:</strong> Tính năng này có thể khác nhau tùy phiên bản trình duyệt.
+            </div>
+        </div>
+    `;
+    
+    showCustomAlert('Hướng dẫn cài đặt', message);
+}
+
+// Hàm hiển thị alert tùy chỉnh
+function showCustomAlert(title, content) {
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+    `;
+    
+    alertDiv.innerHTML = `
+        <div style="background: white; border-radius: 10px; max-width: 500px; width: 100%; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <div style="background: #27ae60; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.2rem;">${title}</h3>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">×</button>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto;">
+                ${content}
+            </div>
+            <div style="padding: 15px 20px; text-align: right; border-top: 1px solid #eee;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="padding: 8px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">Đóng</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Đóng khi click ra ngoài
+    alertDiv.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.remove();
+        }
+    });
+}
+
+// Khởi tạo khi trang được tải
+window.addEventListener('load', () => {
+    // Kiểm tra trình duyệt
+    checkBrowserCompatibility();
+    
+    // Thiết lập nút cài đặt
+    setupInstallButton();
+    
+    // Kiểm tra lại khi thay đổi kết nối mạng
+    window.addEventListener('online', checkBrowserCompatibility);
+    window.addEventListener('offline', checkBrowserCompatibility);
+});
+
+// Sự kiện khi app đã được cài đặt
+window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    installButton.style.display = 'none';
+    deferredPrompt = null;
+    showToast('Ứng dụng đã được cài đặt thành công!', 'success');
+});
+
+
+
+
+
+		
         window.addEventListener('offline', () => {
             offlineIndicator.querySelector('i').className = 'fas fa-wifi-slash';
             offlineIndicator.querySelector('span').textContent = 'Đang offline';
@@ -6513,19 +6761,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
-		// Đăng ký Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('https://github.com/tudienxedang/tudien/service-worker.js')
-      .then(function(registration) {
-        console.log('Service Worker đã đăng ký thành công:', registration.scope);
-      })
-      .catch(function(error) {
-        console.log('Đăng ký Service Worker thất bại:', error);
-      });
-  });
-}
     </script>
 
 
