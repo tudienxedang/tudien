@@ -1104,45 +1104,42 @@
 
 
 
-/* === FIX CĂN GIỮA TUYỆT ĐỐI CHO MODAL GAME 4 === */
+/* === FIX CĂN GIỮA TUYỆT ĐỐI CHO MODAL GAME 4 (ĐÃ SỬA LỖI CHE MÀN HÌNH) === */
 #game4-question {
-    /* 1. Chiếm toàn bộ khung nhìn, kể cả phần bị thanh địa chỉ che */
+    /* 1. Vị trí phủ kín màn hình */
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
-    height: 100vh !important; /* Fallback cho máy cũ */
-    height: 100dvh !important; /* Đơn vị chuẩn cho Mobile hiện đại */
+    height: 100dvh !important; /* Chiều cao chuẩn mobile */
     
-    /* 2. Flexbox căn giữa đa chiều */
-    display: flex !important;
-    align-items: center !important;     /* Căn giữa dọc */
-    justify-content: center !important; /* Căn giữa ngang */
+    /* 2. Căn giữa nội dung (Chỉ hoạt động khi JS bật display: flex) */
+    align-items: center !important;
+    justify-content: center !important;
     
-    /* 3. Lớp nền tối và nổi lên trên cùng */
+    /* 3. Giao diện nền */
     z-index: 9999 !important;
     background-color: rgba(0, 0, 0, 0.8) !important;
     backdrop-filter: blur(5px);
     padding: 20px !important;
     margin: 0 !important;
+    
+    /* LƯU Ý: Không được đặt display ở đây để tránh lỗi luôn hiện */
 }
 
 /* Khung nội dung bên trong */
 #game4-question > div {
-    /* Đảm bảo không quá to so với màn hình */
     width: 100% !important;
     max-width: 360px !important;
-    max-height: 90dvh !important; /* Không bao giờ cao hơn màn hình */
-    overflow-y: auto !important; /* Nếu dài quá thì cuộn bên trong */
-    margin: auto !important; /* Kỹ thuật căn giữa cổ điển hỗ trợ thêm */
+    max-height: 90dvh !important;
+    overflow-y: auto !important;
     position: relative !important;
-    transform: none !important; /* Bỏ transform cũ để tránh xung đột */
     
     /* Làm đẹp */
     background: white;
     border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-}    
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
 
 
 
@@ -4183,70 +4180,72 @@ function renderGame4() {
     }
 
     function showQuestion4() {
-      const plotIndex = game4State.selectedPlot;
-      const plot = game4State.plots[plotIndex];
-      
-      if (plot.stage >= 4) {
+    const plotIndex = game4State.selectedPlot;
+    const plot = game4State.plots[plotIndex];
+    
+    // Nếu cây đã chín (stage 4) thì không hiện câu hỏi nữa
+    if (plot.stage >= 4) {
         return;
-      }
-      
-      if (game4State.levelQuestions.length === 0) {
+    }
+    
+    // Logic lấy câu hỏi (Giữ nguyên)
+    if (game4State.levelQuestions.length === 0) {
         game4State.levelQuestions = getQuestionsByLevelExact('game4', game4State.level);
-      }
-      
-      const availableQuestions = game4State.levelQuestions.filter(q => {
+    }
+    
+    const availableQuestions = game4State.levelQuestions.filter(q => {
         const notAskedInThisPlot = !plot.askedQuestions.includes(q.question);
         const askCount = game4State.askedQuestionIds.filter(id => id === q.question).length;
         return notAskedInThisPlot && askCount < 2;
-      });
-      
-      let questionData;
-      if (availableQuestions.length === 0) {
+    });
+    
+    let questionData;
+    if (availableQuestions.length === 0) {
         plot.askedQuestions = [];
-        questionData = game4State.levelQuestions[
-          Math.floor(Math.random() * game4State.levelQuestions.length)
-        ];
-      } else {
-        questionData = availableQuestions[
-          Math.floor(Math.random() * availableQuestions.length)
-        ];
-      }
-      
-      plot.askedQuestions.push(questionData.question);
-      game4State.askedQuestionIds.push(questionData.question);
-      
-      game4State.currentQuestion = {
+        questionData = game4State.levelQuestions[Math.floor(Math.random() * game4State.levelQuestions.length)];
+    } else {
+        questionData = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+    }
+    
+    plot.askedQuestions.push(questionData.question);
+    game4State.askedQuestionIds.push(questionData.question);
+    
+    game4State.currentQuestion = {
         question: questionData.question,
         correctAnswer: questionData.correct,
-        allAnswers: [questionData.correct, ...questionData.wrongs]
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 4),
+        allAnswers: [questionData.correct, ...questionData.wrongs].sort(() => Math.random() - 0.5).slice(0, 4),
         topic: questionData.topic
-      };
+    };
 
-      if (questionData.topic && game4State.currentTopic !== questionData.topic) {
+    if (questionData.topic && game4State.currentTopic !== questionData.topic) {
         game4State.currentTopic = questionData.topic;
         document.getElementById('game4-topic').textContent = questionData.topic;
         document.getElementById('game4-current-topic').textContent = questionData.topic;
-      }
-
-      document.getElementById('q-text').textContent = game4State.currentQuestion.question;
-     // ... bên trong hàm showQuestion4 ...
-
-document.getElementById('q-answers').innerHTML = game4State.currentQuestion.allAnswers.map(answer => `
-    <button 
-        onclick="answerQuestion4('${answer.replace(/'/g, "\\'")}', this)" 
-        class="w-full py-3.5 px-4 text-base bg-white border-2 border-gray-100 text-gray-700 rounded-xl font-bold hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-all duration-200 shadow-sm active:scale-98 flex items-center justify-center min-h-[60px]"
-        aria-label="Chọn đáp án: ${answer}"
-    >
-        ${answer}
-    </button>
-`).join('');
-
-// ...
-
-      document.getElementById('game4-question').style.display = 'block';
     }
+
+    // Hiển thị nội dung lên giao diện
+    document.getElementById('q-text').textContent = game4State.currentQuestion.question;
+    
+    // Tạo nút đáp án (Dạng cột dọc cho đẹp)
+    document.getElementById('q-answers').innerHTML = game4State.currentQuestion.allAnswers.map(answer => `
+        <button 
+            onclick="answerQuestion4('${answer.replace(/'/g, "\\'")}', this)" 
+            class="w-full py-3.5 px-4 text-base bg-white border-2 border-gray-100 text-gray-700 rounded-xl font-bold hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-all duration-200 shadow-sm active:scale-98 flex items-center justify-center min-h-[50px]"
+        >
+            ${answer}
+        </button>
+    `).join('');
+
+    // QUAN TRỌNG: Bật chế độ Flex để căn giữa màn hình
+    const modal = document.getElementById('game4-question');
+    modal.style.display = 'flex'; 
+}
+
+
+
+
+
+    
 
     function answerQuestion4(answer, button) {
       const plotIndex = game4State.selectedPlot;
