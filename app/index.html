@@ -638,13 +638,13 @@
       box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
     }
 
-    /* Game 1 - Thêm class để xử lý click */
+    /* Game 1 - Sửa lỗi lật thẻ */
     .card.disabled {
       cursor: not-allowed;
       opacity: 0.7;
     }
 
-    /* Game 2 - Cải thiện responsive */
+    /* Game 2 - Cải thiện responsive và tốc độ */
     @media (max-width: 640px) {
       .basket-character {
         width: 60px;
@@ -668,7 +668,7 @@
       }
     }
 
-    /* Game 3 - Cải thiện responsive */
+    /* Game 3 - Cải thiện responsive và tốc độ */
     @media (max-width: 640px) {
       .player-turret {
         width: 100px;
@@ -747,6 +747,14 @@
     .certificate-close-btn:hover {
       background: #dc2626;
       transform: scale(1.1);
+    }
+    
+    /* Touch optimization for mobile */
+    @media (hover: none) and (pointer: coarse) {
+      button, .card, [role="button"] {
+        min-height: 44px;
+        min-width: 44px;
+      }
     }
   </style>
   <style>@view-transition { navigation: auto; }</style>
@@ -1087,7 +1095,7 @@
       maxCombo: 0,
       currentTopic: '',
       lastShotTime: 0,
-      shotCooldown: 500,
+      shotCooldown: 800, // Tăng từ 500 lên 800ms để game học tập dễ hơn
       animationFrameId: null
     };
 
@@ -2614,6 +2622,7 @@
       `;
     }
 
+    // ========== GAME 1: LẬT Ô GHI NHỚ - ĐÃ SỬA LỖI ==========
     function initGame1() {
       game1State.level = 1;
       game1State.moves = 0;
@@ -2675,61 +2684,64 @@
       `).join('');
     }
 
+    // ĐÃ SỬA: Logic lật thẻ và xử lý khi 2 thẻ giống nhau
     function flipCard(index) {
-      if (!game1State.canFlip) return;
-      
-      const card = game1State.cards[index];
+      // Kiểm tra nếu thẻ đã được lật hoặc đã khớp
       const cardElement = document.querySelector(`[data-index="${index}"]`);
-
       if (game1State.flippedCards.length >= 2 || 
           game1State.flippedCards.includes(index) || 
-          cardElement.classList.contains('matched')) {
+          cardElement.classList.contains('matched') ||
+          !game1State.canFlip) {
         return;
       }
-
-      SoundEffects.flipCard();
       
-      game1State.canFlip = false;
+      // Lật thẻ
+      SoundEffects.flipCard();
       cardElement.classList.add('flipped');
       game1State.flippedCards.push(index);
-
+      
+      // Nếu đã lật đủ 2 thẻ
       if (game1State.flippedCards.length === 2) {
         game1State.moves++;
         document.getElementById('moves').textContent = game1State.moves;
-
+        game1State.canFlip = false;  // Tạm khóa lật
+        
         const [idx1, idx2] = game1State.flippedCards;
         const card1 = game1State.cards[idx1];
-        const card2 = gameState.cards[idx2];
-
+        const card2 = game1State.cards[idx2];
+        
         if (card1.pairId === card2.pairId) {
-          setTimeout(() => SoundEffects.matchSuccess(), 100);
-          
+          // THẺ GIỐNG NHAU - SỬA QUAN TRỌNG
           setTimeout(() => {
             document.querySelector(`[data-index="${idx1}"]`).classList.add('matched');
             document.querySelector(`[data-index="${idx2}"]`).classList.add('matched');
+            
+            // Giữ thẻ lật để hiển thị
+            document.querySelector(`[data-index="${idx1}"]`).classList.add('flipped');
+            document.querySelector(`[data-index="${idx2}"]`).classList.add('flipped');
+            
+            SoundEffects.matchSuccess();
             game1State.matchedPairs++;
             document.getElementById('matched').textContent = game1State.matchedPairs;
+            
+            // Reset mà không mất hiệu ứng
             game1State.flippedCards = [];
             game1State.canFlip = true;
-
+            
             if (game1State.matchedPairs === game1State.totalPairs) {
               completeGame1Level();
             }
           }, 500);
         } else {
-          setTimeout(() => SoundEffects.matchFail(), 300);
-          
+          // THẺ KHÁC NHAU
           setTimeout(() => {
             document.querySelector(`[data-index="${idx1}"]`).classList.remove('flipped');
             document.querySelector(`[data-index="${idx2}"]`).classList.remove('flipped');
             game1State.flippedCards = [];
             game1State.canFlip = true;
+            SoundEffects.matchFail();
           }, 1000);
         }
-      } else {
-        setTimeout(() => {
-          game1State.canFlip = true;
-        }, 300);
       }
     }
 
@@ -2833,6 +2845,7 @@
       `;
     }
 
+    // ========== GAME 2: MƯA TỪ VỰNG - ĐÃ SỬA LỖI TỐC ĐỘ VÀ MOBILE ==========
     function initGame2() {
       game2State = {
         score: 0,
@@ -2864,6 +2877,19 @@
           <div class="basket-base"></div>
         </div>
       `;
+
+      // Điều chỉnh kích thước basket cho mobile
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        const basket = canvas.querySelector('.basket-character');
+        if (basket) {
+          basket.style.width = '60px';
+          basket.style.height = '80px';
+          basket.querySelector('.basket-body').style.width = '45px';
+          basket.querySelector('.basket-body').style.height = '45px';
+          basket.querySelector('.basket-base').style.width = '55px';
+        }
+      }
 
       document.addEventListener('mousemove', handleGame2Mouse);
       document.addEventListener('touchmove', handleGame2Touch);
@@ -2909,18 +2935,36 @@
       }
     }
 
+    // ĐÃ SỬA: Cải thiện xử lý touch cho mobile
+    let lastTouchTime = 0;
+    const TOUCH_THROTTLE = 16; // ~60fps
+
     function handleGame2Touch(e) {
       if (currentScreen !== 'game2') return;
       e.preventDefault();
+      
+      const now = Date.now();
+      if (now - lastTouchTime < TOUCH_THROTTLE) return;
+      lastTouchTime = now;
+      
       const canvas = document.getElementById('game2-canvas');
-      if (!canvas) return;
+      if (!canvas || currentScreen !== 'game2') return;
       
       const touch = e.touches[0];
       const rect = canvas.getBoundingClientRect();
       const x = touch.clientX - rect.left;
-      game2State.basketX = Math.max(0, Math.min(x - 40, canvas.offsetWidth - 80));
+      
+      // Thêm smoothing cho di chuyển
+      const targetX = Math.max(0, Math.min(x - 40, canvas.offsetWidth - 80));
+      game2State.basketX += (targetX - game2State.basketX) * 0.3; // Linear interpolation
+      
       const basket = canvas.querySelector('.basket-character');
       if (basket) basket.style.left = game2State.basketX + 'px';
+      
+      // Giảm tần suất âm thanh di chuyển
+      if (Math.random() > 0.9) {
+        SoundEffects.basketMove();
+      }
     }
 
     function handleGame2Keys(e) {
@@ -2939,6 +2983,7 @@
       if (basket) basket.style.left = game2State.basketX + 'px';
     }
 
+    // ĐÃ SỬA: Giảm tốc độ rơi của từ cho game học tập
     function nextQuestion2() {
       if (game2State.isProcessing) return;
       game2State.isProcessing = true;
@@ -2971,7 +3016,10 @@
         .sort(() => Math.random() - 0.5)
         .slice(0, 4);
 
-      const speed = 1.5 + game2State.level * 0.3;
+      // GIẢM TỐC ĐỘ XUỐNG - quan trọng cho game học tập
+      const baseSpeed = 0.8;  // Giảm từ 1.5 xuống 0.8
+      const levelFactor = 0.15;  // Giảm từ 0.3 xuống 0.15
+      const speed = baseSpeed + game2State.level * levelFactor;
 
       game2State.fallingWords.forEach(w => {
         if (w.element && w.element.parentNode) {
@@ -3002,7 +3050,7 @@
             caught: false,
             answer: answer
           });
-        }, i * 800);
+        }, i * 1200); // Tăng thời gian delay giữa các từ
       });
 
       game2State.questionIndex++;
@@ -3305,6 +3353,7 @@
       `;
     }
 
+    // ========== GAME 3: BẢO VỆ CỨ ĐIỂM - ĐÃ SỬA LỖI TỐC ĐỘ ==========
     function initGame3() {
       game3State = {
         score: 0,
@@ -3319,7 +3368,7 @@
         maxCombo: 0,
         currentTopic: '',
         lastShotTime: 0,
-        shotCooldown: 500,
+        shotCooldown: 800, // Tăng từ 500 lên 800ms để game học tập dễ hơn
         animationFrameId: null
       };
 
@@ -3389,6 +3438,7 @@
       game3State.questionIndex++;
     }
 
+    // ĐÃ SỬA: Giảm tốc độ enemy cho game học tập
     function spawnEnemy() {
       const canvas = document.getElementById('game3-canvas');
       if (!canvas) return;
@@ -3407,12 +3457,16 @@
       
       canvas.appendChild(enemy);
       
-      const speed = 0.8 + game3State.level * 0.2;
+      // GIẢM TỐC ĐỘ ENEMY - quan trọng cho game học tập
+      const baseSpeed = 0.3;  // Giảm mạnh từ 0.8 xuống 0.3
+      const levelFactor = 0.08;  // Giảm từ 0.2 xuống 0.08
+      const speed = baseSpeed + game3State.level * levelFactor;
+      const finalSpeed = speed * (0.9 + Math.random() * 0.2); // Thêm random variation nhẹ
       
       game3State.enemies.push({
         element: enemy,
         x: -80,
-        speed: speed,
+        speed: finalSpeed,
         health: 100,
         maxHealth: 100
       });
@@ -3446,7 +3500,7 @@
             endGame3WithGameOver();
             return false;
           } else {
-            setTimeout(() => spawnEnemy(), 500);
+            setTimeout(() => spawnEnemy(), 1500); // Tăng thời gian delay spawn enemy
           }
           
           return false;
@@ -4411,6 +4465,15 @@
         console.log('📝 Dữ liệu game2:', gameData.game2.length, 'câu hỏi');
         console.log('📝 Dữ liệu game3:', gameData.game3.length, 'câu hỏi');
         console.log('📝 Dữ liệu game4:', gameData.game4.length, 'câu hỏi');
+        
+        // Hiển thị tutorial cho người dùng mới
+        const isNewUser = !localStorage.getItem('xedang_tutorial_shown');
+        if (isNewUser && currentScreen === 'menu') {
+          setTimeout(() => {
+            showToast('🎮 Chào mừng! Chọn game để bắt đầu học tiếng Xê Đăng!', 'info', 5000);
+            localStorage.setItem('xedang_tutorial_shown', 'true');
+          }, 1000);
+        }
         
       } catch (error) {
         console.error('Lỗi khởi động ứng dụng:', error);
