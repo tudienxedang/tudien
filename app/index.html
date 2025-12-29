@@ -27,15 +27,22 @@
     <meta name="copyright" content="Dự án KHKT Học sinh THCS">
     <meta name="language" content="Vietnamese">
     <meta name="revisit-after" content="7 days">
+
+	<!-- PWA Meta Tags -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-title" content="Tiếng Xơ Đăng">
+	<link rel="apple-touch-icon" href="https://tudienxedang.github.io/tudien/icon-192x192.png">
+	<meta name="theme-color" content="#27ae60">
     
     <!-- PWA Manifest - GIỮ NGUYÊN -->
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="https://tudienxedang.github.io/tudien/manifest.json">
     <meta name="theme-color" content="#27ae60">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Học Tiếng Xơ Đăng THCS">
-    <link rel="apple-touch-icon" href="/icon-192x192.png">
+    <link rel="apple-touch-icon" href="https://tudienxedang.github.io/tudien/icon-192x192.png">
 
     <!-- Open Graph - CẬP NHẬT -->
     <meta property="og:type" content="website">
@@ -2894,75 +2901,41 @@
             }
         }
 
-      /* Install App Button - LUÔN HIỂN THỊ */
-.install-button {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    z-index: 9997;
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 12px 24px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    display: none; /* Mặc định ẩn, JavaScript sẽ hiển thị */
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-    transition: all 0.3s ease;
-    animation: float 3s ease-in-out infinite;
-}
-
-.install-button.show {
-    display: flex; /* JavaScript thêm class này để hiển thị */
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.install-button:hover {
-    background: linear-gradient(135deg, #219653, #27ae60);
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
-}
-
-/* Khi đã cài đặt */
-.install-button.installed {
-    background: #7f8c8d;
-    animation: none;
-}
-
-.install-button.installed:hover {
-    background: #95a5a6;
-    transform: none;
-}
-
-/* Animation nổi */
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-}
-
-/* Trên điện thoại */
-@media (max-width: 768px) {
-    .install-button {
-        bottom: 80px;
-        right: 15px;
-        padding: 10px 20px;
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .install-button {
-        bottom: 70px;
-        right: 10px;
-        padding: 10px 15px;
-        font-size: 0.85rem;
-    }
-}
+        /* Install App Button */
+        .install-button {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 9997;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+        
+        .install-button.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        
+        .install-button:hover {
+            background: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
         
         .offline-indicator {
             position: fixed;
@@ -3891,275 +3864,44 @@ img[loading="lazy"] {
             document.getElementById('darkModeToggle').querySelector('i').className = 'fas fa-sun';
         }
 
+        // ===== PWA INSTALLATION =====
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
 
-// ===== PWA INSTALLATION - FIXED VERSION =====
-let deferredPrompt;
-const installButton = document.getElementById('installButton');
-
-// 1. Hàm kiểm tra xem app đã được cài đặt chưa
-function isAppInstalled() {
-    return window.matchMedia('(display-mode: standalone)').matches || 
-           window.navigator.standalone ||
-           document.referrer.includes('android-app://');
-}
-
-// 2. Hàm cập nhật trạng thái nút cài đặt
-function updateInstallButton() {
-    if (isAppInstalled()) {
-        installButton.style.display = 'none';
-        console.log('App đã được cài đặt, ẩn nút');
-    } else {
-        installButton.style.display = 'flex';
-        installButton.classList.add('show');
-        console.log('App chưa cài đặt, hiển thị nút');
-    }
-}
-
-// 3. Hàm hiển thị hướng dẫn cài đặt thủ công
-function showManualInstallGuide() {
-    const ua = navigator.userAgent;
-    const isIOS = /iPad|iPhone|iPod/.test(ua);
-    const isAndroid = /Android/.test(ua);
-    
-    let title = '';
-    let steps = '';
-    
-    if (isIOS) {
-        title = '<i class="fab fa-apple"></i> Hướng dẫn cài đặt trên iPhone/iPad';
-        steps = `
-            <div class="install-step">
-                <div class="step-number">1</div>
-                <div class="step-text">
-                    <strong>Nhấn vào nút Chia sẻ <i class="fas fa-share-square"></i></strong>
-                    ở thanh dưới cùng Safari
-                </div>
-            </div>
-            <div class="install-step">
-                <div class="step-number">2</div>
-                <div class="step-text">
-                    <strong>Cuộn xuống và chọn "Thêm vào Màn hình chủ"</strong>
-                    <i class="fas fa-plus-square"></i>
-                </div>
-            </div>
-            <div class="install-step">
-                <div class="step-number">3</div>
-                <div class="step-text">
-                    <strong>Nhấn "Thêm"</strong> ở góc trên bên phải
-                </div>
-            </div>
-        `;
-    } else if (isAndroid) {
-        title = '<i class="fab fa-android"></i> Hướng dẫn cài đặt trên Android';
-        steps = `
-            <div class="install-step">
-                <div class="step-number">1</div>
-                <div class="step-text">
-                    <strong>Nhấn vào nút Menu (⋮)</strong> ở góc trên bên phải trình duyệt
-                </div>
-            </div>
-            <div class="install-step">
-                <div class="step-number">2</div>
-                <div class="step-text">
-                    <strong>Chọn "Cài đặt ứng dụng"</strong> hoặc "Thêm vào màn hình chủ"
-                </div>
-            </div>
-            <div class="install-step">
-                <div class="step-number">3</div>
-                <div class="step-text">
-                    <strong>Nhấn "Cài đặt"</strong> để hoàn tất
-                </div>
-            </div>
-        `;
-    } else {
-        title = '<i class="fas fa-desktop"></i> Hướng dẫn cài đặt trên Máy tính';
-        steps = `
-            <div class="install-step">
-                <div class="step-number">1</div>
-                <div class="step-text">
-                    <strong>Nhấn vào biểu tượng cài đặt</strong> ở cuối thanh địa chỉ (Chrome/Edge)
-                </div>
-            </div>
-            <div class="install-step">
-                <div class="step-number">2</div>
-                <div class="step-text">
-                    <strong>Chọn "Cài đặt ứng dụng"</strong> từ menu hiện ra
-                </div>
-            </div>
-            <div class="install-step">
-                <div class="step-number">3</div>
-                <div class="step-text">
-                    <strong>Xác nhận "Cài đặt"</strong> để ứng dụng xuất hiện trên Desktop
-                </div>
-            </div>
-        `;
-    }
-    
-    // Tạo modal hướng dẫn
-    const modal = document.createElement('div');
-    modal.innerHTML = `
-        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;">
-            <div style="background:white; border-radius:15px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
-                <div style="background:linear-gradient(135deg, #27ae60, #2ecc71); color:white; padding:20px; border-radius:15px 15px 0 0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="margin:0; font-size:1.2rem; display:flex; align-items:center; gap:10px;">
-                            ${title}
-                        </h3>
-                        <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" 
-                                style="background:none; border:none; color:white; font-size:2rem; cursor:pointer; line-height:1; padding:0; width:30px; height:30px; display:flex; align-items:center; justify-content:center;">
-                            &times;
-                        </button>
-                    </div>
-                </div>
-                <div style="padding:20px;">
-                    <div style="margin:20px 0;">
-                        ${steps}
-                    </div>
-                    <div style="background:#e8f5e9; border:2px solid #27ae60; border-radius:10px; padding:12px; margin-top:20px; color:#2e7d32; display:flex; align-items:center; gap:10px;">
-                        <i class="fas fa-lightbulb"></i>
-                        <div>
-                            <strong>Lợi ích khi cài đặt:</strong>
-                            <div style="font-size:0.9rem; margin-top:5px;">
-                                • Học offline không cần internet<br>
-                                • Truy cập nhanh từ màn hình chủ<br>
-                                • Trải nghiệm như ứng dụng native
-                            </div>
-                        </div>
-                    </div>
-                    <div style="text-align:center; margin-top:25px;">
-                        <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" 
-                                style="background:#27ae60; color:white; border:none; border-radius:8px; padding:12px 30px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all 0.3s;">
-                            <i class="fas fa-check"></i> Tôi đã hiểu
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Thêm style cho các bước
-    const style = document.createElement('style');
-    style.textContent = `
-        .install-step {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 4px solid #27ae60;
-        }
-        .step-number {
-            background: #27ae60;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-        .step-text {
-            flex: 1;
-            color: #333;
-        }
-        body.dark-mode .install-step {
-            background: #34495e;
-        }
-        body.dark-mode .step-text {
-            color: #ecf0f1;
-        }
-    `;
-    
-    document.head.appendChild(style);
-    document.body.appendChild(modal);
-}
-
-// 4. Sự kiện beforeinstallprompt (chỉ Android hiện đại)
-window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('beforeinstallprompt triggered');
-    e.preventDefault();
-    deferredPrompt = e;
-    
-    // Cập nhật lại nút (vẫn hiển thị)
-    updateInstallButton();
-});
-
-// 5. Sự kiện khi app đã được cài đặt
-window.addEventListener('appinstalled', () => {
-    console.log('PWA was installed');
-    installButton.style.display = 'none';
-    deferredPrompt = null;
-    showToast('🎉 Ứng dụng đã được cài đặt thành công!', 'success');
-});
-
-// 6. Xử lý khi nhấn nút cài đặt
-installButton.addEventListener('click', async () => {
-    console.log('Install button clicked');
-    
-    // Kiểm tra lại nếu đã cài đặt
-    if (isAppInstalled()) {
-        showToast('✅ Ứng dụng đã được cài đặt rồi!', 'info');
-        installButton.style.display = 'none';
-        return;
-    }
-    
-    // Nếu có deferredPrompt (Android hiện đại)
-    if (deferredPrompt) {
-        try {
-            console.log('Using deferredPrompt');
-            deferredPrompt.prompt();
-            const choiceResult = await deferredPrompt.userChoice;
-            console.log('User choice:', choiceResult.outcome);
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.classList.add('show');
             
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted install');
-                installButton.style.display = 'none';
-                showToast('Đang cài đặt ứng dụng...', 'info');
-            } else {
-                console.log('User dismissed install');
-                // Người dùng từ chối, hiển thị hướng dẫn thủ công
-                showManualInstallGuide();
-            }
+            installButton.addEventListener('click', () => {
+                installButton.classList.remove('show');
+                deferredPrompt.prompt();
+                
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            installButton.classList.remove('show');
             deferredPrompt = null;
-        } catch (error) {
-            console.error('Error during install prompt:', error);
-            // Fallback: hiển thị hướng dẫn thủ công
-            showManualInstallGuide();
+            
+            // Hiển thị thông báo
+            showToast('Ứng dụng đã được cài đặt thành công!', 'success');
+        });
+
+        // Kiểm tra nếu app đã được cài đặt
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('Running in standalone mode');
+            installButton.style.display = 'none';
         }
-    } else {
-        console.log('No deferredPrompt, showing manual guide');
-        // Không có deferredPrompt (iOS hoặc Android cũ)
-        showManualInstallGuide();
-    }
-});
-
-// 7. Khởi tạo khi trang load
-window.addEventListener('load', () => {
-    console.log('Page loaded, checking install status');
-    
-    // Cập nhật nút cài đặt
-    updateInstallButton();
-    
-    // Hiển thị thông báo chào mừng lần đầu
-    if (!isAppInstalled() && !localStorage.getItem('installWelcomeShown')) {
-        setTimeout(() => {
-            showToast('📱 Nhấn nút "Cài đặt App" góc dưới phải để học offline!', 'info', 6000);
-            localStorage.setItem('installWelcomeShown', 'true');
-        }, 3000);
-    }
-    
-    // Kiểm tra lại sau 1 giây
-    setTimeout(updateInstallButton, 1000);
-});
-
-// 8. Kiểm tra khi chuyển trang/refresh
-window.addEventListener('pageshow', updateInstallButton);
-
-
-      
 
         // ===== OFFLINE DETECTION =====
         const offlineIndicator = document.getElementById('offlineIndicator');
@@ -6771,6 +6513,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+		// Đăng ký Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('https://github.com/tudienxedang/tudien/service-worker.js')
+      .then(function(registration) {
+        console.log('Service Worker đã đăng ký thành công:', registration.scope);
+      })
+      .catch(function(error) {
+        console.log('Đăng ký Service Worker thất bại:', error);
+      });
+  });
+}
     </script>
 
 
