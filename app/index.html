@@ -3335,17 +3335,6 @@ img[loading="lazy"] {
 /* === HẾT PHẦN CSS THÊM === */
 
 /* THÊM ĐOẠN NÀY VÀO CUỐI PHẦN CSS */
-body.dark-mode #browserWarningContent {
-    background: #34495e;
-    color: #f1c40f;
-    border-color: #f39c12;
-}
-
-#browserWarning .fas {
-    margin-right: 8px;
-}
-
-
 /* Dark mode cho cảnh báo trình duyệt */
 body.dark-mode #browserWarningContent {
     background: #34495e;
@@ -3357,28 +3346,7 @@ body.dark-mode #browserWarningContent .fas {
     color: #f1c40f;
 }
 
-/* Dark mode cho modal iOS */
-body.dark-mode #ios-install-guide > div {
-    background: #2c3e50;
-    color: #ecf0f1;
-}
-
-body.dark-mode #ios-install-guide h3 {
-    color: #2ecc71;
-}
-
-body.dark-mode #ios-install-guide strong {
-    color: #ecf0f1;
-}
-
-body.dark-mode #ios-install-guide p {
-    color: #bdc3c7;
-}
-
-body.dark-mode #ios-install-guide .fa-lightbulb {
-    color: #f1c40f;
-}
-
+		
       
  </style>
 </head>
@@ -3871,6 +3839,9 @@ body.dark-mode #ios-install-guide .fa-lightbulb {
             <p>© 2025@ Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS</p>
             <p>Tác giả: Minh Bảo - Hà Mi, Trường THCS Chu Văn An xã Đăk Hà tỉnh Quảng Ngãi</p>
 
+
+
+
 <div id="browserWarning" style="display: none; margin-top: 1rem; font-size: 0.85rem; text-align: center;">
     <div id="browserWarningContent" style="padding: 10px; border-radius: 8px; background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;">
         <i class="fas fa-exclamation-triangle"></i>
@@ -3878,6 +3849,9 @@ body.dark-mode #ios-install-guide .fa-lightbulb {
     </div>
 </div>
 
+
+
+			
           
             <div class="hashtag-container">
                 <a href="#TừĐiểnXơĐăng" class="hashtag">#TừĐiểnXơĐăng</a>
@@ -3962,34 +3936,45 @@ body.dark-mode #ios-install-guide .fa-lightbulb {
 
         // ===== PWA INSTALLATION =====
 
-		// ===== PWA INSTALLATION =====
+
+// ===== PWA INSTALLATION =====
 let deferredPrompt;
 const installButton = document.getElementById('installButton');
 
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installButton.classList.add('show');
     
-    installButton.addEventListener('click', () => {
-        installButton.classList.remove('show');
-        deferredPrompt.prompt();
-        
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the install prompt');
-            } else {
-                console.log('User dismissed the install prompt');
+    // Chỉ thiết lập sự kiện cho Android/Windows nếu không phải iOS
+    const os = detectOS ? detectOS() : { isIOS: false };
+    const browserDetection = detectUncommonBrowser ? detectUncommonBrowser() : { isUncommon: false };
+    
+    if (!os.isIOS && !browserDetection.isUncommon) {
+        installButton.onclick = function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showToast('Ứng dụng đang được cài đặt...', 'success');
+                        console.log('User accepted the install prompt');
+                    } else {
+                        showToast('Bạn đã hủy cài đặt', 'info');
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
             }
-            deferredPrompt = null;
-        });
-    });
+        };
+    }
 });
 
 window.addEventListener('appinstalled', () => {
     console.log('PWA was installed');
-    installButton.classList.remove('show');
     deferredPrompt = null;
+    
+    // Ẩn nút cài đặt
+    installButton.style.display = 'none';
     
     // Hiển thị thông báo
     showToast('Ứng dụng đã được cài đặt thành công!', 'success');
@@ -4000,6 +3985,11 @@ if (window.matchMedia('(display-mode: standalone)').matches) {
     console.log('Running in standalone mode');
     installButton.style.display = 'none';
 }
+
+
+
+
+		
 
 
       
@@ -6795,8 +6785,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-	// ===== PHÁT HIỆN TRÌNH DUYỆT VÀ XỬ LÝ CÀI ĐẶT THEO PLATFORM =====
-function() {
+
+
+
+
+
+// ===== PHÁT HIỆN TRÌNH DUYỆT VÀ XỬ LÝ CÀI ĐẶT THEO PLATFORM =====
+(function() {
     'use strict';
     
     // 1. PHÁT HIỆN TRÌNH DUYỆT KHÔNG PHỔ BIẾN
@@ -6876,6 +6871,7 @@ function() {
         if (!installButton) return;
         
         const os = detectOS();
+        const browserDetection = detectUncommonBrowser();
         
         // LUÔN HIỂN THỊ NÚT
         installButton.style.display = 'flex';
@@ -6898,22 +6894,31 @@ function() {
             installButton.innerHTML = '<i class="fas fa-download"></i> Cài đặt App';
             installButton.title = 'Cài đặt ứng dụng trên thiết bị';
             
-            // Khôi phục sự kiện click gốc cho Android/Windows
-            if (window.deferredPrompt) {
-                installButton.onclick = function() {
-                    if (window.deferredPrompt) {
-                        window.deferredPrompt.prompt();
-                        
-                        window.deferredPrompt.userChoice.then((choiceResult) => {
-                            if (choiceResult.outcome === 'accepted') {
-                                showToast('Ứng dụng đang được cài đặt...', 'success');
-                            } else {
-                                showToast('Bạn đã hủy cài đặt', 'info');
-                            }
-                            window.deferredPrompt = null;
-                        });
-                    }
+            // Nếu là trình duyệt không phổ biến, thay đổi hành vi
+            if (browserDetection.isUncommon) {
+                installButton.onclick = function(e) {
+                    e.preventDefault();
+                    showToast('Vui lòng mở ứng dụng bằng trình duyệt Chrome hoặc Safari để cài đặt.', 'error');
+                    return false;
                 };
+            } else {
+                // Khôi phục sự kiện click gốc cho Android/Windows nếu có deferredPrompt
+                if (window.deferredPrompt) {
+                    installButton.onclick = function() {
+                        if (window.deferredPrompt) {
+                            window.deferredPrompt.prompt();
+                            
+                            window.deferredPrompt.userChoice.then((choiceResult) => {
+                                if (choiceResult.outcome === 'accepted') {
+                                    showToast('Ứng dụng đang được cài đặt...', 'success');
+                                } else {
+                                    showToast('Bạn đã hủy cài đặt', 'info');
+                                }
+                                window.deferredPrompt = null;
+                            });
+                        }
+                    };
+                }
             }
         }
     }
@@ -7030,6 +7035,7 @@ function() {
     }
     
 })();
+	
 
 </body>
 	
