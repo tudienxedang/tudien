@@ -3417,7 +3417,7 @@ img[loading="lazy"] {
         .badge.chrome { background: #e0f2fe; color: #0284c7; }
         .badge.safari { background: #f0fdf4; color: #16a34a; }
 
-        .zalo-guide-tip {
+        .zalo-guide-tip {a
             margin-top: 15px; padding-top: 10px;
             border-top: 1px dashed #cbd5e1;
             font-size: 0.8rem; color: #475569; font-style: italic;
@@ -3490,8 +3490,82 @@ img[loading="lazy"] {
 }
 /* === KẾT THÚC PHẦN ĐIỀU CHỈNH === */
 
+/* === CSS CHO GAME OVERLAY FULL SCREEN === */
+.game-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20000; /* Cao hơn tất cả các thành phần khác */
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+}
+
+.game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    flex: 1; /* Chiếm toàn bộ không gian còn lại */
+}
+
+.close-game-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 20001;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+}
+
+.close-game-btn:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+
+.game-loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 19999;
+    pointer-events: none; /* Không chặn click */
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Ẩn nút đóng khi ở chế độ ngang trên điện thoại để đỡ che game */
+@media (max-width: 768px) and (orientation: landscape) {
+    .close-game-btn {
+        top: 5px;
+        right: 5px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        opacity: 0.7;
+    }
+}
 
 
+
+
+
+
+		
 
 		
 	
@@ -6922,30 +6996,83 @@ img[loading="lazy"] {
             document.querySelector('.footer-content').appendChild(pwaStatus);
         });
 
-	// ===== XỬ LÝ MỞ GAME TRONG TAB MỚI =====
+	// ===== XỬ LÝ MỞ GAME FULL MÀN HÌNH (IFRAME) =====
 document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý click vào menu Game học tập
-    const gameLinks = document.querySelectorAll('a[href="https://tudienxedang.github.io/tudien/game.html"]');
-    
+    // 1. Xử lý click vào menu Game học tập
+    const gameLinks = document.querySelectorAll('a[href*="game.html"]');
+    const gameOverlay = document.getElementById('gameOverlay');
+    const gameFrame = document.getElementById('gameFrame');
+    const gameSpinner = document.getElementById('gameLoadingSpinner');
+
+    // Hàm mở game
+    window.openGameOverlay = function() {
+        // Kiểm tra offline trước khi mở
+        if (!navigator.onLine) {
+             // Kiểm tra cache (nếu bạn có cài đặt cache cho game.html)
+             caches.match('./game.html').then(response => {
+                if (!response) {
+                    showToast('📡 Cần kết nối Internet để tải Game lần đầu!', 'error');
+                    return;
+                }
+                launchGame();
+             }).catch(() => {
+                 showToast('📡 Cần kết nối Internet để chơi Game!', 'error');
+             });
+             return; // Dừng lại nếu offline và không check được cache
+        }
+        
+        launchGame();
+    };
+
+    function launchGame() {
+        // Hiển thị loading
+        gameSpinner.style.display = 'block';
+        gameOverlay.style.display = 'flex';
+        
+        // Set link cho iframe
+        gameFrame.src = './game.html';
+        
+        // Ẩn loading khi game tải xong
+        gameFrame.onload = function() {
+            gameSpinner.style.display = 'none';
+        };
+        
+        // Đẩy lịch sử duyệt web để khi nhấn Back trên điện thoại thì đóng game chứ không thoát app
+        history.pushState({modal: 'game'}, 'Game Xơ Đăng', '#game');
+    }
+
+    // Hàm đóng game
+    window.closeGameOverlay = function() {
+        gameOverlay.style.display = 'none';
+        gameFrame.src = ''; // Xóa src để dừng game và âm thanh
+        
+        // Quay lại lịch sử duyệt web nếu cần
+        if (window.location.hash === '#game') {
+            history.back();
+        }
+    };
+
+    // Gán sự kiện click cho các link game
     gameLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            // Ngăn hành vi mặc định
-            e.preventDefault();
-            
-            // Mở tab mới
-            window.open(
-                'https://tudienxedang.github.io/tudien/game.html',
-                '_blank',
-                'noopener,noreferrer'
-            );
-            
-            // Luôn quay lại trang chủ
-            showSection('home');
+            e.preventDefault(); // Ngăn mở tab mới
+            openGameOverlay();
         });
     });
-});
-    </script>
 
+    // Xử lý nút Back trên điện thoại
+    window.addEventListener('popstate', function(event) {
+        // Nếu người dùng nhấn Back và game đang mở -> Đóng game
+        if (gameOverlay.style.display === 'flex') {
+            gameOverlay.style.display = 'none';
+            gameFrame.src = '';
+        }
+    });
+});
+
+
+
+	
 
 <script>
 // ===== LOADING SCREEN MANAGEMENT =====
@@ -7091,6 +7218,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+<div id="gameOverlay" class="game-overlay" style="display: none;">
+    <button class="close-game-btn" onclick="closeGameOverlay()">
+        <i class="fas fa-times"></i> Đóng Game
+    </button>
+    <div class="game-loading-spinner" id="gameLoadingSpinner">
+        <div class="spinner"></div>
+    </div>
+    <iframe id="gameFrame" class="game-frame" src=""></iframe>
+</div>
+
+
+
 	
 
 </body>
