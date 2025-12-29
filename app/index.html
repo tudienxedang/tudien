@@ -3454,6 +3454,46 @@ img[loading="lazy"] {
         body.dark-mode .modal-close-btn { background: #334155; }
         body.dark-mode .ios-step { background: #0f172a; border-color: #334155; }
         body.dark-mode .step-text { color: #cbd5e1; }
+
+		/* === BẮT ĐẦU PHẦN ĐIỀU CHỈNH THỐNG KÊ CHO MOBILE === */
+@media (max-width: 768px) {
+    /* Chuyển sang dùng Grid để chia cột đều nhau */
+    .dictionary-stats {
+        display: grid !important; 
+        grid-template-columns: repeat(2, 1fr); /* Chia thành 2 cột bằng nhau */
+        gap: 10px; /* Giảm khoảng cách giữa các ô xuống 10px */
+        margin: 1rem 0;
+    }
+
+    /* Điều chỉnh lại các ô thống kê */
+    .stat-item {
+        min-width: unset !important; /* Hủy bỏ chiều rộng tối thiểu 150px cũ */
+        width: 100%; /* Chiếm hết chiều rộng cột */
+        padding: 0.8rem 0.5rem; /* Thu nhỏ padding để tiết kiệm diện tích */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Điều chỉnh cỡ chữ số cho cân đối */
+    .stat-number {
+        font-size: 1.4rem; /* Giảm kích thước số một chút */
+        margin-bottom: 0.1rem;
+    }
+
+    /* Điều chỉnh cỡ chữ tiêu đề */
+    .stat-label {
+        font-size: 0.8rem; /* Giảm kích thước chữ mô tả */
+        white-space: nowrap; /* Giữ chữ trên 1 dòng nếu có thể */
+    }
+}
+/* === KẾT THÚC PHẦN ĐIỀU CHỈNH === */
+
+
+
+
+		
 	
 </style>
 </head>
