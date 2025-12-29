@@ -1101,7 +1101,48 @@
     background-color: rgba(0, 0, 0, 0.75) !important;
     backdrop-filter: blur(4px);
 }  
+
+
+
+/* === FIX CĂN GIỮA TUYỆT ĐỐI CHO MODAL GAME 4 === */
+#game4-question {
+    /* 1. Chiếm toàn bộ khung nhìn, kể cả phần bị thanh địa chỉ che */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important; /* Fallback cho máy cũ */
+    height: 100dvh !important; /* Đơn vị chuẩn cho Mobile hiện đại */
     
+    /* 2. Flexbox căn giữa đa chiều */
+    display: flex !important;
+    align-items: center !important;     /* Căn giữa dọc */
+    justify-content: center !important; /* Căn giữa ngang */
+    
+    /* 3. Lớp nền tối và nổi lên trên cùng */
+    z-index: 9999 !important;
+    background-color: rgba(0, 0, 0, 0.8) !important;
+    backdrop-filter: blur(5px);
+    padding: 20px !important;
+    margin: 0 !important;
+}
+
+/* Khung nội dung bên trong */
+#game4-question > div {
+    /* Đảm bảo không quá to so với màn hình */
+    width: 100% !important;
+    max-width: 360px !important;
+    max-height: 90dvh !important; /* Không bao giờ cao hơn màn hình */
+    overflow-y: auto !important; /* Nếu dài quá thì cuộn bên trong */
+    margin: auto !important; /* Kỹ thuật căn giữa cổ điển hỗ trợ thêm */
+    position: relative !important;
+    transform: none !important; /* Bỏ transform cũ để tránh xung đột */
+    
+    /* Làm đẹp */
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}    
     
   </style>
   <style>@view-transition { navigation: auto; }</style>
@@ -3992,20 +4033,18 @@ function renderGame3() {
       setTimeout(() => backToMenu(), 1500);
     }
 
-
 function renderGame4() {
     const config = window.elementSdk?.config || defaultConfig;
     const game4Name = config.game4_name || defaultConfig.game4_name;
     const bgmClass = bgmEnabled ? 'active' : '';
     const sfxClass = sfxEnabled ? 'active' : '';
     
-    // Logic hiển thị các ô đất (giữ nguyên)
     const plotsHtml = game4State.plots.map((plot, i) => {
         const plotInfo = getPlotDisplay(plot.stage);
         return `
         <div onclick="selectPlot(${i})" 
-             class="rounded-xl shadow-md cursor-pointer relative overflow-hidden transition-transform active:scale-95 border-2 border-white/50"
-             style="height: 140px; background: ${plotInfo.bg}; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
+             class="rounded-xl shadow-md cursor-pointer relative overflow-hidden transition-transform active:scale-95 border-2 border-white/60"
+             style="height: 140px; background: ${plotInfo.bg}; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"
              data-plot-index="${i}">
              
              <div class="plant-plot">
@@ -4016,7 +4055,7 @@ function renderGame4() {
              </div>
              
              ${plot.stage === 4 
-                ? '<div class="absolute inset-0 flex items-center justify-center bg-green-900/60 text-white font-bold text-base backdrop-blur-[2px] animate-pulse">🌾 Thu hoạch ngay!</div>' 
+                ? '<div class="absolute inset-0 flex items-center justify-center bg-green-900/60 text-white font-bold text-base backdrop-blur-[2px] animate-pulse">🌾 Thu hoạch!</div>' 
                 : '<div class="absolute inset-0 flex items-center justify-center bg-black/20 text-white text-xs font-semibold opacity-0 active:opacity-100 transition">Chạm để chăm sóc</div>'}
         </div>
         `;
@@ -4051,40 +4090,41 @@ function renderGame4() {
                 ${plotsHtml}
             </div>
 
-            <div id="game4-question" class="fixed inset-0 z-[5000] flex items-center justify-center p-4 modal-backdrop" style="display: none;">
-                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden modal-pop relative">
-                    
-                    <div class="h-3 w-full bg-gradient-to-r from-green-400 to-green-600"></div>
+            <div id="game4-question" style="display: none;">
+                <div class="modal-content animate-pop">
+                    <div class="h-4 w-full bg-gradient-to-r from-green-400 to-green-600 rounded-t-3xl"></div>
                     
                     <div class="p-6">
                         <div class="text-center mb-6">
-                            <span class="inline-block bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full mb-2">CÂU HỎI</span>
+                            <span class="inline-block bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded-full mb-2 tracking-wider">CÂU HỎI</span>
                             <h3 class="text-xl md:text-2xl font-extrabold text-gray-800 leading-snug" id="q-text">
-                                Nội dung câu hỏi sẽ hiện ở đây?
+                                Nội dung câu hỏi?
                             </h3>
                         </div>
 
-                        <div class="flex flex-col gap-3" id="q-answers">
-                            </div>
+                        <div class="flex flex-col gap-3" id="q-answers"></div>
 
                         <div class="text-center mt-5 pt-4 border-t border-gray-100">
-                            <p class="text-xs text-gray-400 italic">
-                                "Chọn đúng cây sẽ lớn nhanh như thổi!"
-                            </p>
+                            <p class="text-xs text-gray-400 italic">"Chọn đúng để cây lớn, sai cây sẽ héo!"</p>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div class="fixed bottom-2 left-0 w-full text-center pointer-events-none">
-                <span class="text-[10px] text-gray-400 bg-white/80 px-2 py-1 rounded-full shadow-sm backdrop-blur-sm">
-                    Chủ đề: <span id="game4-current-topic" class="font-bold text-green-700">${game4State.currentTopic || 'Chung'}</span>
+                <span class="text-[10px] text-gray-500 bg-white/90 px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-gray-100">
+                    Chủ đề hiện tại: <span id="game4-current-topic" class="font-bold text-green-700">${game4State.currentTopic || 'Chung'}</span>
                 </span>
             </div>
         </div>
     </div>
     `;
 }
+
+
+
+
+    
 
     
     // ========== GAME 4 LOGIC - ĐÃ SỬA LỖI ==========
