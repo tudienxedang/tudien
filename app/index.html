@@ -29,7 +29,7 @@
     <meta name="revisit-after" content="7 days">
     
     <!-- PWA Manifest - GIỮ NGUYÊN -->
-    <link rel="manifest" href="https://tudienxedang.github.io/tudien/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#27ae60">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2895,161 +2895,34 @@
         }
 
         /* Install App Button */
-
-
-
-/* === 1. NÚT CÀI ĐẶT (CHUYỂN SANG TRÁI) === */
         .install-button {
             position: fixed;
-            bottom: 20px;
-            left: 20px; /* ĐỔI TỪ RIGHT SANG LEFT */
+            bottom: 90px;
+            right: 20px;
             z-index: 9997;
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); /* Gradient đẹp hơn */
+            background: var(--secondary-color);
             color: white;
             border: none;
             border-radius: 50px;
             padding: 12px 24px;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 0.95rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Hiệu ứng nảy */
-            opacity: 1; 
-            pointer-events: all;
-            animation: float-btn 3s ease-in-out infinite;
-        }
-
-        @keyframes float-btn {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        .install-button:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.6);
-        }
-
-        /* Responsive trên mobile */
-        @media (max-width: 768px) {
-            .install-button {
-                bottom: 90px; /* Tránh bị che bởi chat widget hoặc footer */
-                left: 15px;
-                padding: 10px 18px;
-                font-size: 0.85rem;
-                max-width: 160px; /* Giới hạn chiều rộng */
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-
-        /* === 2. MODAL HƯỚNG DẪN (GIỮ NGUYÊN HOẶC TINH CHỈNH NHẸ) === */
-        .install-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); /* Tối hơn chút cho tập trung */
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        .install-modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            position: relative;
-            text-align: center;
-            animation: zoomIn 0.3s ease;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-        }
-        @keyframes zoomIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .close-modal {
-            position: absolute;
-            top: 15px; right: 20px;
-            background: none; border: none;
-            font-size: 1.8rem; cursor: pointer; color: #999;
-            transition: color 0.3s;
-        }
-        .close-modal:hover { color: #e74c3c; }
-
-        /* === 3. GIAO DIỆN CẢNH BÁO FOOTER (ĐẸP MẮT) === */
-        .pwa-status-card {
-            margin: 20px auto 10px;
-            padding: 15px 20px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 15px;
-            max-width: 90%;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
             transition: all 0.3s ease;
-            text-align: left;
-            border-left: 5px solid; /* Viền màu bên trái */
-        }
-
-        /* Style cho trạng thái TỐT (Chrome/Safari) */
-        .pwa-status-card.good {
-            background-color: #f0fdf4; /* Xanh nhạt */
-            border-left-color: #27ae60;
-            color: #1e4620;
-        }
-
-        /* Style cho trạng thái CẢNH BÁO (Samsung/Xiaomi) */
-        .pwa-status-card.warning {
-            background-color: #fff7ed; /* Cam nhạt */
-            border-left-color: #f39c12;
-            color: #9a6603;
-        }
-
-        /* Style cho trạng thái LỖI/KHÔNG HỖ TRỢ (Zalo/Facebook) */
-        .pwa-status-card.error {
-            background-color: #fef2f2; /* Đỏ nhạt */
-            border-left-color: #e74c3c;
-            color: #991b1b;
-        }
-
-        .pwa-icon-box {
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.8);
-            flex-shrink: 0;
-        }
-
-        .pwa-text-content strong {
-            display: block;
-            margin-bottom: 2px;
-            font-size: 0.95rem;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
         }
         
-        /* Dark mode cho card */
-        body.dark-mode .pwa-status-card.good { background: #1e3a2a; color: #a7f3d0; }
-        body.dark-mode .pwa-status-card.warning { background: #3f2e18; color: #fde68a; }
-        body.dark-mode .pwa-status-card.error { background: #451a1a; color: #fecaca; }
-        body.dark-mode .pwa-icon-box { background: rgba(0,0,0,0.2); }
-
-
-
-
-
-		
-
-/*Hết*/
-		
+        .install-button.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
         
         .install-button:hover {
             background: #219653;
@@ -3418,35 +3291,261 @@ img[loading="lazy"] {
 }
 /* === HẾT PHẦN CSS THÊM === */
 		
- </style>
+/* =========================================
+           CSS MỚI CHO PWA (NÚT TRÁI & MODAL ĐẸP) 
+           ========================================= */
+
+        /* 1. Nút cài đặt (Góc Trái - Đẹp mắt) */
+        .install-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px !important; /* Bắt buộc nằm trái */
+            right: auto !important; 
+            z-index: 9997;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: float-btn 3s ease-in-out infinite;
+        }
+
+        @keyframes float-btn {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .install-button:hover {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.6);
+        }
+
+        /* Chỉnh sửa hiển thị trên điện thoại */
+        @media (max-width: 768px) {
+            .install-button {
+                bottom: 80px; /* Tránh bị che */
+                left: 15px !important;
+                padding: 10px 16px;
+                font-size: 0.85rem;
+                max-width: 150px;
+                white-space: nowrap;
+                overflow: hidden;
+            }
+        }
+
+        /* 2. Modal (Hộp thoại) Phong cách Hiện đại */
+        .install-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .install-modal[style*="display: flex"] {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .install-modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); /* Nền tối mờ */
+            backdrop-filter: blur(4px);
+        }
+
+        .install-modal-card {
+            position: relative;
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10001;
+        }
+
+        .install-modal[style*="display: flex"] .install-modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px; right: 15px;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .modal-header h3 { font-size: 1.2rem; color: #1e293b; margin: 15px 0 5px; font-weight: 700; }
+        .modal-desc { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+
+        .icon-circle {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto; font-size: 1.8rem;
+        }
+        .icon-circle.ios { background: #eff6ff; color: #3b82f6; }
+        .icon-circle.warning { background: #fff7ed; color: #f97316; }
+
+        /* Hướng dẫn iOS */
+        .ios-steps { text-align: left; display: flex; flex-direction: column; gap: 10px; }
+        .ios-step {
+            display: flex; align-items: center;
+            background: #f8fafc; padding: 10px;
+            border-radius: 12px; border: 1px solid #e2e8f0;
+        }
+        .step-num {
+            background: #3b82f6; color: white;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: bold; margin-right: 10px; flex-shrink: 0;
+        }
+        .step-text { flex: 1; font-size: 0.85rem; color: #334155; }
+        .ios-icon-simulate { font-size: 1.2rem; color: #3b82f6; margin-left: 8px; }
+        .ios-text-simulate { font-weight: bold; color: #3b82f6; font-size: 0.85rem; }
+
+        /* Cảnh báo trình duyệt */
+        .warning-box {
+            background: #fef2f2; border: 1px solid #fecaca;
+            border-radius: 12px; padding: 12px; margin-bottom: 15px;
+        }
+        .warning-box p { color: #b91c1c; font-size: 0.9rem; margin: 0; }
+
+        .browser-suggestion p { font-size: 0.85rem; color: #64748b; margin-bottom: 8px; }
+        .browser-badges { display: flex; justify-content: center; gap: 8px; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 12px; border-radius: 50px;
+            font-size: 0.8rem; font-weight: 600;
+        }
+        .badge.chrome { background: #e0f2fe; color: #0284c7; }
+        .badge.safari { background: #f0fdf4; color: #16a34a; }
+
+        .zalo-guide-tip {
+            margin-top: 15px; padding-top: 10px;
+            border-top: 1px dashed #cbd5e1;
+            font-size: 0.8rem; color: #475569; font-style: italic;
+        }
+
+        /* 3. Cảnh báo Footer Đẹp (Card UI) */
+        .pwa-status-card {
+            margin: 20px auto;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 95%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            text-align: left;
+            border-left: 4px solid #ddd;
+            background: #fff;
+        }
+        
+        /* Màu sắc cho các trạng thái */
+        .pwa-status-card.good { background: #f0fdf4; border-left-color: #27ae60; color: #166534; }
+        .pwa-status-card.warning { background: #fffbeb; border-left-color: #f59e0b; color: #92400e; }
+        .pwa-status-card.error { background: #fef2f2; border-left-color: #ef4444; color: #991b1b; }
+
+        .pwa-icon-box { font-size: 1.2rem; }
+        .pwa-text-content strong { display: block; margin-bottom: 2px; }
+
+        /* Dark Mode */
+        body.dark-mode .pwa-status-card { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+        body.dark-mode .pwa-status-card.good { background: #064e3b; border-color: #34d399; color: #d1fae5; }
+        body.dark-mode .pwa-status-card.warning { background: #451a03; border-color: #fbbf24; color: #fef3c7; }
+        body.dark-mode .pwa-status-card.error { background: #450a0a; border-color: #f87171; color: #fee2e2; }
+        body.dark-mode .install-modal-card { background: #1e293b; }
+        body.dark-mode .modal-header h3 { color: #f1f5f9; }
+        body.dark-mode .modal-close-btn { background: #334155; }
+        body.dark-mode .ios-step { background: #0f172a; border-color: #334155; }
+        body.dark-mode .step-text { color: #cbd5e1; }
+	
+	
+</style>
 </head>
 <body>
-	
-<div id="installGuideModal" class="install-modal" style="display:none;">
-        <div class="install-modal-content">
-            <button class="close-modal" onclick="closeInstallModal()">&times;</button>
+    <div id="installGuideModal" class="install-modal" style="display:none;">
+        <div class="install-modal-overlay" onclick="closeInstallModal()"></div>
+        <div class="install-modal-card">
+            <button class="modal-close-btn" onclick="closeInstallModal()"><i class="fas fa-times"></i></button>
             
-            <div id="iosInstallGuide" style="display:none;">
-                <h3><i class="fab fa-apple"></i> Cài đặt trên iPhone/iPad</h3>
-                <p>Apple yêu cầu thao tác thủ công:</p>
-                <ol>
-                    <li>Nhấn nút <strong>Chia sẻ (Share)</strong> <img src="https://img.icons8.com/ios-glyphs/30/000000/share-rounded.png" style="width: 15px; vertical-align: middle;"> trên Safari.</li>
-                    <li>Chọn <strong>Thêm vào MH chính (Add to Home Screen)</strong>.</li>
-                    <li>Nhấn <strong>Thêm (Add)</strong>.</li>
-                </ol>
+            <div id="iosInstallGuide" class="modal-content-section" style="display:none;">
+                <div class="modal-header">
+                    <div class="icon-circle ios"><i class="fab fa-apple"></i></div>
+                    <h3>Cài đặt trên iPhone/iPad</h3>
+                </div>
+                <p class="modal-desc">Thao tác đơn giản chỉ trong 3 bước:</p>
+                <div class="ios-steps">
+                    <div class="ios-step">
+                        <span class="step-num">1</span>
+                        <div class="step-text">Nhấn nút <strong>Chia sẻ (Share)</strong> trên thanh công cụ</div>
+                        <i class="fas fa-share-square ios-icon-simulate"></i>
+                    </div>
+                    <div class="ios-step">
+                        <span class="step-num">2</span>
+                        <div class="step-text">Kéo lên và chọn dòng <br><strong>Thêm vào MH chính</strong></div>
+                        <i class="fas fa-plus-square ios-icon-simulate"></i>
+                    </div>
+                    <div class="ios-step">
+                        <span class="step-num">3</span>
+                        <div class="step-text">Nhấn <strong>Thêm (Add)</strong> ở góc trên cùng bên phải</div>
+                        <span class="ios-text-simulate">Thêm</span>
+                    </div>
+                </div>
             </div>
 
-            <div id="inAppBrowserWarning" style="display:none;">
-                <h3><i class="fas fa-exclamation-triangle"></i> Trình duyệt không hỗ trợ</h3>
-                <p>Trình duyệt của ứng dụng (Zalo/Facebook) không hỗ trợ cài đặt.</p>
-                <p style="color: #d35400; font-weight: bold;">Vui lòng nhấn dấu 3 chấm góc màn hình và chọn "Mở bằng trình duyệt" (Chrome/Safari).</p>
+            <div id="inAppBrowserWarning" class="modal-content-section" style="display:none;">
+                <div class="modal-header">
+                    <div class="icon-circle warning"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h3 id="warningTitle">Trình duyệt hạn chế</h3>
+                </div>
+                
+                <div class="warning-box">
+                    <p id="warningText">Trình duyệt này không hỗ trợ cài đặt ứng dụng tốt nhất.</p>
+                </div>
+
+                <div class="browser-suggestion">
+                    <p>Vui lòng mở bằng trình duyệt mặc định:</p>
+                    <div class="browser-badges">
+                        <span class="badge chrome"><i class="fab fa-chrome"></i> Google Chrome</span>
+                        <span class="badge safari"><i class="fab fa-safari"></i> Safari</span>
+                    </div>
+                </div>
+                
+                <div class="zalo-guide-tip">
+                    <i class="fas fa-hand-point-right"></i> Nhấn dấu <i class="fas fa-ellipsis-h"></i> ở góc màn hình & chọn <strong>"Mở bằng trình duyệt"</strong>
+                </div>
             </div>
         </div>
     </div>
-	
 
-
-	
+    <button id="installButton" class="install-button" aria-label="Cài đặt ứng dụng">
+        <i class="fas fa-download"></i> Cài App Ngay
+    </button>
 	
     <!-- Install App Button -->
     <button id="installButton" class="install-button" aria-label="Cài đặt ứng dụng">
@@ -4010,121 +4109,162 @@ img[loading="lazy"] {
             document.getElementById('darkModeToggle').querySelector('i').className = 'fas fa-sun';
         }
 
-// ===== LOGIC CAO CẤP: PWA, DETECT DEVICE & WARNING =====
-        
-        // 1. Hàm phát hiện môi trường chính xác
-        function getEnv() {
+        // ===== PWA INSTALLATION =====
+<script>
+        // 1. Hàm kiểm tra trình duyệt & Hệ điều hành
+        function checkEnvironment() {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             return {
+                // Phát hiện iOS (iPhone/iPad)
                 isIOS: /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
+                
+                // Phát hiện Android
                 isAndroid: /android/i.test(ua),
-                // Phát hiện Zalo, FB, Instagram, TikTok...
-                isInApp: /Zalo|FBAN|FBAV|Instagram|Line|Kakaotalk|Twitter|wv/i.test(ua), 
+                
+                // Phát hiện App chặn (Zalo, Facebook, Instagram...)
+                isInApp: /Zalo|FBAN|FBAV|Instagram|Line|Kakaotalk|Twitter/i.test(ua),
+                
+                // Phát hiện trình duyệt của hãng (Samsung, Xiaomi, Oppo...)
+                isOEM: /SamsungBrowser|MiuiBrowser|HeyTapBrowser|OppoBrowser|VivoBrowser|UCBrowser/i.test(ua),
+
+                // Kiểm tra đã cài đặt chưa
                 isStandalone: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
             };
         }
 
-        const env = getEnv();
-        let deferredPrompt; // Biến lưu sự kiện cài đặt của Chrome
+        const env = checkEnvironment();
+        let deferredPrompt = null; 
 
+        // Bắt sự kiện cài đặt của Chrome
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e; 
+        });
+
+        // CHẠY KHI TRANG TẢI XONG
         window.addEventListener('load', () => {
             const installBtn = document.getElementById('installButton');
             const footerContent = document.querySelector('.footer-content');
 
-            // --- YÊU CẦU 1: Xử lý nút Cài đặt ---
-            // Nếu đã cài đặt rồi thì ẩn nút, ngược lại luôn hiện
-            if (env.isStandalone) {
-                installBtn.style.display = 'none';
-            } else {
-                installBtn.style.display = 'flex'; // Luôn hiển thị
+            // 1. Xử lý hiển thị nút Cài đặt (Ẩn nếu đã cài)
+            if (installBtn) {
+                installBtn.style.display = env.isStandalone ? 'none' : 'flex';
             }
 
-            // --- YÊU CẦU 3 & 6: Cảnh báo Footer (Style giống PWA Status) ---
-            // Tạo div status PWA chuẩn
-            const pwaStatus = document.createElement('div');
-            // Style gốc bạn yêu cầu: font 0.85rem, color #666, center
-            pwaStatus.style.cssText = 'margin-top: 1rem; font-size: 0.85rem; color: #666; text-align: center;';
-            
-            if (env.isStandalone) {
-                pwaStatus.innerHTML = '<i class="fas fa-check-circle" style="color: #27ae60;"></i> Đang chạy offline (PWA Mode)';
-            } else if (env.isInApp) {
-                // Cảnh báo trình duyệt In-App (Zalo/FB) - Chữ đỏ
-                pwaStatus.style.color = '#e74c3c'; 
-                pwaStatus.style.fontWeight = '600';
-                pwaStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Bạn đang dùng trình duyệt giới hạn (Zalo/FB). Vui lòng mở bằng Chrome/Safari để học tốt nhất.';
-            } else if (!env.isIOS && !env.isAndroid && !/Chrome|Firefox|Safari/.test(navigator.userAgent)) {
-                 // Cảnh báo trình duyệt lạ trên PC
-                 pwaStatus.innerHTML = '<i class="fas fa-info-circle"></i> Khuyên dùng Chrome hoặc Safari để có trải nghiệm tốt nhất.';
-            } else {
-                // Trình duyệt chuẩn
-                pwaStatus.innerHTML = '<i class="fas fa-mobile-alt"></i> Sẵn sàng cài đặt & học Offline';
+            // 2. Tạo thẻ Cảnh báo đẹp ở Footer
+            if (!env.isStandalone) { // Chỉ hiện khi chưa cài đặt
+                const statusCard = document.createElement('div');
+                let cardClass = 'good';
+                let icon = '<i class="fas fa-mobile-alt"></i>';
+                let title = 'Sẵn sàng cài đặt';
+                let desc = 'Nhấn nút "Cài App Ngay" để sử dụng Offline.';
+
+                // Logic hiển thị nội dung cảnh báo
+                if (env.isInApp) {
+                    cardClass = 'error';
+                    icon = '<i class="fas fa-exclamation-triangle"></i>';
+                    title = 'Trình duyệt hạn chế';
+                    desc = 'Bạn đang dùng Zalo/Facebook. Vui lòng mở bằng Chrome hoặc Safari để cài đặt.';
+                } 
+                else if (env.isOEM) {
+                    cardClass = 'warning';
+                    icon = '<i class="fas fa-info-circle"></i>';
+                    title = 'Khuyên dùng Chrome';
+                    desc = 'Trình duyệt này (Samsung/Xiaomi) có thể không hỗ trợ tốt nhất. Hãy dùng Chrome.';
+                }
+                else if (env.isIOS) {
+                    cardClass = 'warning'; // iOS màu vàng nhẹ
+                    icon = '<i class="fab fa-apple"></i>';
+                    title = 'Dành cho iPhone/iPad';
+                    desc = 'Sử dụng Safari và làm theo hướng dẫn để cài đặt.';
+                }
+
+                // Render HTML thẻ cảnh báo
+                statusCard.className = `pwa-status-card ${cardClass}`;
+                statusCard.innerHTML = `
+                    <div class="pwa-icon-box">${icon}</div>
+                    <div class="pwa-text-content">
+                        <strong>${title}</strong>
+                        <span>${desc}</span>
+                    </div>
+                `;
+                
+                // Chèn vào cuối footer
+                if(footerContent) footerContent.appendChild(statusCard);
             }
-            // Thêm vào footer
-            footerContent.appendChild(pwaStatus);
         });
 
-        // --- YÊU CẦU 4: Logic cho Android/PC (Bắt sự kiện Chrome) ---
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e; // Lưu sự kiện để dùng khi bấm nút
-            console.log('Đã bắt được sự kiện cài đặt (Android/PC)');
-        });
+        // XỬ LÝ KHI NHẤN NÚT CÀI ĐẶT
+        const btn = document.getElementById('installButton');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                const modal = document.getElementById('installGuideModal');
+                const iosGuide = document.getElementById('iosInstallGuide');
+                const warningSection = document.getElementById('inAppBrowserWarning');
+                const warningTitle = document.getElementById('warningTitle');
+                const warningText = document.getElementById('warningText');
 
-        // --- XỬ LÝ CLICK NÚT CÀI ĐẶT (Yêu cầu 4, 5, 6) ---
-        document.getElementById('installButton').addEventListener('click', () => {
-            const modal = document.getElementById('installGuideModal');
-            const iosGuide = document.getElementById('iosInstallGuide');
-            const inAppWarning = document.getElementById('inAppBrowserWarning');
-
-            // 1. Nếu là Zalo/FB/In-App Browser -> Hiện cảnh báo
-            if (env.isInApp) {
+                // Reset hiển thị
                 iosGuide.style.display = 'none';
-                inAppWarning.style.display = 'block';
-                modal.style.display = 'flex';
-                return;
-            }
+                warningSection.style.display = 'none';
 
-            // 2. Nếu là iOS (Safari) -> Hiện hướng dẫn Share
-            if (env.isIOS) {
-                inAppWarning.style.display = 'none';
-                iosGuide.style.display = 'block';
-                modal.style.display = 'flex';
-                return;
-            }
-
-            // 3. Nếu là Android/PC (Chrome/Edge/Cốc Cốc) -> Kích hoạt popup cài đặt
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        showToast('Đang tiến hành cài đặt...', 'success');
+                // Trường hợp 1: Zalo/Facebook hoặc Trình duyệt máy (Samsung/Xiaomi)
+                if (env.isInApp || env.isOEM) {
+                    warningSection.style.display = 'block';
+                    
+                    if (env.isOEM) {
+                        // Cảnh báo nhẹ cho Samsung/Xiaomi
+                        warningTitle.innerHTML = '<i class="fas fa-info-circle"></i> Lưu ý nhỏ';
+                        warningText.textContent = 'Bạn đang dùng trình duyệt mặc định của máy. Nếu nút cài đặt không hoạt động, hãy thử mở trang web này bằng Google Chrome.';
+                    } else {
+                        // Cảnh báo đỏ cho Zalo
+                        warningTitle.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Trình duyệt không hỗ trợ';
+                        warningText.textContent = 'Trình duyệt Zalo/Facebook chặn tính năng này. Vui lòng nhấn dấu 3 chấm góc màn hình -> Chọn "Mở bằng trình duyệt".';
                     }
-                    deferredPrompt = null;
-                });
-            } else {
-                // Trường hợp trình duyệt PC đã chặn hoặc không hỗ trợ, hoặc đã cài rồi
-                showToast('Không thể tự động cài đặt. Hãy kiểm tra menu trình duyệt > Cài đặt ứng dụng.', 'info');
-            }
-        });
+                    
+                    modal.style.display = 'flex';
+                    return;
+                }
 
-        // Hàm đóng modal
+                // Trường hợp 2: iOS (Safari)
+                if (env.isIOS) {
+                    iosGuide.style.display = 'block';
+                    modal.style.display = 'flex';
+                    return;
+                }
+
+                // Trường hợp 3: Android/PC (Chrome chuẩn)
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted setup');
+                        }
+                        deferredPrompt = null;
+                    });
+                } else {
+                    // Lỗi không xác định hoặc đã cài rồi
+                    alert('Không thể tự động cài đặt. Hãy kiểm tra menu trình duyệt > Cài đặt ứng dụng.');
+                }
+            });
+        }
+
+        // Đóng Modal
         window.closeInstallModal = function() {
             document.getElementById('installGuideModal').style.display = 'none';
         }
         
-        // Đóng khi click ra ngoài
-        window.onclick = function(event) {
-            const modal = document.getElementById('installGuideModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-
-        // Sự kiện khi cài đặt thành công
+        // Cài đặt thành công
         window.addEventListener('appinstalled', () => {
-            document.getElementById('installButton').style.display = 'none';
-            showToast('Cài đặt thành công! Kiểm tra màn hình chính.', 'success');
+            if(btn) btn.style.display = 'none';
+            // Ẩn luôn thẻ cảnh báo ở footer nếu có
+            const statusCard = document.querySelector('.pwa-status-card');
+            if(statusCard) statusCard.style.display = 'none';
         });
+    </script>
+
+
+
 
 
 		
@@ -6870,6 +7010,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 	
+
 </body>
 	
 </html>
