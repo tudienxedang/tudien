@@ -1143,6 +1143,34 @@
     border-radius: 24px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.3);
 }    
+
+
+
+/* ================================================= */
+/* === FIX GAME 2: ĐIỀU CHỈNH VỊ TRÍ GIỎ HỨNG === */
+/* ================================================= */
+
+.basket-character {
+    /* Code cũ là 10px, giờ hạ xuống còn 2px để sát mép dưới */
+    bottom: 2px !important; 
+    
+    /* Thêm hiệu ứng nhún nhảy nhẹ khi di chuyển cho sinh động */
+    transition: left 0.08s ease-out, transform 0.1s !important;
+}
+
+/* Trên điện thoại, hạ thấp hơn nữa để dễ nhìn */
+@media (max-width: 640px) {
+    .basket-character {
+        bottom: 0px !important; /* Sát sàn sạt đáy màn hình */
+        width: 70px !important; /* Cho giỏ to ra một chút xíu để dễ hứng */
+    }
+    
+    /* Chỉnh lại cái đế giỏ cho cân đối */
+    .basket-base {
+        width: 70px !important;
+    }
+}
+/* ================================================= */
     
   </style>
   <style>@view-transition { navigation: auto; }</style>
