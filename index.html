@@ -4,6 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Hệ thống học tiếng xơ đăng cho học sinh THCS | Ứng dụng PWA miễn phí</title>
+	<script>
+  // CẤU HÌNH: Link trang Intro tên miền mới
+  const INTRO_URL = "https://hoctiengxodang.online"; 
+
+  // 1. Kiểm tra xem có "vé" (verified=true) trên thanh địa chỉ không
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasTicket = urlParams.get('verified');
+
+  // 2. Nếu có vé, lưu ngay vào bộ nhớ của App để lần sau không hỏi nữa
+  if (hasTicket === 'true') {
+      sessionStorage.setItem('hasSeenIntro', 'true');
+      
+      // (Tùy chọn) Xóa cái đuôi ?verified=true đi cho đẹp link
+      window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  // 3. Kiểm tra lần cuối: Nếu chưa có trong bộ nhớ VÀ không có vé trên link
+  if (!sessionStorage.getItem('hasSeenIntro')) {
+      // Đá về trang Intro mới
+      window.location.href = INTRO_URL;
+  }
+</script>
+
+
+
+	
     <meta name="description" content="Hệ thống học tiếng Xơ Đăng trực tuyến dành riêng cho học sinh THCS. Từ điển tương tác, bài học sinh động, trắc nghiệm thông minh, trò chơi giáo dục. Ứng dụng PWA học offline, hỗ trợ phát âm chuẩn, hoàn toàn miễn phí.">
     <meta name="keywords" content="học tiếng xơ đăng, tiếng xê đăng, học tiếng dân tộc thiểu số, từ điển xơ đăng, ứng dụng học tiếng xơ đăng, học tiếng xơ đăng online, bài tập tiếng xơ đăng, pwa học tiếng dân tộc, tiếng xơ đăng cho học sinh, giáo dục dân tộc thiểu số, bảo tồn ngôn ngữ dân tộc">
 
