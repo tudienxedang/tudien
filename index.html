@@ -4,6 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Hệ thống học tiếng xơ đăng cho học sinh THCS | Ứng dụng PWA miễn phí</title>
+	
+	<script>
+    // ĐỊNH NGHĨA HÀM TOÀN CỤC TRƯỚC KHI TRANG TẢI
+    function showContactLock(kenh) {
+        // TẠO TOASTCONTAINER NẾU CHƯA CÓ
+        let toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000;';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // TẠO THÔNG BÁO TOAST
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 10px;
+            font-weight: 500;
+            z-index: 10000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(-30px);
+            transition: opacity 0.3s, transform 0.3s;
+            min-width: 300px;
+        `;
+        
+        toast.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-user-shield" style="font-size: 1.3em;"></i>
+                <div style="text-align: left;">
+                    <strong style="display:block; margin-bottom:2px;">ĐANG THẨM ĐỊNH</strong>
+                    Kênh ${kenh} tạm khóa để bảo mật danh tính.
+                </div>
+            </div>
+        `;
+        
+        // THÊM VÀO TRANG
+        toastContainer.appendChild(toast);
+        
+        // HIỆU ỨNG HIỆN LÊN
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        }, 10);
+        
+        // TỰ ĐỘNG ẨN SAU 3 GIÂY
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-30px)';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
+    
+    // ĐẢM BẢO HÀM CÓ THỂ GỌI TỪ HTML
+    window.showContactLock = showContactLock;
+    </script>
+
+	
 	<script>
   // CẤU HÌNH: Link trang Intro tên miền mới
   const INTRO_URL = "https://hoctiengxodang.online"; 
@@ -7265,69 +7333,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-<script>
-   function showContactLock(kenh) {
-    // TẠO TOASTCONTAINER NẾU CHƯA CÓ
-    let toastContainer = document.getElementById('toastContainer');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toastContainer';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // TẠO THÔNG BÁO TOAST
-    const toast = document.createElement('div');
-    toast.className = 'toast info';
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        background: linear-gradient(135deg, #3498db, #2980b9);
-        color: white;
-        border-radius: 10px;
-        font-weight: 500;
-        z-index: 10000;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        opacity: 0;
-        transform: translateY(-30px);
-        transition: opacity 0.3s, transform 0.3s;
-        min-width: 300px;
-    `;
-    
-    toast.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-user-shield" style="font-size: 1.3em;"></i>
-            <div style="text-align: left;">
-                <strong style="display:block; margin-bottom:2px;">ĐANG THẨM ĐỊNH</strong>
-                Kênh ${kenh} tạm khóa để bảo mật danh tính.
-            </div>
-        </div>
-    `;
-    
-    // THÊM VÀO TRANG
-    toastContainer.appendChild(toast);
-    
-    // HIỆU ỨNG HIỆN LÊN
-    setTimeout(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
-    }, 10);
-    
-    // TỰ ĐỘNG ẨN SAU 3 GIÂY
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-30px)';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
-}
-</script>
-	
 
-</body>
 	
 </html>
