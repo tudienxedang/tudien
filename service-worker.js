@@ -1,10 +1,11 @@
-// service-worker.js - VERSION 3.2 (FULLY FIXED)
+// service-worker.js - VERSION 3.3 (FIXED)
 
 // 1. IMPORT THƯ VIỆN IDB
 importScripts('https://cdn.jsdelivr.net/npm/idb@7/build/umd.js');
 
-const CACHE_NAME = 'tudien-xodang-v3.3';
+const CACHE_NAME = 'tudien-xodang-v3.4';
 const FONT_CACHE = 'fonts-v1';
+const DRIVE_AUDIO_CACHE = 'drive-audio-v1';
 const OFFLINE_URL = './offline.html';
 
 const urlsToPreCache = [
@@ -26,18 +27,15 @@ const fontsToCache = [
   'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap'
 ];
 
+const DRIVE_AUDIO_URLS = [
+  'https://drive.google.com/file/d/1SSEmYan9807CD2rUePjs7rOUKqRmYxYO/preview'
+];
+
 // SVG placeholder cho ảnh bị lỗi
 const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
   <rect width="400" height="300" fill="#f0f0f0"/>
   <text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="20" fill="#999">Image not available offline</text>
 </svg>`;
-// Google Drive Audio Cache
-const DRIVE_AUDIO_CACHE = 'drive-audio-v1';
-
-// Danh sách file audio Drive đã biết (thêm vào đây)
-const DRIVE_AUDIO_URLS = [
-    'https://drive.google.com/file/d/1SSEmYan9807CD2rUePjs7rOUKqRmYxYO/preview'
-];
 
 // INSTALL
 self.addEventListener('install', event => {
@@ -46,20 +44,18 @@ self.addEventListener('install', event => {
       caches.open(CACHE_NAME).then(cache => {
         return cache.addAll(urlsToPreCache).catch(err => {
           console.error('Lỗi cache assets:', err);
-          // Continue even if some files fail
         });
       }),
       caches.open(FONT_CACHE).then(cache => {
         return cache.addAll(fontsToCache).catch(err => {
           console.error('Lỗi cache fonts:', err);
         });
-      })
-
+      }),
       caches.open(DRIVE_AUDIO_CACHE).then(cache => {
         return Promise.all(
           DRIVE_AUDIO_URLS.map(url => {
             return cache.add(url).catch(err => {
-              console.log('Không cache được:', url, err);
+              console.log('Không cache được audio:', url, err);
             });
           })
         );
@@ -69,22 +65,21 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-
-
 // ACTIVATE
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && cacheName !== FONT_CACHE) {
+          if (cacheName !== CACHE_NAME && 
+              cacheName !== FONT_CACHE && 
+              cacheName !== DRIVE_AUDIO_CACHE) {
             console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-      // Initialize IndexedDB
       return idb.openDB('tudien-contributions', 1, {
         upgrade(db) {
           if (!db.objectStoreNames.contains('pending')) {
@@ -106,7 +101,42 @@ self.addEventListener('fetch', event => {
 
   const requestUrl = new URL(event.request.url);
 
-  // 1. Google Sheets API - Stale-While-Revalidate
+  // 1. Google Drive Audio - Ưu tiên cache
+  if (requestUrl.hostname.includes('drive.google.com') && 
+      requestUrl.pathname.includes('/file/d/')) {
+    event.respondWith(
+      (async () => {
+        // Thử lấy từ cache drive audio trước
+        const driveCache = await caches.open(DRIVE_AUDIO_CACHE);
+        const cachedResponse = await driveCache.match(event.request);
+        
+        if (cachedResponse) {
+          console.log('✅ Drive audio served from cache');
+          return cachedResponse;
+        }
+        
+        // Nếu online, fetch từ network
+        try {
+          const networkResponse = await fetch(event.request);
+          if (networkResponse.status === 200) {
+            driveCache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch (error) {
+          // Offline và không có cache
+          return new Response(
+            '<div style="padding:20px;text-align:center;color:#666;font-size:14px;">' +
+            '<i class="fas fa-volume-mute" style="display:block;margin:10px;font-size:2em;"></i>' +
+            'Âm thanh không khả dụng offline</div>',
+            { headers: { 'Content-Type': 'text/html' } }
+          );
+        }
+      })()
+    );
+    return;
+  }
+
+  // 2. Google Sheets API - Stale-While-Revalidate
   if (requestUrl.hostname.includes('sheets.googleapis.com') || 
       requestUrl.hostname.includes('script.google.com')) {
     event.respondWith(
@@ -143,9 +173,10 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 2. Fonts - Cache First
+  // 3. Fonts - Cache First
   if (requestUrl.pathname.includes('webfonts') || 
-      requestUrl.hostname.includes('fonts.googleapis.com')) {
+      requestUrl.hostname.includes('fonts.googleapis.com') ||
+      requestUrl.hostname.includes('fonts.gstatic.com')) {
     event.respondWith(
       caches.match(event.request, { cacheName: FONT_CACHE })
         .then(response => response || fetch(event.request))
@@ -153,7 +184,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 3. Navigation requests - Network First, Cache fallback
+  // 4. Navigation requests - Network First, Cache fallback
   if (event.request.mode === 'navigate') {
     event.respondWith(
       (async () => {
@@ -171,7 +202,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 4. Default Strategy - Cache First with Network fallback
+  // 5. Default Strategy - Cache First with Network fallback
   event.respondWith(
     (async () => {
       // Try cache first
@@ -218,43 +249,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// 5. Google Drive Audio - Ưu tiên cache
-if (event.request.url.includes('drive.google.com/file/d/') && 
-    event.request.url.includes('/preview')) {
-    
-  event.respondWith(
-    (async () => {
-      // Thử lấy từ cache drive audio trước
-      const driveCache = await caches.open(DRIVE_AUDIO_CACHE);
-      const cachedResponse = await driveCache.match(event.request);
-      
-      if (cachedResponse) {
-        console.log('✅ Drive audio served from cache');
-        return cachedResponse;
-      }
-      
-      // Nếu online, fetch từ network
-      try {
-        const networkResponse = await fetch(event.request);
-        if (networkResponse.status === 200) {
-          driveCache.put(event.request, networkResponse.clone());
-        }
-        return networkResponse;
-      } catch (error) {
-        // Offline và không có cache
-        return new Response(
-          '<div style="padding:20px;text-align:center;color:#666;font-size:14px;">' +
-          '<i class="fas fa-volume-mute" style="display:block;margin:10px;font-size:2em;"></i>' +
-          'Âm thanh không khả dụng offline</div>',
-          { headers: { 'Content-Type': 'text/html' } }
-        );
-      }
-    })()
-  );
-  return;
-}
-
-
 // BACKGROUND SYNC
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-contributions') {
@@ -275,21 +269,21 @@ async function syncContributions() {
     
     for (const contribution of pending) {
       try {
-        await fetch('https://script.google.com/macros/s/AKfycbz9XYdorp6vsKFTCrqx2tUSJGecpOmCbrROqKfkHYSFn2WXieQtJXWCQvSJvxCk6yrs/exec', {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbz9XYdorp6vsKFTCrqx2tUSJGecpOmCbrROqKfkHYSFn2WXieQtJXWCQvSJvxCk6yrs/exec', {
           method: 'POST',
           body: JSON.stringify(contribution),
           headers: { 'Content-Type': 'text/plain;charset=utf-8' }
         });
         
-        // Remove from pending if successful
-        const deleteTx = db.transaction('pending', 'readwrite');
-        await deleteTx.objectStore('pending').delete(contribution.id);
-        await deleteTx.done;
-        
-        console.log('Successfully synced contribution:', contribution.id);
+        if (response.ok) {
+          // Remove from pending if successful
+          const deleteTx = db.transaction('pending', 'readwrite');
+          await deleteTx.objectStore('pending').delete(contribution.id);
+          await deleteTx.done;
+          console.log('Successfully synced contribution:', contribution.id);
+        }
       } catch (err) {
         console.error('Failed to sync contribution:', contribution.id, err);
-        // Keep in pending for next retry
       }
     }
   } catch (error) {
@@ -308,23 +302,27 @@ self.addEventListener('push', event => {
     data = {
       title: 'Từ điển Xơ Đăng',
       body: event.data.text() || 'Có thông báo mới',
-      icon: '/icon-192x192.png'
+      icon: './icon-192x192.png'
     };
   }
   
   const options = {
     body: data.body,
-    icon: data.icon || '/icon-192x192.png',
-    badge: '/badge-72x72.png',
+    icon: data.icon || './icon-192x192.png',
+    badge: './badge-72x72.png',
     tag: data.tag || 'tudien-update',
     data: {
-      url: data.url || '/',
+      url: data.url || './',
       timestamp: Date.now()
     },
-    actions: data.actions || [
+    actions: [
       {
         action: 'open',
         title: 'Mở ứng dụng'
+      },
+      {
+        action: 'close',
+        title: 'Đóng'
       }
     ]
   };
@@ -337,50 +335,26 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   
-  const urlToOpen = event.notification.data?.url || '/';
+  if (event.action === 'close') {
+    return;
+  }
+  
+  const urlToOpen = event.notification.data?.url || './';
   
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then(clientList => {
-        // Check if there's already a window open
         for (const client of clientList) {
           if (client.url === urlToOpen && 'focus' in client) {
             return client.focus();
           }
         }
-        // Open new window
         if (clients.openWindow) {
           return clients.openWindow(urlToOpen);
         }
       })
   );
 });
-
-// Periodic Sync (if supported)
-if ('periodicSync' in self.registration) {
-  self.addEventListener('periodicsync', event => {
-    if (event.tag === 'update-dictionary') {
-      console.log('Periodic sync for dictionary update');
-      event.waitUntil(updateDictionaryData());
-    }
-  });
-}
-
-async function updateDictionaryData() {
-  // Update cached dictionary data periodically
-  const cache = await caches.open(CACHE_NAME);
-  const apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1Z59pDBu_tGwlYqUeS1-VJLpcHozp7LbxnC_-qhT3iHs/values/Sheet1!A2:F?key=AIzaSyD757jS4SLR7-EzrPgrW9WrLQeD2DQExHw';
-  
-  try {
-    const response = await fetch(apiUrl);
-    if (response.ok) {
-      await cache.put(apiUrl, response.clone());
-      console.log('Dictionary data updated via periodic sync');
-    }
-  } catch (error) {
-    console.error('Periodic sync failed:', error);
-  }
-}
 
 // Message handling from main thread
 self.addEventListener('message', event => {
