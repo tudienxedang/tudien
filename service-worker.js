@@ -31,6 +31,13 @@ const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="400" hei
   <rect width="400" height="300" fill="#f0f0f0"/>
   <text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="20" fill="#999">Image not available offline</text>
 </svg>`;
+// Google Drive Audio Cache
+const DRIVE_AUDIO_CACHE = 'drive-audio-v1';
+
+// Danh sách file audio Drive đã biết (thêm vào đây)
+const DRIVE_AUDIO_URLS = [
+    'https://drive.google.com/file/d/1SSEmYan9807CD2rUePjs7rOUKqRmYxYO/preview'
+];
 
 // INSTALL
 self.addEventListener('install', event => {
@@ -47,10 +54,22 @@ self.addEventListener('install', event => {
           console.error('Lỗi cache fonts:', err);
         });
       })
+
+      caches.open(DRIVE_AUDIO_CACHE).then(cache => {
+        return Promise.all(
+          DRIVE_AUDIO_URLS.map(url => {
+            return cache.add(url).catch(err => {
+              console.log('Không cache được:', url, err);
+            });
+          })
+        );
+      })
     ])
   );
   self.skipWaiting();
 });
+
+
 
 // ACTIVATE
 self.addEventListener('activate', event => {
@@ -198,6 +217,43 @@ self.addEventListener('fetch', event => {
     })()
   );
 });
+
+// 5. Google Drive Audio - Ưu tiên cache
+if (event.request.url.includes('drive.google.com/file/d/') && 
+    event.request.url.includes('/preview')) {
+    
+  event.respondWith(
+    (async () => {
+      // Thử lấy từ cache drive audio trước
+      const driveCache = await caches.open(DRIVE_AUDIO_CACHE);
+      const cachedResponse = await driveCache.match(event.request);
+      
+      if (cachedResponse) {
+        console.log('✅ Drive audio served from cache');
+        return cachedResponse;
+      }
+      
+      // Nếu online, fetch từ network
+      try {
+        const networkResponse = await fetch(event.request);
+        if (networkResponse.status === 200) {
+          driveCache.put(event.request, networkResponse.clone());
+        }
+        return networkResponse;
+      } catch (error) {
+        // Offline và không có cache
+        return new Response(
+          '<div style="padding:20px;text-align:center;color:#666;font-size:14px;">' +
+          '<i class="fas fa-volume-mute" style="display:block;margin:10px;font-size:2em;"></i>' +
+          'Âm thanh không khả dụng offline</div>',
+          { headers: { 'Content-Type': 'text/html' } }
+        );
+      }
+    })()
+  );
+  return;
+}
+
 
 // BACKGROUND SYNC
 self.addEventListener('sync', event => {
