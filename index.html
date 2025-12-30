@@ -3443,7 +3443,7 @@ img[loading="lazy"] {
         .badge.chrome { background: #e0f2fe; color: #0284c7; }
         .badge.safari { background: #f0fdf4; color: #16a34a; }
 
-        .zalo-guide-tip {a
+        .zalo-guide-tip {.
             margin-top: 15px; padding-top: 10px;
             border-top: 1px dashed #cbd5e1;
             font-size: 0.8rem; color: #475569; font-style: italic;
@@ -3713,7 +3713,15 @@ body.dark-mode .form-label {
 </head>
 <body>
  
+<div id="app-loading" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:99999; display:none; justify-content:center; align-items:center; flex-direction:column;">
+    <div class="spinner"></div>
+    <div class="loading-bar-container" style="width:200px; height:4px; background:#eee; margin-top:20px; border-radius:2px;">
+        <div class="loading-bar" style="width:0%; height:100%; background:#27ae60; transition:width 0.3s;"></div>
+    </div>
+    <p style="margin-top:10px; color:#27ae60;">Đang khởi động...</p>
+</div>
 
+	
     <!-- Install App Button -->
 
 <div id="installGuideModal" class="install-modal" style="display:none;">
@@ -7258,15 +7266,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-//khóa zalo,fb
-	<script>
+<script>
     function showContactLock(kenh) {
-        // Tạo thông báo (Toast)
         const toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) return; // Kiểm tra an toàn
+
         const toast = document.createElement('div');
         toast.className = 'toast info'; 
-        
-        // Nội dung thông báo đẹp, có icon khiên bảo mật
         toast.innerHTML = `
             <div style="display: flex; align-items: center; gap: 10px;">
                 <i class="fas fa-user-shield" style="font-size: 1.3em;"></i>
@@ -7278,10 +7284,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         toastContainer.appendChild(toast);
         
-        // Hiệu ứng hiện ra
         setTimeout(() => toast.classList.add('show'), 10);
-        
-        // Tự biến mất sau 3 giây
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
