@@ -14,14 +14,14 @@ const urlsToPreCache = [
   OFFLINE_URL,
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
   'https://cdn.tailwindcss.com',
-  'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js'
+  'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js',
   'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap'
 ];
 
 const fontsToCache = [
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff2'
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff2',
   'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap'
 ];
