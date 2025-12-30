@@ -4283,15 +4283,14 @@ body.dark-mode .form-label {
        <a href="javascript:void(0)" onclick="showContactLock('Zalo')" title="Zalo (Đang khóa)" aria-label="Liên hệ qua Zalo">
         <i class="fas fa-comment-dots"></i>
     </a>
-
     <a href="javascript:void(0)" onclick="showContactLock('Facebook')" title="Facebook (Đang khóa)" aria-label="Trang Facebook">
         <i class="fab fa-facebook-f"></i>
     </a>
-
     <a href="javascript:void(0)" onclick="showContactLock('Email')" title="Email (Đang khóa)" aria-label="Gửi email">
         <i class="fas fa-envelope"></i>
     </a>
-</div>
+					
+           </div>
             </div>
         </div>
     </footer>
@@ -7117,6 +7116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+		
     </script>
 
 
@@ -7265,31 +7265,66 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-
 <script>
-    function showContactLock(kenh) {
-        const toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) return; // Kiểm tra an toàn
-
-        const toast = document.createElement('div');
-        toast.className = 'toast info'; 
-        toast.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-user-shield" style="font-size: 1.3em;"></i>
-                <div style="text-align: left;">
-                    <strong style="display:block; margin-bottom:2px;">ĐANG THẨM ĐỊNH</strong>
-                    Kênh ${kenh} tạm khóa để bảo mật danh tính.
-                </div>
-            </div>
-        `;
-        toastContainer.appendChild(toast);
-        
-        setTimeout(() => toast.classList.add('show'), 10);
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+   function showContactLock(kenh) {
+    // TẠO TOASTCONTAINER NẾU CHƯA CÓ
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        document.body.appendChild(toastContainer);
     }
+    
+    // TẠO THÔNG BÁO TOAST
+    const toast = document.createElement('div');
+    toast.className = 'toast info';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        border-radius: 10px;
+        font-weight: 500;
+        z-index: 10000;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        opacity: 0;
+        transform: translateY(-30px);
+        transition: opacity 0.3s, transform 0.3s;
+        min-width: 300px;
+    `;
+    
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-user-shield" style="font-size: 1.3em;"></i>
+            <div style="text-align: left;">
+                <strong style="display:block; margin-bottom:2px;">ĐANG THẨM ĐỊNH</strong>
+                Kênh ${kenh} tạm khóa để bảo mật danh tính.
+            </div>
+        </div>
+    `;
+    
+    // THÊM VÀO TRANG
+    toastContainer.appendChild(toast);
+    
+    // HIỆU ỨNG HIỆN LÊN
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // TỰ ĐỘNG ẨN SAU 3 GIÂY
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-30px)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
 </script>
 	
 
