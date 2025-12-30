@@ -4327,16 +4327,18 @@ body.dark-mode .form-label {
             <div class="contact-section">
                 <span class="contact-title">Liên hệ</span>
                 <div class="social-icons">
-                    <a href="https://zalo.me/0877623579" target="_blank" title="Zalo" aria-label="Liên hệ qua Zalo">
-    <i class="fas fa-comment-dots"></i>
-</a>
-                    <a href="https://facebook.com/your_facebook_page" target="_blank" title="Facebook" aria-label="Trang Facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="baotruongminh201@gmail.com" title="Gmail" aria-label="Gửi email">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-                </div>
+    <a href="javascript:void(0)" onclick="showContactLock('Zalo')" title="Zalo (Đang khóa)" aria-label="Liên hệ qua Zalo">
+        <i class="fas fa-comment-dots"></i>
+    </a>
+
+    <a href="javascript:void(0)" onclick="showContactLock('Facebook')" title="Facebook (Đang khóa)" aria-label="Trang Facebook">
+        <i class="fab fa-facebook-f"></i>
+    </a>
+
+    <a href="javascript:void(0)" onclick="showContactLock('Email')" title="Email (Đang khóa)" aria-label="Gửi email">
+        <i class="fas fa-envelope"></i>
+    </a>
+</div>
             </div>
         </div>
     </footer>
@@ -7309,6 +7311,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+
+//khóa zalo,fb
+	<script>
+    function showContactLock(kenh) {
+        // Tạo thông báo (Toast)
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast info'; 
+        
+        // Nội dung thông báo đẹp, có icon khiên bảo mật
+        toast.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-user-shield" style="font-size: 1.3em;"></i>
+                <div style="text-align: left;">
+                    <strong style="display:block; margin-bottom:2px;">ĐANG THẨM ĐỊNH</strong>
+                    Kênh ${kenh} tạm khóa để bảo mật danh tính.
+                </div>
+            </div>
+        `;
+        toastContainer.appendChild(toast);
+        
+        // Hiệu ứng hiện ra
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        // Tự biến mất sau 3 giây
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+</script>
 	
 
 </body>
