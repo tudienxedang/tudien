@@ -1860,38 +1860,7 @@
       updateOfflineIndicator();
     });
 
-    function updateOfflineIndicator() {
-      const indicator = document.getElementById('offline-indicator');
-      if (!indicator) return;
-
-      if (!isOnline) {
-        const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
-        const lastUpdate = offlineTimestamp ? new Date(parseInt(offlineTimestamp)).toLocaleString('vi-VN') : 'Chưa có';
-        
-        indicator.className = 'offline-indicator';
    
-        
-      
-        indicator.style.display = 'flex';
-      } else {
-        const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
-        const lastUpdate = offlineTimestamp ? new Date(parseInt(offlineTimestamp)).toLocaleString('vi-VN') : 'Mới';
-        
-        indicator.className = 'offline-indicator';
-        indicator.innerHTML = `
-          <div class="offline-dot"></div>
-          <div>
-            <div style="font-size: 12px;">📶 Online</div>
-            <div style="font-size: 10px; opacity: 0.8;">Dữ liệu: ${lastUpdate}</div>
-          </div>
-        `;
-        indicator.style.display = 'flex';
-        
-        setTimeout(() => {
-          indicator.style.display = 'none';
-        }, 3000);
-      }
-    }
 
     async function fetchData() {
       console.log('🔄 Đang fetch dữ liệu...');
