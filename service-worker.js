@@ -2,7 +2,7 @@
 // GIỮ NGUYÊN API KEY - FIX LỖI 408
 
 // ==================== CẤU HÌNH QUAN TRỌNG ====================
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '9.1.0';
 const CACHE_NAME = `tudien-${APP_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 
