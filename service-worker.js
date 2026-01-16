@@ -24,13 +24,6 @@ const CACHE_NAMES = {
   data: 'sheets-data-v2'  // Cache riêng cho Google Sheets data
 };
 
-// ==================== ĐƯỜNG DẪN AUDIO THỰC TẾ ====================
-// Bạn cần direct download link từ Google Drive
-// Ví dụ: https://drive.google.com/uc?export=download&id=FILE_ID
-const AUDIO_FILES = [
-  // Thêm các link audio thực tế của bạn ở đây
-  'https://drive.google.com/uc?export=download&id=1SSEmYan9807CD2rUePjs7rOUKqRmYxYO'
-];
 
 // ==================== FILE CẦN CACHE ====================
 const STATIC_FILES = [
