@@ -11,6 +11,7 @@ const STATIC_FILES = [
   './',
   './index.html',
   './offline.html',
+  './game.html',
   './manifest.json',
   './favicon.png',
   './badge-72x72.png',
