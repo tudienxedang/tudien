@@ -1,7 +1,7 @@
 {
-  "name": "Học Tiếng Xơ Đăng THCS",
-  "short_name": "Từ điển Xơ Đăng",
-  "description": "Hệ thống học tiếng Xơ Đăng cho học sinh THCS",
+  "name": "Từ điển Xơ Đăng THCS",
+  "short_name": "Xơ Đăng",
+  "description": "Hệ thống học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -50,16 +50,15 @@
     {
       "name": "Tra từ điển",
       "short_name": "Tra từ",
-      "description": "Tra cứu từ vựng Xơ Đăng",
+      "description": "Tra cứu từ vựng Xơ Đăng - Việt",
       "url": "./#home"
     },
     {
-      "name": "Học tập",
-      "short_name": "Học",
-      "description": "Học và kiểm tra",
+      "name": "Học và kiểm tra",
+      "short_name": "Học tập",
+      "description": "Ôn tập và làm trắc nghiệm",
       "url": "./#quiz"
     }
   ],
-  "prefer_related_applications": false,
-  "related_applications": []
+  "prefer_related_applications": false
 }
