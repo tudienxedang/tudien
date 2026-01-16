@@ -72,28 +72,6 @@
     </script>
 
 	
-	<script>
-  // CẤU HÌNH: Link trang Intro tên miền mới
-  const INTRO_URL = "https://hoctiengxodang.online"; 
-
-  // 1. Kiểm tra xem có "vé" (verified=true) trên thanh địa chỉ không
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasTicket = urlParams.get('verified');
-
-  // 2. Nếu có vé, lưu ngay vào bộ nhớ của App để lần sau không hỏi nữa
-  if (hasTicket === 'true') {
-      sessionStorage.setItem('hasSeenIntro', 'true');
-      
-      // (Tùy chọn) Xóa cái đuôi ?verified=true đi cho đẹp link
-      window.history.replaceState({}, document.title, window.location.pathname);
-  }
-
-  // 3. Kiểm tra lần cuối: Nếu chưa có trong bộ nhớ VÀ không có vé trên link
-  if (!sessionStorage.getItem('hasSeenIntro')) {
-      // Đá về trang Intro mới
-      window.location.href = INTRO_URL;
-  }
-</script>
 
 
 
