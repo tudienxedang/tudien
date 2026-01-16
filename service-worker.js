@@ -1,370 +1,627 @@
-// service-worker.js - VERSION 3.3 (FIXED)
+// service-worker.js - VERSION 4.1 (WITH GOOGLE SHEETS INTEGRATION)
 
-// 1. IMPORT THƯ VIỆN IDB
-importScripts('https://cdn.jsdelivr.net/npm/idb@7/build/umd.js');
+// ==================== CẤU HÌNH GOOGLE SHEETS ====================
+const GOOGLE_CONFIG = {
+  API_KEY: 'AIzaSyD757jS4SLR7-EzrPgrW9WrLQeD2DQExHw',
+  SHEET_ID: '1Z59pDBu_tGwlYqUeS1-VJLpcHozp7LbxnC_-qhT3iHs',
+  RANGE: 'Tu_Dien!A2:F',
+  
+  // Tự động tạo URL từ cấu hình
+  get SHEETS_URL() {
+    return `https://sheets.googleapis.com/v4/spreadsheets/${this.SHEET_ID}/values/${this.RANGE}?key=${this.API_KEY}`;
+  },
+  
+  // Apps Script URL cho ghi dữ liệu
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz9XYdorp6vsKFTCrqx2tUSJGecpOmCbrROqKfkHYSFn2WXieQtJXWCQvSJvxCk6yrs/exec'
+};
 
-const CACHE_NAME = 'tudien-xodang-v3.4';
-const FONT_CACHE = 'fonts-v1';
-const DRIVE_AUDIO_CACHE = 'drive-audio-v1';
-const OFFLINE_URL = './offline.html';
+// ==================== CẤU HÌNH CACHE ====================
+const APP_VERSION = '4.1.0';
+const CACHE_NAMES = {
+  app: `tudien-xodang-v${APP_VERSION}`,
+  fonts: 'fonts-v2',
+  audio: 'audio-v2',
+  data: 'sheets-data-v2'  // Cache riêng cho Google Sheets data
+};
 
-const urlsToPreCache = [
+// ==================== ĐƯỜNG DẪN AUDIO THỰC TẾ ====================
+// Bạn cần direct download link từ Google Drive
+// Ví dụ: https://drive.google.com/uc?export=download&id=FILE_ID
+const AUDIO_FILES = [
+  // Thêm các link audio thực tế của bạn ở đây
+  'https://drive.google.com/uc?export=download&id=1SSEmYan9807CD2rUePjs7rOUKqRmYxYO'
+];
+
+// ==================== FILE CẦN CACHE ====================
+const STATIC_FILES = [
   './',
   './index.html',
   './game.html',
-  OFFLINE_URL,
+  './intro.html',
+  './offline.html',
+  './manifest.json',
+  './favicon.png',
+  './badge-72x72.png',
+  
+  // Tất cả icon bạn có
+  './icon-48x48.png',
+  './icon-72x72.png',
+  './icon-96x96.png',
+  './icon-128x128.png',
+  './icon-144x144.png',
+  './icon-152x152.png',
+  './icon-192x192.png',
+  './icon-256x256.png',
+  './icon-384x384.png',
+  './icon-512x512.png'
+];
+
+const FONT_FILES = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
-  'https://cdn.tailwindcss.com',
-  'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js',
-  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
-  'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap'
+  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap'
 ];
 
-const fontsToCache = [
-  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff2',
-  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
-  'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap'
-];
+// ==================== SERVICE WORKER LIFE CYCLE ====================
 
-const DRIVE_AUDIO_URLS = [
-  'https://drive.google.com/file/d/1SSEmYan9807CD2rUePjs7rOUKqRmYxYO/preview'
-];
-
-// SVG placeholder cho ảnh bị lỗi
-const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
-  <rect width="400" height="300" fill="#f0f0f0"/>
-  <text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="20" fill="#999">Image not available offline</text>
-</svg>`;
-
-// INSTALL
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
+  console.log('📦 Service Worker installing v' + APP_VERSION);
+  
   event.waitUntil(
     Promise.all([
-      caches.open(CACHE_NAME).then(cache => {
-        return cache.addAll(urlsToPreCache).catch(err => {
-          console.error('Lỗi cache assets:', err);
-        });
-      }),
-      caches.open(FONT_CACHE).then(cache => {
-        return cache.addAll(fontsToCache).catch(err => {
-          console.error('Lỗi cache fonts:', err);
-        });
-      }),
-      caches.open(DRIVE_AUDIO_CACHE).then(cache => {
-        return Promise.all(
-          DRIVE_AUDIO_URLS.map(url => {
-            return cache.add(url).catch(err => {
-              console.log('Không cache được audio:', url, err);
-            });
-          })
-        );
-      })
-    ])
-  );
-  self.skipWaiting();
-});
-
-// ACTIVATE
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && 
-              cacheName !== FONT_CACHE && 
-              cacheName !== DRIVE_AUDIO_CACHE) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-      return idb.openDB('tudien-contributions', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('pending')) {
-            db.createObjectStore('pending', { keyPath: 'id' });
-          }
-        }
-      });
+      cacheStaticFiles(),
+      cacheGoogleSheetsData()  // Cache data từ Google Sheets ngay khi install
+    ]).then(() => {
+      console.log('✅ Tất cả resources đã được cache');
+      return self.skipWaiting();
     })
   );
-  self.clients.claim();
 });
 
-// FETCH
-self.addEventListener('fetch', event => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  const requestUrl = new URL(event.request.url);
-
-  // 1. Google Drive Audio - Ưu tiên cache
-  if (requestUrl.hostname.includes('drive.google.com') && 
-      requestUrl.pathname.includes('/file/d/')) {
-    event.respondWith(
-      (async () => {
-        // Thử lấy từ cache drive audio trước
-        const driveCache = await caches.open(DRIVE_AUDIO_CACHE);
-        const cachedResponse = await driveCache.match(event.request);
-        
-        if (cachedResponse) {
-          console.log('✅ Drive audio served from cache');
-          return cachedResponse;
-        }
-        
-        // Nếu online, fetch từ network
-        try {
-          const networkResponse = await fetch(event.request);
-          if (networkResponse.status === 200) {
-            driveCache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        } catch (error) {
-          // Offline và không có cache
-          return new Response(
-            '<div style="padding:20px;text-align:center;color:#666;font-size:14px;">' +
-            '<i class="fas fa-volume-mute" style="display:block;margin:10px;font-size:2em;"></i>' +
-            'Âm thanh không khả dụng offline</div>',
-            { headers: { 'Content-Type': 'text/html' } }
-          );
-        }
-      })()
-    );
-    return;
-  }
-
-  // 2. Google Sheets API - Stale-While-Revalidate
-  if (requestUrl.hostname.includes('sheets.googleapis.com') || 
-      requestUrl.hostname.includes('script.google.com')) {
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(event.request);
-        
-        // Return cached response immediately if available
-        if (cachedResponse) {
-          // Update cache in background
-          fetch(event.request)
-            .then(networkResponse => {
-              cache.put(event.request, networkResponse.clone());
-            })
-            .catch(() => {
-              // Network failed, keep using cached version
-            });
-          return cachedResponse;
-        }
-        
-        // No cache, try network
-        try {
-          const networkResponse = await fetch(event.request);
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        } catch (error) {
-          // Network failed, return empty response for API calls
-          return new Response('{}', {
-            headers: { 'Content-Type': 'application/json' }
-          });
-        }
-      })()
-    );
-    return;
-  }
-
-  // 3. Fonts - Cache First
-  if (requestUrl.pathname.includes('webfonts') || 
-      requestUrl.hostname.includes('fonts.googleapis.com') ||
-      requestUrl.hostname.includes('fonts.gstatic.com')) {
-    event.respondWith(
-      caches.match(event.request, { cacheName: FONT_CACHE })
-        .then(response => response || fetch(event.request))
-    );
-    return;
-  }
-
-  // 4. Navigation requests - Network First, Cache fallback
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      (async () => {
-        try {
-          const networkResponse = await fetch(event.request);
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        } catch (error) {
-          const cached = await caches.match(OFFLINE_URL);
-          return cached || new Response('Offline - Please check your connection');
-        }
-      })()
-    );
-    return;
-  }
-
-  // 5. Default Strategy - Cache First with Network fallback
-  event.respondWith(
-    (async () => {
-      // Try cache first
-      const cachedResponse = await caches.match(event.request);
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      // Try network
-      try {
-        const networkResponse = await fetch(event.request);
-        
-        // Only cache successful, non-opaque responses
-        if (networkResponse.status === 200 && 
-            networkResponse.type !== 'opaque') {
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(event.request, networkResponse.clone());
-        }
-        
-        return networkResponse;
-      } catch (error) {
-        // Network failed - provide fallback based on request type
-        console.log('Network failed for:', event.request.url);
-        
-        if (event.request.destination === 'image') {
-          return new Response(PLACEHOLDER_SVG, {
-            headers: { 'Content-Type': 'image/svg+xml' }
-          });
-        }
-        
-        if (event.request.headers.get('Accept')?.includes('application/json')) {
-          return new Response('{"error": "offline"}', {
-            headers: { 'Content-Type': 'application/json' }
-          });
-        }
-        
-        // For other resources, return a basic offline response
-        return new Response('Offline - Resource not available', {
-          status: 408,
-          headers: { 'Content-Type': 'text/plain' }
-        });
-      }
-    })()
+self.addEventListener('activate', (event) => {
+  console.log('🔄 Service Worker activating v' + APP_VERSION);
+  
+  event.waitUntil(
+    Promise.all([
+      cleanupOldCaches(),
+      initIndexedDB(),
+      self.clients.claim()
+    ]).then(() => {
+      console.log('✅ Service Worker ready');
+      notifyClients('SW_ACTIVATED', { version: APP_VERSION });
+    })
   );
 });
 
-// BACKGROUND SYNC
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-contributions') {
-    console.log('Background sync triggered:', event.tag);
-    event.waitUntil(syncContributions());
-  }
-});
+// ==================== CACHE FUNCTIONS ====================
 
-async function syncContributions() {
+async function cacheStaticFiles() {
+  const cache = await caches.open(CACHE_NAMES.app);
+  
+  return Promise.all(
+    STATIC_FILES.map(url => 
+      cache.add(url).catch(err => 
+        console.log('⚠️ Không cache được:', url, err.message)
+      )
+    )
+  );
+}
+
+// QUAN TRỌNG: Cache dữ liệu từ Google Sheets
+async function cacheGoogleSheetsData() {
   try {
-    const db = await idb.openDB('tudien-contributions', 1);
-    const tx = db.transaction('pending', 'readonly');
-    const store = tx.objectStore('pending');
-    const pending = await store.getAll();
-    await tx.done;
+    const sheetsUrl = GOOGLE_CONFIG.SHEETS_URL;
+    console.log('📊 Đang cache dữ liệu Google Sheets từ:', sheetsUrl);
     
-    console.log(`Found ${pending.length} pending contributions`);
+    // Fetch dữ liệu từ Google Sheets API
+    const response = await fetch(sheetsUrl);
     
-    for (const contribution of pending) {
-      try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbz9XYdorp6vsKFTCrqx2tUSJGecpOmCbrROqKfkHYSFn2WXieQtJXWCQvSJvxCk6yrs/exec', {
-          method: 'POST',
-          body: JSON.stringify(contribution),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        });
-        
-        if (response.ok) {
-          // Remove from pending if successful
-          const deleteTx = db.transaction('pending', 'readwrite');
-          await deleteTx.objectStore('pending').delete(contribution.id);
-          await deleteTx.done;
-          console.log('Successfully synced contribution:', contribution.id);
-        }
-      } catch (err) {
-        console.error('Failed to sync contribution:', contribution.id, err);
-      }
+    if (!response.ok) {
+      throw new Error(`Google Sheets API error: ${response.status}`);
     }
+    
+    const data = await response.json();
+    
+    // Mở cache cho dữ liệu
+    const dataCache = await caches.open(CACHE_NAMES.data);
+    
+    // Tạo request object cho caching
+    const request = new Request(sheetsUrl, {
+      headers: new Headers({
+        'Accept': 'application/json'
+      })
+    });
+    
+    // Tạo response với dữ liệu đã fetch
+    const cacheResponse = new Response(JSON.stringify(data), {
+      status: 200,
+      statusText: 'OK',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'max-age=3600', // Cache 1 giờ
+        'X-Cached-At': new Date().toISOString()
+      }
+    });
+    
+    // Lưu vào cache
+    await dataCache.put(request, cacheResponse);
+    
+    console.log('✅ Đã cache dữ liệu Google Sheets:', data.values?.length || 0, 'dòng');
+    
+    // Đồng thời lưu vào IndexedDB để truy cập nhanh
+    await saveToIndexedDB(data);
+    
   } catch (error) {
-    console.error('Background sync failed:', error);
+    console.error('❌ Không thể cache Google Sheets data:', error);
+    // Không throw error để không làm hỏng quá trình install
   }
 }
 
-// PUSH NOTIFICATIONS
-self.addEventListener('push', event => {
-  if (!event.data) return;
-  
-  let data;
-  try {
-    data = event.data.json();
-  } catch (e) {
-    data = {
-      title: 'Từ điển Xơ Đăng',
-      body: event.data.text() || 'Có thông báo mới',
-      icon: './icon-192x192.png'
-    };
-  }
-  
-  const options = {
-    body: data.body,
-    icon: data.icon || './icon-192x192.png',
-    badge: './badge-72x72.png',
-    tag: data.tag || 'tudien-update',
-    data: {
-      url: data.url || './',
-      timestamp: Date.now()
-    },
-    actions: [
-      {
-        action: 'open',
-        title: 'Mở ứng dụng'
-      },
-      {
-        action: 'close',
-        title: 'Đóng'
-      }
-    ]
-  };
-  
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'Từ điển Xơ Đăng', options)
-  );
-});
+// ==================== FETCH HANDLER ====================
 
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  const request = event.request;
   
-  if (event.action === 'close') {
+  // Bỏ qua non-GET
+  if (request.method !== 'GET') return;
+  
+  // 1. Google Sheets API Request
+  if (url.hostname === 'sheets.googleapis.com' && 
+      url.pathname.includes(GOOGLE_CONFIG.SHEET_ID)) {
+    event.respondWith(handleSheetsRequest(request));
     return;
   }
   
-  const urlToOpen = event.notification.data?.url || './';
+  // 2. Apps Script Request (ghi dữ liệu)
+  if (url.hostname.includes('script.google.com')) {
+    event.respondWith(handleAppsScriptRequest(request));
+    return;
+  }
   
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then(clientList => {
-        for (const client of clientList) {
-          if (client.url === urlToOpen && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
-        }
-      })
-  );
+  // 3. Navigation requests
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigationRequest(request));
+    return;
+  }
+  
+  // 4. Default: Cache First, Network Fallback
+  event.respondWith(handleDefaultRequest(request));
 });
 
-// Message handling from main thread
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+// ==================== GOOGLE SHEETS REQUEST HANDLER ====================
+
+async function handleSheetsRequest(request) {
+  const url = new URL(request.url);
+  const cacheKey = GOOGLE_CONFIG.SHEETS_URL; // Dùng URL đầy đủ làm cache key
   
-  if (event.data && event.data.type === 'CACHE_URLS') {
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(event.data.urls);
+  console.log('📊 Google Sheets request:', url.pathname);
+  
+  try {
+    // Chiến lược: Stale-While-Revalidate
+    // 1. Trả về cached data ngay lập tức (nếu có)
+    // 2. Đồng thời fetch data mới và cập nhật cache
+    
+    const dataCache = await caches.open(CACHE_NAMES.data);
+    
+    // Kiểm tra cache
+    const cachedResponse = await dataCache.match(cacheKey);
+    
+    if (cachedResponse) {
+      console.log('📥 Trả về cached Google Sheets data');
+      
+      // Bắt đầu fetch dữ liệu mới ở background
+      updateSheetsDataInBackground(cacheKey);
+      
+      return cachedResponse;
+    }
+    
+    // Nếu không có cache, fetch từ network
+    console.log('🌐 Fetching Google Sheets data từ network');
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      // Clone response để cache và trả về
+      const responseToCache = networkResponse.clone();
+      await dataCache.put(cacheKey, responseToCache);
+      
+      // Lưu vào IndexedDB
+      const data = await networkResponse.json();
+      await saveToIndexedDB(data);
+      
+      return networkResponse;
+    } else {
+      throw new Error(`Google Sheets fetch failed: ${networkResponse.status}`);
+    }
+    
+  } catch (error) {
+    console.error('❌ Google Sheets fetch error:', error);
+    
+    // Fallback: trả về empty data structure
+    return new Response(
+      JSON.stringify({
+        error: 'offline',
+        message: 'Dữ liệu không khả dụng offline',
+        cached: true,
+        values: []
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Cache': 'FALLBACK'
+        }
+      }
+    );
+  }
+}
+
+async function updateSheetsDataInBackground(cacheKey) {
+  try {
+    const response = await fetch(GOOGLE_CONFIG.SHEETS_URL);
+    
+    if (response.ok) {
+      const dataCache = await caches.open(CACHE_NAMES.data);
+      await dataCache.put(cacheKey, response.clone());
+      
+      const data = await response.json();
+      await saveToIndexedDB(data);
+      
+      console.log('🔄 Đã cập nhật Google Sheets data trong background');
+      
+      // Thông báo cho clients về data mới
+      notifyClients('DATA_UPDATED', { 
+        count: data.values?.length || 0,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    // Không cần xử lý error trong background update
+    console.log('⚠️ Background update failed (có thể đang offline)');
+  }
+}
+
+// ==================== APPS SCRIPT REQUEST HANDLER ====================
+
+async function handleAppsScriptRequest(request) {
+  // Đây là request để ghi dữ liệu lên Google Sheets
+  // Chiến lược: Network First, offline queue
+  
+  try {
+    // Thử gửi request ngay
+    const response = await fetch(request);
+    
+    if (response.ok) {
+      console.log('✅ Apps Script request thành công');
+      return response;
+    } else {
+      throw new Error(`Apps Script error: ${response.status}`);
+    }
+    
+  } catch (error) {
+    console.log('📴 Offline, lưu request vào queue');
+    
+    // Lưu request vào IndexedDB để sync sau
+    await queueRequestForSync(request);
+    
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: 'Đang offline, dữ liệu sẽ được đồng bộ khi có mạng',
+        queued: true,
+        timestamp: new Date().toISOString()
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Offline': 'true'
+        }
+      }
+    );
+  }
+}
+
+// ==================== INDEXEDDB FUNCTIONS ====================
+
+async function initIndexedDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('TudienXoDangDB', 4);
+    
+    request.onerror = (event) => {
+      console.error('❌ IndexedDB error:', event.target.error);
+      resolve(); // Không reject để không làm hỏng activation
+    };
+    
+    request.onsuccess = (event) => {
+      console.log('✅ IndexedDB initialized');
+      resolve(event.target.result);
+    };
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      
+      // Store cho từ điển
+      if (!db.objectStoreNames.contains('vocabulary')) {
+        const store = db.createObjectStore('vocabulary', {
+          keyPath: 'id',
+          autoIncrement: true
+        });
+        store.createIndex('word', 'word', { unique: true });
+        store.createIndex('timestamp', 'timestamp');
+      }
+      
+      // Store cho pending requests
+      if (!db.objectStoreNames.contains('pendingRequests')) {
+        const store = db.createObjectStore('pendingRequests', {
+          keyPath: 'id',
+          autoIncrement: true
+        });
+        store.createIndex('timestamp', 'timestamp');
+      }
+      
+      // Store cho user progress
+      if (!db.objectStoreNames.contains('progress')) {
+        db.createObjectStore('progress', {
+          keyPath: 'userId'
+        });
+      }
+      
+      console.log('🗃️ IndexedDB schema upgraded');
+    };
+  });
+}
+
+async function saveToIndexedDB(sheetsData) {
+  try {
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('TudienXoDangDB', 4);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = reject;
     });
+    
+    const tx = db.transaction('vocabulary', 'readwrite');
+    const store = tx.objectStore('vocabulary');
+    
+    // Clear old data
+    await store.clear();
+    
+    // Save new data từ Google Sheets
+    if (sheetsData.values && sheetsData.values.length > 0) {
+      const timestamp = Date.now();
+      
+      for (let i = 0; i < sheetsData.values.length; i++) {
+        const row = sheetsData.values[i];
+        if (row && row.length >= 2) { // Ít nhất có từ và nghĩa
+          await store.put({
+            word: row[0]?.toString().trim() || '',
+            meaning: row[1]?.toString().trim() || '',
+            pronunciation: row[2]?.toString().trim() || '',
+            example: row[3]?.toString().trim() || '',
+            category: row[4]?.toString().trim() || '',
+            audioUrl: row[5]?.toString().trim() || '',
+            timestamp: timestamp,
+            id: i
+          });
+        }
+      }
+      
+      console.log(`💾 Đã lưu ${sheetsData.values.length} từ vào IndexedDB`);
+    }
+    
+    await tx.done;
+    
+  } catch (error) {
+    console.error('❌ Lỗi lưu vào IndexedDB:', error);
+  }
+}
+
+async function queueRequestForSync(request) {
+  try {
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('TudienXoDangDB', 4);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = reject;
+    });
+    
+    const tx = db.transaction('pendingRequests', 'readwrite');
+    const store = tx.objectStore('pendingRequests');
+    
+    // Lưu request details
+    const requestData = {
+      url: request.url,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries()),
+      body: request.method !== 'GET' ? await request.clone().text() : null,
+      timestamp: Date.now(),
+      retryCount: 0
+    };
+    
+    await store.add(requestData);
+    await tx.done;
+    
+    console.log('📤 Đã lưu request vào offline queue');
+    
+    // Đăng ký background sync
+    if ('sync' in self.registration) {
+      await self.registration.sync.register('sync-pending-requests');
+    }
+    
+  } catch (error) {
+    console.error('❌ Lỗi lưu request vào queue:', error);
+  }
+}
+
+// ==================== OTHER HANDLERS (giữ nguyên) ====================
+
+async function handleNavigationRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    const cache = await caches.open(CACHE_NAMES.app);
+    await cache.put(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    const cached = await caches.match('./offline.html');
+    return cached || caches.match('./index.html');
+  }
+}
+
+async function handleDefaultRequest(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAMES.app);
+      await cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    return new Response('Resource not available offline', { status: 408 });
+  }
+}
+
+// ==================== BACKGROUND SYNC ====================
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-pending-requests') {
+    event.waitUntil(syncPendingRequests());
   }
 });
+
+async function syncPendingRequests() {
+  try {
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('TudienXoDangDB', 4);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = reject;
+    });
+    
+    const tx = db.transaction('pendingRequests', 'readwrite');
+    const store = tx.objectStore('pendingRequests');
+    const pending = await store.getAll();
+    await tx.done;
+    
+    console.log(`🔄 Syncing ${pending.length} pending requests`);
+    
+    for (const item of pending) {
+      try {
+        const response = await fetch(item.url, {
+          method: item.method,
+          headers: new Headers(item.headers),
+          body: item.body
+        });
+        
+        if (response.ok) {
+          // Xóa sau khi sync thành công
+          const deleteTx = db.transaction('pendingRequests', 'readwrite');
+          await deleteTx.objectStore('pendingRequests').delete(item.id);
+          await deleteTx.done;
+          
+          console.log(`✅ Synced request ${item.id}`);
+          
+          // Thông báo success cho client
+          notifyClients('SYNC_SUCCESS', { requestId: item.id });
+        }
+      } catch (error) {
+        console.error(`❌ Failed to sync request ${item.id}:`, error);
+        
+        // Tăng retry count
+        const updateTx = db.transaction('pendingRequests', 'readwrite');
+        const updateStore = updateTx.objectStore('pendingRequests');
+        const record = await updateStore.get(item.id);
+        
+        if (record) {
+          record.retryCount = (record.retryCount || 0) + 1;
+          if (record.retryCount < 3) {
+            await updateStore.put(record);
+          } else {
+            // Xóa nếu đã retry quá nhiều
+            await updateStore.delete(item.id);
+          }
+        }
+        
+        await updateTx.done;
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Background sync failed:', error);
+  }
+}
+
+// ==================== CLEANUP FUNCTIONS ====================
+
+async function cleanupOldCaches() {
+  const cacheNames = await caches.keys();
+  const currentCaches = Object.values(CACHE_NAMES);
+  
+  return Promise.all(
+    cacheNames.map(cacheName => {
+      if (!currentCaches.includes(cacheName)) {
+        console.log('🗑️ Deleting old cache:', cacheName);
+        return caches.delete(cacheName);
+      }
+    })
+  );
+}
+
+// ==================== HELPER FUNCTIONS ====================
+
+function notifyClients(type, data) {
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({ type, data });
+    });
+  });
+}
+
+// ==================== MESSAGE HANDLER ====================
+
+self.addEventListener('message', (event) => {
+  const { type, data } = event.data || {};
+  
+  switch (type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
+      
+    case 'REFRESH_DATA':
+      cacheGoogleSheetsData();
+      break;
+      
+    case 'GET_DATA_INFO':
+      sendDataInfo(event.source);
+      break;
+  }
+});
+
+async function sendDataInfo(client) {
+  try {
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('TudienXoDangDB', 4);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = reject;
+    });
+    
+    const tx = db.transaction('vocabulary', 'readonly');
+    const store = tx.objectStore('vocabulary');
+    const count = await store.count();
+    await tx.done;
+    
+    client.postMessage({
+      type: 'DATA_INFO',
+      data: {
+        wordCount: count,
+        lastUpdated: new Date().toISOString(),
+        apiKeyConfigured: !!GOOGLE_CONFIG.API_KEY
+      }
+    });
+    
+  } catch (error) {
+    client.postMessage({
+      type: 'DATA_INFO',
+      data: { error: 'Không thể lấy thông tin data' }
+    });
+  }
+}
+
+console.log('✅ Service Worker loaded với Google Sheets integration');
