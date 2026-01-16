@@ -3,8 +3,8 @@
   "short_name": "Học Tiếng Xơ Đăng THCS",
   "description": "Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
   
-  "start_url": "/",  // FIX: Dùng "/" thay vì "./index.html"
-  "scope": "/",      // FIX: Scope phải khớp với start_url
+  "start_url": "/",  
+  "scope": "/",      
   
   "display": "standalone",
   "background_color": "#ffffff",
