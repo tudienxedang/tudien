@@ -16,7 +16,7 @@ const GOOGLE_CONFIG = {
 };
 
 // ==================== CẤU HÌNH CACHE ====================
-const APP_VERSION = '4.1.0';
+const APP_VERSION = '4.2.0';
 const CACHE_NAMES = {
   app: `tudien-xodang-v${APP_VERSION}`,
   fonts: 'fonts-v2',
