@@ -146,69 +146,77 @@
     <!-- Favicon - GIỮ NGUYÊN -->
     <link rel="icon" type="image/png" href="https://tudienxedang.github.io/tudien/favicon.png">
     
-    <!-- === SCHEMA MARKUP MỚI - QUAN TRỌNG CHO AI CỦA GOOGLE === -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
-        "description": "Ứng dụng web tiến bộ (PWA) hỗ trợ học sinh THCS học tiếng Xơ Đăng thông qua từ điển tương tác, bài học sinh động và trò chơi giáo dục",
-        "url": "https://tudienxedang.github.io/tudien/",
-        "applicationCategory": "EducationalApplication",
-        "operatingSystem": "Any",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "VND"
-        },
-        "author": {
-            "@type": "EducationalOrganization",
-            "name": "Dự án KHKT Học sinh THCS",
-            "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "Quảng Ngãi",
-                "addressRegion": "Quảng Ngãi",
-                "addressCountry": "VN"
-            }
-        },
-        "audience": {
-            "@type": "EducationalAudience",
-            "educationalRole": "student",
-            "audienceType": "SecondarySchoolStudents"
-        },
-        "featureList": [
-            "Từ điển Xơ Đăng - Việt tương tác",
-            "Bài học tiếng Xơ Đăng có phát âm",
-            "Hệ thống trắc nghiệm thông minh",
-            "Trò chơi học tập tương tác",
-            "Hỗ trợ học offline",
-            "Công cụ đóng góp từ vựng"
-        ],
-        "softwareVersion": "2.0",
-        "datePublished": "2025-12-26",
-        "dateModified": "2025-12-26"
-    }
-    
-    
-    <!-- Schema cho khóa học -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Course",
-        "name": "Khóa học tiếng Xơ Đăng cho học sinh THCS",
-        "description": "Khóa học tiếng Xơ Đăng trực tuyến miễn phí dành cho học sinh trung học cơ sở",
-        "provider": {
-            "@type": "Organization",
-            "name": "Quảng Ngãi"
-        },
-        "teaches": "Tiếng Xơ Đăng (ngôn ngữ dân tộc thiểu số)",
-        "timeRequired": "P30H",
-        "hasCourseInstance": {
-            "@type": "CourseInstance",
-            "courseMode": "online"
+
+
+<!-- SỬA LẠI PHẦN SCHEMA MARKUP (dòng khoảng 150) -->
+<!-- === SCHEMA MARKUP MỚI - QUAN TRỌNG CHO AI CỦA GOOGLE === -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
+    "description": "Ứng dụng web tiến bộ (PWA) hỗ trợ học sinh THCS học tiếng Xơ Đăng thông qua từ điển tương tác, bài học sinh động và trò chơi giáo dục",
+    "url": "https://tudienxedang.github.io/tudien/",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "VND"
+    },
+    "author": {
+        "@type": "EducationalOrganization",
+        "name": "Dự án KHKT Học sinh THCS",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Quảng Ngãi",
+            "addressRegion": "Quảng Ngãi",
+            "addressCountry": "VN"
         }
+    },
+    "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student",
+        "audienceType": "SecondarySchoolStudents"
+    },
+    "featureList": [
+        "Từ điển Xơ Đăng - Việt tương tác",
+        "Bài học tiếng Xơ Đăng có phát âm",
+        "Hệ thống trắc nghiệm thông minh",
+        "Trò chơi học tập tương tác",
+        "Hỗ trợ học offline",
+        "Công cụ đóng góp từ vựng"
+    ],
+    "softwareVersion": "2.0",
+    "datePublished": "2025-12-26",
+    "dateModified": "2025-12-26"
+}
+</script>
+
+<!-- Schema cho khóa học -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "Khóa học tiếng Xơ Đăng cho học sinh THCS",
+    "description": "Khóa học tiếng Xơ Đăng trực tuyến miễn phí dành cho học sinh trung học cơ sở",
+    "provider": {
+        "@type": "Organization",
+        "name": "Quảng Ngãi"
+    },
+    "teaches": "Tiếng Xơ Đăng (ngôn ngữ dân tộc thiểu số)",
+    "timeRequired": "P30H",
+    "hasCourseInstance": {
+        "@type": "CourseInstance",
+        "courseMode": "online"
     }
-    </script>
+}
+</script>
+
+	
+
+
+	
 	<!-- === THÊM: Breadcrumb Schema === -->
 <script type="application/ld+json">
 {
