@@ -2,76 +2,82 @@
   "name": "Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
   "short_name": "Học Tiếng Xơ Đăng THCS",
   "description": "Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
-  "start_url": "./index.html",
+  
+  "start_url": "/",  // FIX: Dùng "/" thay vì "./index.html"
+  "scope": "/",      // FIX: Scope phải khớp với start_url
+  
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#27ae60",
   "orientation": "portrait",
-  "scope": "./",
+  
   "lang": "vi",
   "dir": "ltr",
+  
   "categories": ["education", "books", "utilities"],
+  
   "icons": [
     {
-      "src": "./icon-48x48.png",
+      "src": "icon-48x48.png",
       "sizes": "48x48",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-72x72.png",
+      "src": "icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-96x96.png",
+      "src": "icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-128x128.png",
+      "src": "icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-144x144.png",
+      "src": "icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-152x152.png",
+      "src": "icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-192x192.png",
+      "src": "icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"  // FIX: "any maskable" trong dấu ngoặc kép
     },
     {
-      "src": "./icon-256x256.png",
+      "src": "icon-256x256.png",
       "sizes": "256x256",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-384x384.png",
+      "src": "icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-512x512.png",
+      "src": "icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"  // FIX: "any maskable" trong dấu ngoặc kép
     }
   ],
+  
   "prefer_related_applications": false
 }
