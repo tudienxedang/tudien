@@ -1,7 +1,15 @@
 // service-worker.js - VERSION 4.1 (WITH GOOGLE SHEETS INTEGRATION)
 
 // ==================== CẤU HÌNH GOOGLE SHEETS ====================
-
+const GOOGLE_CONFIG = {
+  API_KEY: 'AIzaSyD757jS4SLR7-EzrPgrW9WrLQeD2DQExHw',
+  SHEET_ID: '1Z59pDBu_tGwlYqUeS1-VJLpcHozp7LbxnC_-qhT3iHs',
+  RANGE: 'Tu_Dien!A2:F',
+  
+  // Tự động tạo URL từ cấu hình
+  get SHEETS_URL() {
+    return `https://sheets.googleapis.com/v4/spreadsheets/${this.SHEET_ID}/values/${this.RANGE}?key=${this.API_KEY}`;
+  },
   
   // Apps Script URL cho ghi dữ liệu
   APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz9XYdorp6vsKFTCrqx2tUSJGecpOmCbrROqKfkHYSFn2WXieQtJXWCQvSJvxCk6yrs/exec'
