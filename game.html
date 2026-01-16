@@ -482,43 +482,7 @@
       animation: sealRotate 0.8s ease-out 0.3s backwards;
     }
 
-    .offline-indicator {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      color: white;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 14px;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-      z-index: 999;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      animation: slideInLeft 0.3s ease-out;
-      max-width: calc(100vw - 40px);
-    }
-
-    @keyframes slideInLeft {
-      from {
-        transform: translateX(-400px);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-
-    .offline-dot {
-      width: 8px;
-      height: 8px;
-      background: #10b981;
-      border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
-    }
+    /* ĐÃ XÓA: .offline-indicator và các style liên quan */
 
     .sound-controls {
       position: fixed;
@@ -1175,9 +1139,8 @@
 </head>
 <body class="h-full">
   <div id="app" class="h-full w-full overflow-auto bg-gradient-to-br from-blue-50 to-indigo-100"></div>
-  <div id="offline-indicator" style="display: none;"></div>
+  <!-- ĐÃ XÓA: <div id="offline-indicator" style="display: none;"></div> -->
   
-
 
   <script>
     // ========== CẤU HÌNH TỰ ĐỘNG LEVEL ==========
@@ -1861,39 +1824,15 @@
     });
 
     function updateOfflineIndicator() {
-      const indicator = document.getElementById('offline-indicator');
-      if (!indicator) return;
-
+      // THAY ĐỔI: Sử dụng showToast thay vì hiển thị cố định
       if (!isOnline) {
         const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
         const lastUpdate = offlineTimestamp ? new Date(parseInt(offlineTimestamp)).toLocaleString('vi-VN') : 'Chưa có';
-        
-        indicator.className = 'offline-indicator';
-        indicator.innerHTML = `
-          <div class="offline-dot" style="background: #f59e0b;"></div>
-          <div>
-            <div style="font-size: 12px;">📵 Chế độ Offline</div>
-            <div style="font-size: 10px; opacity: 0.8;">Cập nhật lần cuối: ${lastUpdate}</div>
-          </div>
-        `;
-        indicator.style.display = 'flex';
+        showToast(`📵 Đang offline. Dữ liệu lần cuối: ${lastUpdate}`, 'error');
       } else {
         const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
         const lastUpdate = offlineTimestamp ? new Date(parseInt(offlineTimestamp)).toLocaleString('vi-VN') : 'Mới';
-        
-        indicator.className = 'offline-indicator';
-        indicator.innerHTML = `
-          <div class="offline-dot"></div>
-          <div>
-            <div style="font-size: 12px;">📶 Online</div>
-            <div style="font-size: 10px; opacity: 0.8;">Dữ liệu: ${lastUpdate}</div>
-          </div>
-        `;
-        indicator.style.display = 'flex';
-        
-        setTimeout(() => {
-          indicator.style.display = 'none';
-        }, 3000);
+        showToast(`📶 Đã online. Dữ liệu: ${lastUpdate}`, 'success');
       }
     }
 
@@ -2562,6 +2501,18 @@
                   <span>Bắt đầu học ngay</span>
                 </span>
               </button>
+
+              <!-- THÊM NÚT VỀ TRANG CHỦ -->
+              <button 
+                type="button"
+                onclick="window.location.href='https://hoctiengxodang.online/'"
+                class="w-full py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white font-semibold rounded-xl hover:from-gray-600 hover:to-gray-800 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 shadow-lg hover:shadow-xl mt-4"
+              >
+                <span class="flex items-center justify-center gap-2">
+                  <span>🏠</span>
+                  <span>Về trang chủ</span>
+                </span>
+              </button>
             </form>
 
             <div class="mt-6 pt-6 border-t border-gray-200">
@@ -2702,12 +2653,6 @@ function renderMenu() {
     </div>
     `;
 }
-
-
-
-
-
-    
 
     function renderLeaderboard() {
       const config = window.elementSdk?.config || defaultConfig;
@@ -3024,10 +2969,6 @@ function renderGame1() {
     `;
 }
 
-
-    
-    
-
     function initGame1() {
       game1State.level = 1;
       game1State.moves = 0;
@@ -3221,12 +3162,6 @@ function renderGame1() {
     </div>
     `;
 }
-
-
-
-
-
-    
 
     function initGame2() {
       game2State = {
@@ -3662,6 +3597,7 @@ function renderGame1() {
       showToast(`Game kết thúc! Điểm: ${game2State.score}`, 'success');
       setTimeout(() => backToMenu(), 1500);
     }
+
 function renderGame3() {
     const config = window.elementSdk?.config || defaultConfig;
     const game3Name = config.game3_name || defaultConfig.game3_name;
@@ -3707,11 +3643,6 @@ function renderGame3() {
     `;
 }
 
-
-
-
-    
-    
     function initGame3() {
       game3State = {
         score: 0,
@@ -4146,12 +4077,6 @@ function renderGame4() {
     `;
 }
 
-
-
-
-    
-
-    
     // ========== GAME 4 LOGIC - ĐÃ SỬA LỖI ==========
     function selectPlot(plotIndex) {
       const plot = game4State.plots[plotIndex];
@@ -4240,12 +4165,6 @@ function renderGame4() {
     const modal = document.getElementById('game4-question');
     modal.style.display = 'flex'; 
 }
-
-
-
-
-
-    
 
     function answerQuestion4(answer, button) {
       const plotIndex = game4State.selectedPlot;
@@ -4942,10 +4861,6 @@ function showTutorial(gameType) {
     `;
     document.body.appendChild(modal);
 }
-
-// Tự động hiện hướng dẫn khi vào game lần đầu (Mỗi phiên làm việc)
-// Bạn có thể gọi hàm này ở cuối các hàm initGame1(), initGame2()...
-// Ví dụ: if(!sessionStorage.getItem('tutorial_shown_' + currentScreen)) { showTutorial(currentScreen); sessionStorage.setItem('tutorial_shown_' + currentScreen, 'true'); }
     
   </script>
 </body>
