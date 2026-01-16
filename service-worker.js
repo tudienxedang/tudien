@@ -1,17 +1,22 @@
-// service-worker.js - VERSION 3.2 (FULLY FIXED)
+// service-worker.js - VERSION 3.2 (FULLY FIXED - PATH CORRECTED)
 
-// 1. IMPORT THƯ VIỆN IDB
+// 1. IMPORT THƯ VIỆN IDB - CHỈ SỬA KHI CẦN, GIỮ NGUYÊN
 importScripts('https://cdn.jsdelivr.net/npm/idb@7/build/umd.js');
 
 const CACHE_NAME = 'tudien-xodang-v5.2';
 const FONT_CACHE = 'fonts-v1';
 const OFFLINE_URL = './offline.html';
 
+// ĐƯỜNG DẪN ĐÃ SỬA: tất cả đều dùng ./
 const urlsToPreCache = [
   './',
   './index.html',
   './game.html',
-  OFFLINE_URL,
+  './offline.html',  // SỬA: thêm ./
+  './manifest.json', // THÊM: file manifest
+  './favicon.png',   // THÊM: favicon
+  './badge-72x72.png', // THÊM: badge
+  './icon-192x192.png', // THÊM: icon chính
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js'
@@ -28,14 +33,13 @@ const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="400" hei
   <text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="20" fill="#999">Image not available offline</text>
 </svg>`;
 
-// INSTALL
+// INSTALL (không sửa)
 self.addEventListener('install', event => {
   event.waitUntil(
     Promise.all([
       caches.open(CACHE_NAME).then(cache => {
         return cache.addAll(urlsToPreCache).catch(err => {
           console.error('Lỗi cache assets:', err);
-          // Continue even if some files fail
         });
       }),
       caches.open(FONT_CACHE).then(cache => {
@@ -48,7 +52,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// ACTIVATE
+// ACTIVATE (không sửa)
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -61,7 +65,6 @@ self.addEventListener('activate', event => {
         })
       );
     }).then(() => {
-      // Initialize IndexedDB
       return idb.openDB('tudien-contributions', 1, {
         upgrade(db) {
           if (!db.objectStoreNames.contains('pending')) {
@@ -74,7 +77,7 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// FETCH
+// FETCH (không sửa logic, chỉ kiểm tra đường dẫn)
 self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
@@ -140,7 +143,7 @@ self.addEventListener('fetch', event => {
           cache.put(event.request, networkResponse.clone());
           return networkResponse;
         } catch (error) {
-          const cached = await caches.match(OFFLINE_URL);
+          const cached = await caches.match('./offline.html'); // ĐÃ SỬA: thêm ./
           return cached || new Response('Offline - Please check your connection');
         }
       })()
@@ -195,7 +198,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// BACKGROUND SYNC
+// BACKGROUND SYNC (không sửa)
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-contributions') {
     console.log('Background sync triggered:', event.tag);
@@ -229,7 +232,6 @@ async function syncContributions() {
         console.log('Successfully synced contribution:', contribution.id);
       } catch (err) {
         console.error('Failed to sync contribution:', contribution.id, err);
-        // Keep in pending for next retry
       }
     }
   } catch (error) {
@@ -237,7 +239,7 @@ async function syncContributions() {
   }
 }
 
-// PUSH NOTIFICATIONS
+// PUSH NOTIFICATIONS - SỬA LỖI ĐƯỜNG DẪN ICON
 self.addEventListener('push', event => {
   if (!event.data) return;
   
@@ -248,17 +250,17 @@ self.addEventListener('push', event => {
     data = {
       title: 'Từ điển Xơ Đăng',
       body: event.data.text() || 'Có thông báo mới',
-      icon: '/icon-192x192.png'
+      icon: './icon-192x192.png'  // ĐÃ SỬA: / → ./
     };
   }
   
   const options = {
     body: data.body,
-    icon: data.icon || '/icon-192x192.png',
-    badge: '/badge-72x72.png',
+    icon: data.icon || './icon-192x192.png',  // ĐÃ SỬA: / → ./
+    badge: './badge-72x72.png',  // ĐÃ SỬA: / → ./
     tag: data.tag || 'tudien-update',
     data: {
-      url: data.url || '/',
+      url: data.url || './',  // ĐÃ SỬA: / → ./
       timestamp: Date.now()
     },
     actions: data.actions || [
@@ -277,18 +279,16 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   
-  const urlToOpen = event.notification.data?.url || '/';
+  const urlToOpen = event.notification.data?.url || './';  // ĐÃ SỬA: / → ./
   
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then(clientList => {
-        // Check if there's already a window open
         for (const client of clientList) {
           if (client.url === urlToOpen && 'focus' in client) {
             return client.focus();
           }
         }
-        // Open new window
         if (clients.openWindow) {
           return clients.openWindow(urlToOpen);
         }
@@ -307,13 +307,13 @@ if ('periodicSync' in self.registration) {
 }
 
 async function updateDictionaryData() {
-  // Update cached dictionary data periodically
-  const cache = await caches.open(CACHE_NAME);
+  // ĐÃ SỬA: thêm API KEY vào URL
   const apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1Z59pDBu_tGwlYqUeS1-VJLpcHozp7LbxnC_-qhT3iHs/values/Tu_Dien!A2:F?key=AIzaSyD757jS4SLR7-EzrPgrW9WrLQeD2DQExHw';
   
   try {
     const response = await fetch(apiUrl);
     if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
       await cache.put(apiUrl, response.clone());
       console.log('Dictionary data updated via periodic sync');
     }
@@ -322,7 +322,7 @@ async function updateDictionaryData() {
   }
 }
 
-// Message handling from main thread
+// Message handling from main thread (không sửa)
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
