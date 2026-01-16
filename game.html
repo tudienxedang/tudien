@@ -1860,7 +1860,42 @@
       updateOfflineIndicator();
     });
 
-   
+    function updateOfflineIndicator() {
+      const indicator = document.getElementById('offline-indicator');
+      if (!indicator) return;
+
+      if (!isOnline) {
+        const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
+        const lastUpdate = offlineTimestamp ? new Date(parseInt(offlineTimestamp)).toLocaleString('vi-VN') : 'Chưa có';
+        
+        indicator.className = 'offline-indicator';
+        indicator.innerHTML = `
+          <div class="offline-dot" style="background: #f59e0b;"></div>
+          <div>
+            <div style="font-size: 12px;">📵 Chế độ Offline</div>
+            <div style="font-size: 10px; opacity: 0.8;">Cập nhật lần cuối: ${lastUpdate}</div>
+          </div>
+        `;
+        indicator.style.display = 'flex';
+      } else {
+        const offlineTimestamp = localStorage.getItem('xedang_offline_timestamp');
+        const lastUpdate = offlineTimestamp ? new Date(parseInt(offlineTimestamp)).toLocaleString('vi-VN') : 'Mới';
+        
+        indicator.className = 'offline-indicator';
+        indicator.innerHTML = `
+          <div class="offline-dot"></div>
+          <div>
+            <div style="font-size: 12px;">📶 Online</div>
+            <div style="font-size: 10px; opacity: 0.8;">Dữ liệu: ${lastUpdate}</div>
+          </div>
+        `;
+        indicator.style.display = 'flex';
+        
+        setTimeout(() => {
+          indicator.style.display = 'none';
+        }, 3000);
+      }
+    }
 
     async function fetchData() {
       console.log('🔄 Đang fetch dữ liệu...');
@@ -2546,7 +2581,7 @@
           </div>
 
           <div class="mt-8 text-center text-white/80">
-            <p class="text-sm">©Ứng dụng học tiếng Xơ Đăng</p>
+            <p class="text-sm">© 2024 Học Tiếng Xê Đăng - Phiên bản 1.0</p>
           </div>
         </div>
       `;
