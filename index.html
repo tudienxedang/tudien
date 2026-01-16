@@ -7325,48 +7325,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-	// Thêm vào phần JavaScript của index.html (gần cuối file, trước </script>)
 
-// ===== FIX LỖI GOOGLE SHEETS API =====
-function fixSheetsAPI() {
-    // Thêm retry logic cho tất cả API calls
-    const originalFetch = window.fetch;
-    
-    window.fetch = function(url, options) {
-        // Nếu là Google Sheets API, thêm retry
-        if (url.includes('sheets.googleapis.com')) {
-            return retryFetch(url, options, 3); // Retry 3 lần
-        }
-        return originalFetch(url, options);
-    };
-    
-    async function retryFetch(url, options, retries) {
-        for (let i = 0; i < retries; i++) {
-            try {
-                const response = await originalFetch(url, {
-                    ...options,
-                    signal: AbortSignal.timeout(10000) // 10 giây timeout
-                });
-                
-                if (response.ok) {
-                    return response;
-                }
-                
-                throw new Error(`HTTP ${response.status}`);
-            } catch (error) {
-                console.log(`Lỗi lần ${i + 1}:`, error.message);
-                
-                if (i === retries - 1) {
-                    throw error;
-                }
-                
-                // Chờ 1 giây trước khi thử lại
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-    }
-}
-
-// Gọi hàm fix
-fixSheetsAPI();
 </html>
