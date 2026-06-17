@@ -1,8 +1,8 @@
-// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.0
+// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.1
 // GIỮ NGUYÊN API KEY - FIX LỖI 408 - CACHE CDN & AUDIO LOCAL
 
 // ==================== CẤU HÌNH QUAN TRỌNG ====================
-const APP_VERSION = '10.0.0';
+const APP_VERSION = '10.0.1';
 const CACHE_NAME = `tudien-${APP_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 
@@ -295,6 +295,11 @@ async function handleNavigationRequest(request) {
 
 // ==================== HÀM XỬ LÝ FILE TĨNH ====================
 async function handleStaticRequest(request) {
+  // Hỗ trợ Range Requests cho các tệp âm thanh (phát âm) khi offline
+  if (request.headers.has('range')) {
+    return handleRangeRequest(request);
+  }
+
   const cached = await caches.match(request);
   if (cached) return cached;
   
@@ -327,6 +332,47 @@ async function handleStaticRequest(request) {
       headers: { 'Content-Type': 'text/plain' }
     });
   }
+}
+
+// ==================== HÀM XỬ LÝ RANGE REQUESTS (HTTP 206) ====================
+async function handleRangeRequest(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request, { ignoreSearch: true });
+  
+  if (!cachedResponse) {
+    try {
+      return await fetch(request);
+    } catch (err) {
+      return new Response('', { status: 408, statusText: 'Network Error' });
+    }
+  }
+  
+  const rangeHeader = request.headers.get('range');
+  const arrayBuffer = await cachedResponse.arrayBuffer();
+  
+  // Phân tích header: bytes=start-end (ví dụ: bytes=0-)
+  const bytesMatch = rangeHeader.match(/^bytes=(\d+)-(\d+)?$/);
+  if (!bytesMatch) {
+    return new Response(arrayBuffer, {
+      status: 200,
+      headers: cachedResponse.headers
+    });
+  }
+  
+  const start = parseInt(bytesMatch[1], 10);
+  const end = bytesMatch[2] ? parseInt(bytesMatch[2], 10) : arrayBuffer.byteLength - 1;
+  
+  const slicedBuffer = arrayBuffer.slice(start, end + 1);
+  const responseHeaders = new Headers(cachedResponse.headers);
+  
+  responseHeaders.set('Content-Range', `bytes ${start}-${end}/${arrayBuffer.byteLength}`);
+  responseHeaders.set('Content-Length', slicedBuffer.byteLength.toString());
+  
+  return new Response(slicedBuffer, {
+    status: 206,
+    statusText: 'Partial Content',
+    headers: responseHeaders
+  });
 }
 
 // ==================== XỬ LÝ PUSH NOTIFICATION ====================
