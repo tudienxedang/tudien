@@ -1,8 +1,8 @@
-// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.2
+// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.3
 // GIỮ NGUYÊN API KEY - FIX LỖI 408 - CACHE CDN & AUDIO LOCAL
 
 // ==================== CẤU HÌNH QUAN TRỌNG ====================
-const APP_VERSION = '10.0.2';
+const APP_VERSION = '10.0.3';
 const CACHE_NAME = `tudien-${APP_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 

@@ -4758,17 +4758,30 @@ body.dark-mode .form-label {
 
         // ===== SERVICE WORKER REGISTRATION =====
         if ('serviceWorker' in navigator) {
+            // Tự động reload trang khi Service Worker mới kích hoạt và chiếm quyền
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    console.log('🔄 Service Worker mới đã chiếm quyền điều khiển. Đang tải lại trang...');
+                    window.location.reload();
+                }
+            });
+
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(registration => {
                         console.log('Service Worker registered with scope:', registration.scope);
+                        
+                        // Ép buộc kiểm tra cập nhật mới từ máy chủ (bỏ qua cache HTTP của trình duyệt)
+                        registration.update();
                         
                         // Kiểm tra cập nhật
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    showToast('Có phiên bản mới! Làm mới trang để cập nhật.', 'info');
+                                    showToast('Có phiên bản mới! Trang web đang tự động cập nhật...', 'info');
                                 }
                             });
                         });
