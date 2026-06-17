@@ -3365,6 +3365,120 @@
 img[loading="lazy"] {
   content-visibility: auto;
 }
+
+/* Style cho PWA Offline Audio Card */
+.offline-download-card {
+    margin-top: 1.5rem;
+    padding: 1.2rem;
+    background: #ffffff;
+    border: 1px dashed #27ae60;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.04);
+    transition: all 0.3s ease;
+}
+body.dark-mode .offline-download-card {
+    background: #2c3e50;
+    border-color: #27ae60;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.offline-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+.offline-card-icon {
+    font-size: 1.6rem;
+    color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
+    padding: 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.offline-card-info {
+    text-align: left;
+    flex: 1;
+}
+.offline-card-title {
+    display: block;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--primary-color);
+}
+body.dark-mode .offline-card-title {
+    color: #ffffff;
+}
+.offline-card-desc {
+    font-size: 0.85rem;
+    color: #666666;
+}
+body.dark-mode .offline-card-desc {
+    color: #b0c4de;
+}
+.download-progress-container {
+    width: 100%;
+    margin-top: 5px;
+}
+.download-progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #666666;
+    margin-bottom: 6px;
+}
+body.dark-mode .download-progress-header {
+    color: #b0c4de;
+}
+.download-progress-track {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+body.dark-mode .download-progress-track {
+    background: #4a5568;
+}
+.download-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    transition: width 0.1s ease;
+}
+.btn-download-offline {
+    width: 100%;
+    max-width: 280px;
+    background: #27ae60;
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+.btn-download-offline:hover {
+    background: #219653;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2);
+}
+.btn-download-offline:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.8;
+}
 /* === HẾT PHẦN CSS THÊM === */
 
       /* === CSS MỚI: NÚT CÀI ĐẶT & MODAL & THẺ CẢNH BÁO === */
@@ -3945,6 +4059,35 @@ body.dark-mode .form-label {
                         <div class="stat-label">Câu hỏi ôn tập</div>
                     </div>
                 </div>
+
+                <!-- OFFLINE DOWNLOAD CARD -->
+                <div class="offline-download-card">
+                    <div class="offline-card-header">
+                        <div class="offline-card-icon">
+                            <i class="fas fa-wifi"></i>
+                        </div>
+                        <div class="offline-card-info">
+                            <strong class="offline-card-title">Học ngoại tuyến 100% (Offline Audio)</strong>
+                            <span class="offline-card-desc" id="download-status">Bạn có thể tải toàn bộ âm thanh phát âm về máy để nghe khi không có mạng.</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar (Ẩn mặc định, chỉ hiện khi đang tải) -->
+                    <div class="download-progress-container" id="download-progress-container" style="display: none;">
+                        <div class="download-progress-header">
+                            <span id="download-progress-text">Đang tải: 0/0 (0%)</span>
+                            <span>Vui lòng không tắt trang...</span>
+                        </div>
+                        <div class="download-progress-track">
+                            <div class="download-progress-bar" id="download-progress-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <button id="btn-download-offline" class="btn-download-offline">
+                        <i class="fas fa-download"></i> Tải âm thanh offline (~40MB)
+                    </button>
+                </div>
+
                 <div class="features-list">
                     <div class="feature-item">
                         <i class="fas fa-book"></i>
@@ -5145,9 +5288,170 @@ body.dark-mode .form-label {
                 `;
             });
             
+            // --- HÀM TẢI TOÀN BỘ ÂM THANH OFFLINE ---
+            function initOfflineDownloader() {
+                const btnDownload = document.getElementById('btn-download-offline');
+                const progressContainer = document.getElementById('download-progress-container');
+                const progressBar = document.getElementById('download-progress-bar');
+                const progressText = document.getElementById('download-progress-text');
+                const downloadStatus = document.getElementById('download-status');
+                
+                if (!btnDownload) return;
+                
+                // Tên bộ nhớ đệm khớp với service-worker.js
+                const OFFLINE_CACHE_NAME = 'tudien-10.0.0';
+                
+                // Kiểm tra trạng thái dữ liệu đã tải trước đó
+                checkOfflineStatus();
+                
+                async function checkOfflineStatus() {
+                    if (!('caches' in window)) return;
+                    
+                    try {
+                        const cache = await caches.open(OFFLINE_CACHE_NAME);
+                        let cachedCount = 0;
+                        let totalWithAudio = 0;
+                        
+                        for (const item of dictionary) {
+                            if (item.driveId && item.driveId.trim() !== '') {
+                                totalWithAudio++;
+                                const url = `./audio/${item.driveId}.webm`;
+                                const cachedResponse = await cache.match(url);
+                                if (cachedResponse) {
+                                    cachedCount++;
+                                }
+                            }
+                        }
+                        
+                        if (totalWithAudio > 0 && cachedCount === totalWithAudio) {
+                            btnDownload.innerHTML = '<i class="fas fa-check-circle"></i> Đã tải offline thành công';
+                            btnDownload.style.background = '#27ae60';
+                            downloadStatus.textContent = `Đã lưu sẵn ${cachedCount}/${totalWithAudio} file âm thanh. Sẵn sàng học offline 100%!`;
+                            btnDownload.disabled = true;
+                        } else if (cachedCount > 0) {
+                            btnDownload.innerHTML = `<i class="fas fa-download"></i> Tiếp tục tải offline (${cachedCount}/${totalWithAudio})`;
+                            downloadStatus.textContent = `Đã tải được ${cachedCount}/${totalWithAudio} file. Bạn có thể bấm tiếp tục tải phần còn lại.`;
+                        }
+                    } catch (e) {
+                        console.warn('Lỗi kiểm tra trạng thái offline:', e);
+                    }
+                }
+                
+                btnDownload.addEventListener('click', async () => {
+                    btnDownload.disabled = true;
+                    btnDownload.style.opacity = '0.7';
+                    btnDownload.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang chuẩn bị dữ liệu...';
+                    progressContainer.style.display = 'block';
+                    
+                    if (!('caches' in window)) {
+                        showToast('Trình duyệt của bạn không hỗ trợ lưu trữ offline!', 'error');
+                        btnDownload.disabled = false;
+                        btnDownload.style.opacity = '1';
+                        btnDownload.innerHTML = '<i class="fas fa-download"></i> Tải âm thanh offline (~40MB)';
+                        return;
+                    }
+                    
+                    try {
+                        const cache = await caches.open(OFFLINE_CACHE_NAME);
+                        
+                        // Lọc các từ vựng có ID âm thanh
+                        const itemsToDownload = dictionary.filter(item => item.driveId && item.driveId.trim() !== '');
+                        const total = itemsToDownload.length;
+                        
+                        if (total === 0) {
+                            showToast('Không tìm thấy file âm thanh nào trong dữ liệu!', 'info');
+                            btnDownload.disabled = false;
+                            btnDownload.style.opacity = '1';
+                            btnDownload.innerHTML = '<i class="fas fa-download"></i> Tải âm thanh offline (~40MB)';
+                            progressContainer.style.display = 'none';
+                            return;
+                        }
+                        
+                        let loaded = 0;
+                        let successCount = 0;
+                        
+                        // Tải song song tối đa 5 luồng cùng lúc
+                        const concurrencyLimit = 5;
+                        const queue = [...itemsToDownload];
+                        
+                        async function downloadNext() {
+                            if (queue.length === 0) return;
+                            
+                            const item = queue.shift();
+                            const url = `./audio/${item.driveId}.webm`;
+                            
+                            // 1. Kiểm tra xem file này đã có trong cache chưa
+                            const exists = await cache.match(url);
+                            if (exists) {
+                                loaded++;
+                                successCount++;
+                                updateProgress();
+                                await downloadNext();
+                                return;
+                            }
+                            
+                            // 2. Nếu chưa có, tiến hành fetch và lưu cache
+                            try {
+                                const response = await fetch(url);
+                                if (response.ok) {
+                                    await cache.put(url, response.clone());
+                                    successCount++;
+                                }
+                            } catch (e) {
+                                console.warn("Lỗi tải file âm thanh từ GitHub:", url, e);
+                            }
+                            
+                            loaded++;
+                            updateProgress();
+                            await downloadNext();
+                        }
+                        
+                        function updateProgress() {
+                            const percent = Math.round((loaded / total) * 100);
+                            progressBar.style.width = `${percent}%`;
+                            progressText.textContent = `Đã tải: ${loaded}/${total} (${percent}%)`;
+                        }
+                        
+                        // Khởi động các luồng bất đồng bộ song song
+                        const promises = [];
+                        for (let i = 0; i < Math.min(concurrencyLimit, queue.length); i++) {
+                            promises.push(downloadNext());
+                        }
+                        
+                        // Chờ tất cả luồng hoàn thành
+                        await Promise.all(promises);
+                        
+                        // Hoàn tất tải
+                        btnDownload.style.opacity = '1';
+                        progressContainer.style.display = 'none';
+                        
+                        if (successCount === total) {
+                            btnDownload.innerHTML = '<i class="fas fa-check-circle"></i> Đã tải offline thành công';
+                            btnDownload.style.background = '#27ae60';
+                            downloadStatus.textContent = `Đã tải xong toàn bộ ${total}/${total} file âm thanh. Sẵn sàng offline 100%!`;
+                            showToast('Tải dữ liệu âm thanh offline thành công!', 'success');
+                        } else {
+                            btnDownload.disabled = false;
+                            btnDownload.innerHTML = `<i class="fas fa-redo"></i> Tải lại file lỗi (${successCount}/${total})`;
+                            downloadStatus.textContent = `Đã tải được ${successCount}/${total} file. Một số file gặp sự cố mạng, bấm tải lại.`;
+                            showToast('Một số file gặp lỗi mạng khi tải. Vui lòng bấm tải lại.', 'warning');
+                        }
+                        
+                    } catch (err) {
+                        console.error('Lỗi nghiêm trọng khi tải offline:', err);
+                        btnDownload.disabled = false;
+                        btnDownload.style.opacity = '1';
+                        btnDownload.innerHTML = '<i class="fas fa-redo"></i> Thử tải lại';
+                        progressContainer.style.display = 'none';
+                        showToast('Có lỗi xảy ra, vui lòng thử lại.', 'error');
+                    }
+                });
+            }
+
             // Khởi động ứng dụng
             fetchDictionary().then(() => {
                 initSpeechRecognition();
+                initOfflineDownloader();
                 showToast('Hệ thống tìm kiếm thông minh đã sẵn sàng', 'success');
             }).catch(error => {
                 console.error('Lỗi khởi động ứng dụng:', error);
