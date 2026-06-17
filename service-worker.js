@@ -1,8 +1,8 @@
-// service-worker.js - EMERGENCY FIX - Version 2.1
-// GIỮ NGUYÊN API KEY - FIX LỖI 408
+// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.0
+// GIỮ NGUYÊN API KEY - FIX LỖI 408 - CACHE CDN & AUDIO LOCAL
 
 // ==================== CẤU HÌNH QUAN TRỌNG ====================
-const APP_VERSION = '9.1.0';
+const APP_VERSION = '10.0.0';
 const CACHE_NAME = `tudien-${APP_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 
@@ -112,12 +112,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // 3. CDN & FONTS - Không cache
+  // 3. CDN & FONTS - CÓ CACHE ĐỂ HOẠT ĐỘNG OFFLINE 100%
   if (url.hostname.includes('fonts.googleapis.com') || 
       url.hostname.includes('fonts.gstatic.com') ||
       url.hostname.includes('cdnjs.cloudflare.com') ||
       url.hostname.includes('cdn.tailwindcss.com') ||
       url.hostname.includes('cdn.jsdelivr.net')) {
+    event.respondWith(handleStaticRequest(event.request));
     return;
   }
   
