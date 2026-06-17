@@ -1,8 +1,8 @@
-// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.1
+// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.2
 // GIỮ NGUYÊN API KEY - FIX LỖI 408 - CACHE CDN & AUDIO LOCAL
 
 // ==================== CẤU HÌNH QUAN TRỌNG ====================
-const APP_VERSION = '10.0.1';
+const APP_VERSION = '10.0.2';
 const CACHE_NAME = `tudien-${APP_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 
@@ -81,7 +81,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== 'tudien-audio') {
             console.log(`🗑️ Xóa cache cũ: ${cacheName}`);
             return caches.delete(cacheName);
           }
@@ -336,17 +336,23 @@ async function handleStaticRequest(request) {
 
 // ==================== HÀM XỬ LÝ RANGE REQUESTS (HTTP 206) ====================
 async function handleRangeRequest(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const cachedResponse = await cache.match(request, { ignoreSearch: true });
+  console.log('🔊 Trình duyệt yêu cầu Range Request:', request.url);
+  
+  // Tìm kiếm trên toàn bộ các Cache của Origin bằng caches.match(request.url)
+  // Việc này giúp tìm thấy tệp dù nó ở cache tudien-audio hay cache phiên bản tĩnh
+  const cachedResponse = await caches.match(request.url, { ignoreSearch: true });
   
   if (!cachedResponse) {
+    console.warn('❌ Không tìm thấy tệp âm thanh trong Cache Storage. Đang thử tải qua mạng:', request.url);
     try {
       return await fetch(request);
     } catch (err) {
+      console.error('❌ Mất kết nối mạng và tệp âm thanh không có sẵn offline:', request.url);
       return new Response('', { status: 408, statusText: 'Network Error' });
     }
   }
   
+  console.log('✅ Tìm thấy tệp âm thanh trong Cache Storage. Đang xử lý Range...:', request.url);
   const rangeHeader = request.headers.get('range');
   const arrayBuffer = await cachedResponse.arrayBuffer();
   
