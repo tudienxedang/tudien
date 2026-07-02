@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Hệ thống học tiếng xơ đăng cho học sinh THCS | Ứng dụng PWA miễn phí</title>
+    <title>Ứng dụng số hóa hỗ trợ tự học và bảo tồn ngôn ngữ Xơ Đăng cho học sinh THCS trên nền tảng PWA</title>
     <meta name="description" content="Hệ thống học tiếng Xơ Đăng trực tuyến dành riêng cho học sinh THCS. Từ điển tương tác, bài học sinh động, trắc nghiệm thông minh, trò chơi giáo dục. Ứng dụng PWA học offline, hỗ trợ phát âm chuẩn, hoàn toàn miễn phí.">
     <meta name="keywords" content="học tiếng xơ đăng, tiếng xê đăng, học tiếng dân tộc thiểu số, từ điển xơ đăng, ứng dụng học tiếng xơ đăng, học tiếng xơ đăng online, bài tập tiếng xơ đăng, pwa học tiếng dân tộc, tiếng xơ đăng cho học sinh, giáo dục dân tộc thiểu số, bảo tồn ngôn ngữ dân tộc">
 
@@ -40,7 +40,7 @@
     <!-- Open Graph - CẬP NHẬT -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tudienxedang.github.io/tudien/">
-    <meta property="og:title" content="Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS">
+    <meta property="og:title" content="Ứng dụng số hóa hỗ trợ tự học và bảo tồn ngôn ngữ Xơ Đăng cho học sinh THCS trên nền tảng PWA">
     <meta property="og:description" content="Ứng dụng PWA học tiếng Xơ Đăng miễn phí dành cho học sinh THCS. Từ điển tương tác, bài học sinh động, hỗ trợ phát âm chuẩn.">
     <meta property="og:image" content="https://tudienxedang.github.io/tudien/Thumnail.jpg">
 	<meta property="og:image:secure_url" content="https://tudienxedang.github.io/tudien/Thumnail.jpg">
@@ -54,7 +54,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@hocxodang">
     <meta name="twitter:creator" content="@hocxodang">
-    <meta name="twitter:title" content="Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS">
+    <meta name="twitter:title" content="Ứng dụng số hóa hỗ trợ tự học và bảo tồn ngôn ngữ Xơ Đăng cho học sinh THCS trên nền tảng PWA">
     <meta name="twitter:description" content="Ứng dụng PWA học tiếng Xơ Đăng miễn phí - Từ điển tương tác, bài học sinh động">
     <meta name="twitter:image" content="https://tudienxedang.github.io/tudien/Thumnail.jpg">
     
@@ -79,7 +79,7 @@
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS",
+        "name": "Ứng dụng số hóa hỗ trợ tự học và bảo tồn ngôn ngữ Xơ Đăng cho học sinh THCS trên nền tảng PWA",
         "description": "Ứng dụng web tiến bộ (PWA) hỗ trợ học sinh THCS học tiếng Xơ Đăng thông qua từ điển tương tác, bài học sinh động và trò chơi giáo dục",
         "url": "https://tudienxedang.github.io/tudien/",
         "applicationCategory": "EducationalApplication",
@@ -731,6 +731,14 @@
             color: var(--primary-color);
             font-size: 0.95rem;
             text-align: center;
+        }
+        .footer-content p.project-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #64748b;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            text-transform: none;
+            letter-spacing: 0.025em;
         }
         .hashtag-container {
             margin-top: 1rem;
@@ -3853,7 +3861,7 @@ body.dark-mode .form-label {
             <li><a href="#contribute" class="menu-link" onclick="showSection('contribute')"><i class="fas fa-microphone-alt"></i> Đóng góp từ vựng</a></li>
             <li><a href="#quiz" class="menu-link" onclick="showSection('quiz')"><i class="fas fa-book"></i> Học và kiểm tra</a></li>
             
-	    <li><a href="https://tudienxedang.github.io/tudien/game.html" class="menu-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-gamepad"></i> Game học tập</a></li>
+	    <li><a href="#game" class="menu-link" onclick="showSection('game')"><i class="fas fa-gamepad"></i> Game học tập</a></li>
 
             <li><button id="darkModeToggle" class="menu-button"><i class="fas fa-moon"></i> Dark Mode</button></li>
         </ul>
@@ -3865,7 +3873,7 @@ body.dark-mode .form-label {
         <section id="home" class="container active" 
          itemscope 
          itemtype="https://schema.org/WebApplication">
-  <div itemprop="name" content="Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS" style="display:none;"></div>
+  <div itemprop="name" content="Ứng dụng số hóa hỗ trợ tự học và bảo tồn ngôn ngữ Xơ Đăng cho học sinh THCS trên nền tảng PWA" style="display:none;"></div>
   <div itemprop="description" content="Ứng dụng PWA học tiếng Xơ Đăng miễn phí với từ điển tương tác" style="display:none;"></div>
             <h1>Tra Cứu Tiếng Xơ Đăng - Tiếng Việt</h1>
             <div class="intro-content">
@@ -4281,12 +4289,19 @@ body.dark-mode .form-label {
                 </div>
             </div>
         </section>
+
+        <!-- Game học tập -->
+        <section id="game" class="container" style="padding: 0; max-width: 1200px; width: 95%; margin: 1.5rem auto; overflow: hidden; height: calc(100vh - 160px); min-height: 550px;">
+            <div class="game-wrapper" style="width: 100%; height: 100%; overflow: hidden; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); background: #fff;">
+                <iframe src="./game.html" style="width: 100%; height: 100%; border: none;" title="Trò chơi học tiếng Xơ Đăng" loading="lazy"></iframe>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <p>© 2025@ Hệ thống hỗ trợ học tiếng Xơ Đăng trên nền tảng PWA cho học sinh THCS</p>
+            <p class="project-title">Ứng dụng số hóa hỗ trợ tự học và bảo tồn ngôn ngữ Xơ Đăng cho học sinh THCS trên nền tảng PWA</p>
             <p>Tác giả: Minh Bảo - Hà Mi, Trường THCS Chu Văn An xã Đăk Hà tỉnh Quảng Ngãi</p>
             <div class="hashtag-container">
                 <a href="#TừĐiểnXơĐăng" class="hashtag">#TừĐiểnXơĐăng</a>
@@ -4302,13 +4317,13 @@ body.dark-mode .form-label {
             <div class="contact-section">
                 <span class="contact-title">Liên hệ</span>
                 <div class="social-icons">
-                    <a href="https://zalo.me/0877623579" target="_blank" title="Zalo" aria-label="Liên hệ qua Zalo">
+                    <a href="https://zalo.me/0877623579" target="_blank" rel="noopener noreferrer" title="Zalo" aria-label="Liên hệ qua Zalo">
     <i class="fas fa-comment-dots"></i>
 </a>
-                    <a href="https://facebook.com/your_facebook_page" target="_blank" title="Facebook" aria-label="Trang Facebook">
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Trang Facebook">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="baotruongminh201@gmail.com" title="Gmail" aria-label="Gửi email">
+                    <a href="mailto:baotruongminh201@gmail.com" title="Email" aria-label="Gửi email">
                         <i class="fas fa-envelope"></i>
                     </a>
                 </div>
@@ -7115,28 +7130,7 @@ body.dark-mode .form-label {
             document.querySelector('.footer-content').appendChild(pwaStatus);
         });
 
-	// ===== XỬ LÝ MỞ GAME TRONG TAB MỚI =====
-document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý click vào menu Game học tập
-    const gameLinks = document.querySelectorAll('a[href="https://tudienxedang.github.io/tudien/game.html"]');
-    
-    gameLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Ngăn hành vi mặc định
-            e.preventDefault();
-            
-            // Mở tab mới
-            window.open(
-                'https://tudienxedang.github.io/tudien/game.html',
-                '_blank',
-                'noopener,noreferrer'
-            );
-            
-            // Luôn quay lại trang chủ
-            showSection('home');
-        });
-    });
-});
+
     </script>
 
 
@@ -7239,51 +7233,7 @@ function checkGameAvailable() {
     return true;
 }
 
-// ===== SỬA LẠI SỰ KIỆN CLICK GAME =====
-document.addEventListener('DOMContentLoaded', function() {
-    const gameLinks = document.querySelectorAll('a[href="https://tudienxedang.github.io/tudien/game.html"]');
-    
-    gameLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Nếu đang offline, kiểm tra cache trước
-            if (!navigator.onLine) {
-                e.preventDefault();
-                
-                caches.open('tudien-xodang-v3.2').then(cache => {
-                    return cache.match('./game.html');
-                }).then(response => {
-                    if (response) {
-                        // Nếu có cache, mở game
-                        window.open(
-                            'https://tudienxedang.github.io/tudien/game.html',
-                            '_blank',
-                            'noopener,noreferrer'
-                        );
-                    } else {
-                        // Nếu không có cache, hiển thị thông báo
-                        showToast('🎮 Game chỉ khả dụng khi có internet. Vui lòng kết nối mạng để chơi game.', 'error');
-                        
-                        // Hoặc có thể mở modal với thông báo
-                        const modal = document.createElement('div');
-                        modal.innerHTML = `
-                            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-                                <div style="background: white; padding: 2rem; border-radius: 10px; max-width: 400px; text-align: center;">
-                                    <h3 style="color: #e74c3c; margin-bottom: 1rem;">📡 Cần kết nối Internet</h3>
-                                    <p>Game học tập cần tải dữ liệu từ server. Vui lòng kết nối internet để chơi game.</p>
-                                    <p style="font-size: 0.9rem; color: #666; margin-top: 1rem;">Các tính năng khác vẫn hoạt động offline.</p>
-                                    <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 1.5rem; padding: 0.5rem 2rem; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                                        Đã hiểu
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        document.body.appendChild(modal);
-                    }
-                });
-            }
-        });
-    });
-});
+
 	
 
 </body>

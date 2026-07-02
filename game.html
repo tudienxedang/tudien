@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
       box-sizing: border-box;
@@ -46,9 +47,15 @@
       align-items: center;
       justify-content: center;
       border-radius: 12px;
-      padding: 12px;
+      padding: 6px;
       text-align: center;
       font-weight: 500;
+      box-sizing: border-box;
+    }
+    @media (min-width: 768px) {
+      .card-front, .card-back {
+        padding: 12px;
+      }
     }
 
     .card-front {
@@ -62,7 +69,7 @@
       color: #1e3a8a;
       transform: rotateY(180deg);
       border: 3px solid #3b82f6;
-      font-size: clamp(12px, 2vw, 14px);
+      font-size: clamp(10px, 2.5vw, 14px);
     }
 
     .card.matched .card-back {
@@ -323,6 +330,20 @@
       animation: slideIn 0.3s ease-out;
       max-width: 90vw;
       word-wrap: break-word;
+    }
+
+    @media (max-width: 640px) {
+      .toast {
+        top: 15px !important;
+        right: 5% !important;
+        left: 5% !important;
+        max-width: 90vw !important;
+        animation: slideDownMobile 0.3s ease-out !important;
+      }
+    }
+    @keyframes slideDownMobile {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
     @keyframes slideIn {
@@ -1495,7 +1516,7 @@
 
     // ========== HỆ THỐNG ÂM THANH ==========
     let audioContext;
-    let bgmEnabled = localStorage.getItem('xedang_bgm') !== 'false';
+    let bgmEnabled = localStorage.getItem('xedang_bgm') === 'true';
     let sfxEnabled = localStorage.getItem('xedang_sfx') !== 'false';
     let bgmSource;
     let bgmPlaying = false;
@@ -1510,7 +1531,28 @@
           console.warn('Web Audio API not supported:', e);
         }
       }
+      // Resume AudioContext nếu bị suspended do autoplay
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+          console.log('AudioContext resumed via interaction');
+        }).catch(err => {
+          console.warn('Failed to resume AudioContext:', err);
+        });
+      }
     }
+
+    // Tự động kích hoạt AudioContext khi người dùng chạm hoặc click trên màn hình (đặc biệt khi nhúng trong iframe)
+    function autoResumeAudio() {
+      initAudio();
+      if (audioContext && audioContext.state === 'running') {
+        window.removeEventListener('click', autoResumeAudio);
+        window.removeEventListener('touchstart', autoResumeAudio);
+        window.removeEventListener('mousedown', autoResumeAudio);
+      }
+    }
+    window.addEventListener('click', autoResumeAudio);
+    window.addEventListener('touchstart', autoResumeAudio);
+    window.addEventListener('mousedown', autoResumeAudio);
 
     function createBeep(frequency, duration, type = 'sine', volume = 0.3) {
       if (!audioContext || !sfxEnabled) return null;
@@ -1553,7 +1595,7 @@
         setTimeout(() => createBeep(1047, 0.15, 'sine', 0.3), 50);
       },
       wordMissed: () => createBeep(330, 0.3, 'sawtooth', 0.2),
-      basketMove: () => createBeep(440, 0.05, 'sine', 0.1),
+      basketMove: () => {},
       levelUpGame2: () => {
         if (!audioContext || !sfxEnabled) return;
         createBeep(523, 0.1);
@@ -1614,59 +1656,9 @@
     };
 
     function playBackgroundMusic(gameType) {
-      if (!audioContext || !bgmEnabled || bgmPlaying) return;
-      
-      try {
-        if (bgmSource) {
-          bgmSource.stop();
-          bgmSource = null;
-        }
-        
-        currentBGM = gameType;
-        bgmSource = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        bgmSource.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        switch(gameType) {
-          case 'game1':
-            bgmSource.frequency.value = 220;
-            bgmSource.type = 'sine';
-            break;
-          case 'game2':
-            bgmSource.frequency.value = 294;
-            bgmSource.type = 'triangle';
-            break;
-          case 'game3':
-            bgmSource.frequency.value = 330;
-            bgmSource.type = 'sawtooth';
-            break;
-          case 'game4':
-            bgmSource.frequency.value = 196;
-            bgmSource.type = 'sine';
-            break;
-          default:
-            bgmSource.frequency.value = 262;
-            bgmSource.type = 'sine';
-        }
-        
-        const now = audioContext.currentTime;
-        gainNode.gain.setValueAtTime(0.05, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.03, now + 2);
-        
-        bgmSource.start();
-        bgmPlaying = true;
-        
-        bgmSource.onended = () => {
-          if (bgmPlaying && currentScreen.includes('game')) {
-            playBackgroundMusic(currentBGM);
-          }
-        };
-        
-      } catch (e) {
-        console.warn('Error playing background music:', e);
-      }
+      // Vô hiệu hóa nhạc nền đơn âm (Oscillator) gây tiếng hú kéo dài khó chịu
+      bgmPlaying = false;
+      return;
     }
 
     function stopBackgroundMusic() {
@@ -1741,7 +1733,7 @@
     }
 
     const defaultConfig = {
-      app_title: 'Học Tiếng Xê Đăng',
+      app_title: 'Ứng dụng số hóa hỗ trợ tự học và bảo tồn ngôn ngữ Xơ Đăng cho học sinh THCS trên nền tảng PWA',
       welcome_message: 'Chào mừng đến với',
       game1_name: 'Lật Ô Ghi Nhớ',
       game2_name: 'Mưa Từ Vựng',
@@ -2449,16 +2441,14 @@
     function renderLogin() {
       const config = window.elementSdk?.config || defaultConfig;
       const appTitle = config.app_title || defaultConfig.app_title;
-      const welcomeMsg = config.welcome_message || defaultConfig.welcome_message;
       
       return `
         <div class="min-h-screen flex flex-col items-center justify-center p-4 md:p-8" 
              style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
           
-          <div class="w-full max-w-md mb-8 text-center">
-            <div class="text-6xl md:text-7xl mb-4 animate-bounce" aria-hidden="true">🎮</div>
-            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">${appTitle}</h1>
-            <p class="text-blue-100 text-lg">${welcomeMsg}</p>
+          <div class="w-full max-w-md mb-6 text-center">
+            <div class="text-5xl mb-4 animate-bounce" aria-hidden="true">🎮</div>
+            <h1 class="text-base md:text-lg font-normal text-slate-100/90 tracking-wide leading-relaxed px-4">${appTitle}</h1>
           </div>
 
           <div class="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 transform transition-all duration-300 hover:scale-[1.02]">
@@ -2602,16 +2592,16 @@ function renderMenu() {
 
                 <div class="action-bar">
                     <button onclick="showLeaderboard(); SoundEffects.buttonClick()" class="btn-action-new btn-rank-new">
-                        <i>🏆</i> <span>Bảng Xếp Hạng</span>
+                        <i class="fas fa-trophy mr-1"></i> <span>Bảng Xếp Hạng</span>
                     </button>
                     
-                    <button onclick="forceRefreshData(); SoundEffects.buttonClick()" class="btn-action-new btn-icon-new">
-                        <div class="icon">🔄</div>
+                    <button onclick="forceRefreshData(); SoundEffects.buttonClick()" class="btn-action-new btn-icon-new" title="Tải lại dữ liệu">
+                        <div class="icon"><i class="fas fa-sync-alt"></i></div>
                         <div class="label">Tải lại</div>
                     </button>
                     
-                    <button onclick="logout(); SoundEffects.buttonClick()" class="btn-action-new btn-icon-new" style="border-color: #fca5a5; background: #fef2f2; color: #dc2626;">
-                        <div class="icon">🚪</div>
+                    <button onclick="logout(); SoundEffects.buttonClick()" class="btn-action-new btn-icon-new" style="border-color: #fca5a5; background: #fef2f2; color: #dc2626;" title="Đăng xuất">
+                        <div class="icon"><i class="fas fa-sign-out-alt"></i></div>
                         <div class="label">Thoát</div>
                     </button>
                 </div>
@@ -2646,9 +2636,7 @@ function renderMenu() {
                 }).join('')}
             </div>
 
-            <div class="text-center text-xs text-gray-400 pb-4">
-                © 2024 HocTiengXeDang
-            </div>
+            <div class="pb-4"></div>
         </div>
     </div>
     `;
@@ -2802,15 +2790,15 @@ function renderMenu() {
           <div class="max-w-4xl mx-auto">
             <div class="bg-white rounded-2xl shadow-2xl p-8 mb-6">
               <div class="flex items-center justify-between mb-6">
-                <h2 class="text-3xl font-bold" style="color: ${textColor};">📜 Chứng Nhận Của Bạn</h2>
-                <button onclick="backToMenu()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition" onclick="SoundEffects.buttonClick()">
-                  ← Quay lại
+                <h2 class="text-3xl font-bold flex items-center gap-2" style="color: ${textColor};"><i class="fas fa-certificate text-amber-500"></i> Chứng Nhận Của Bạn</h2>
+                <button onclick="backToMenu()" class="px-4 py-2 bg-gray-200 rounded-lg font-medium hover:bg-gray-300 transition flex items-center gap-2" onclick="SoundEffects.buttonClick()">
+                  <i class="fas fa-arrow-left"></i> Quay lại
                 </button>
               </div>
 
               ${certificates.length === 0 ? `
                 <div class="text-center py-16">
-                  <div class="text-7xl mb-4" aria-hidden="true">📜</div>
+                  <div class="text-7xl mb-4 text-amber-400" aria-hidden="true"><i class="fas fa-award"></i></div>
                   <p class="text-gray-500 text-lg">Chưa có chứng nhận nào</p>
                   <p class="text-gray-400 text-sm mt-2">Hoàn thành các game để nhận chứng nhận!</p>
                 </div>
@@ -2823,7 +2811,7 @@ function renderMenu() {
                           <h3 class="text-xl font-bold" style="color: ${textColor};">${cert.gameName}</h3>
                           <p class="text-sm text-gray-600">Ngày: ${cert.date}</p>
                         </div>
-                        <div class="text-3xl" aria-hidden="true">🏆</div>
+                        <div class="text-3xl text-yellow-500" aria-hidden="true"><i class="fas fa-trophy"></i></div>
                       </div>
                       <div class="bg-white rounded-lg p-4 mb-4">
                         <div class="grid grid-cols-2 gap-3 text-center">
@@ -2839,9 +2827,9 @@ function renderMenu() {
                       </div>
                       <button 
                         onclick="viewCertificate(${index}); SoundEffects.buttonClick()" 
-                        class="w-full py-2 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600 transition"
+                        class="w-full py-2 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600 transition flex items-center justify-center gap-2"
                       >
-                        👁️ Xem & Tải xuống
+                        <i class="fas fa-eye"></i> Xem & Tải xuống
                       </button>
                     </div>
                   `).join('')}
@@ -2944,12 +2932,12 @@ function renderGame1() {
                     <span class="game-subtitle">Level <span id="header-level-display">${game1State.level}</span></span>
                 </div>
                 <div class="flex">
-                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')" title="Nhạc nền">🎵</button>
-                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')" title="Hiệu ứng">🔊</button>
+                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')" title="Nhạc nền"><i class="fas fa-music"></i></button>
+                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')" title="Hiệu ứng"><i class="fas fa-volume-up"></i></button>
                     
-                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game1'); SoundEffects.buttonClick()" title="Hướng dẫn">❓</button>
-                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game1')" title="Lưu">💾</button>
-                    <button class="btn-icon-circle btn-exit" onclick="backToMenu()" title="Thoát">🚪</button>
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game1'); SoundEffects.buttonClick()" title="Hướng dẫn"><i class="fas fa-question"></i></button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game1')" title="Lưu"><i class="fas fa-save"></i></button>
+                    <button class="btn-icon-circle btn-exit" onclick="backToMenu()" title="Thoát"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
 
@@ -3017,7 +3005,7 @@ function renderGame1() {
       const board = document.getElementById('game1-board');
       board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       board.innerHTML = cards.map((card, index) => `
-        <div class="card" data-index="${index}" onclick="flipCard(${index})" style="height: 120px;" aria-label="Thẻ số ${index + 1}, nhấn để lật">
+        <div class="card" data-index="${index}" onclick="flipCard(${index})" style="aspect-ratio: 1/1; height: auto; min-height: 95px;" aria-label="Thẻ số ${index + 1}, nhấn để lật">
           <div class="card-inner">
             <div class="card-front" aria-hidden="true">
               <span>🎴</span>
@@ -3133,11 +3121,11 @@ function renderGame1() {
                     <span class="game-subtitle">Level ${game2State.level}</span>
                 </div>
                 <div class="flex">
-                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')">🎵</button>
-                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')">🔊</button>
-                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game2'); SoundEffects.buttonClick()">❓</button>
-                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game2')">💾</button>
-                    <button class="btn-icon-circle btn-exit" onclick="endGame2()">🚪</button>
+                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')" title="Nhạc nền"><i class="fas fa-music"></i></button>
+                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')" title="Hiệu ứng"><i class="fas fa-volume-up"></i></button>
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game2'); SoundEffects.buttonClick()" title="Hướng dẫn"><i class="fas fa-question"></i></button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game2')" title="Lưu"><i class="fas fa-save"></i></button>
+                    <button class="btn-icon-circle btn-exit" onclick="endGame2()" title="Thoát"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
 
@@ -3158,10 +3146,39 @@ function renderGame1() {
                 <div class="absolute bottom-0 w-full h-2 bg-green-600"></div>
                 <div class="absolute bottom-2 left-0 w-full text-center text-xs text-gray-500 opacity-70 pointer-events-none">Vuốt màn hình để di chuyển giỏ</div>
             </div>
+            
+            <!-- Mobile Controls -->
+            <div class="flex justify-between gap-4 mt-3 sm:hidden">
+                <button class="flex-1 py-3.5 bg-blue-600 active:bg-blue-800 text-white rounded-xl font-bold shadow-md text-base select-none" onclick="moveBasketButton('left')">
+                    ◀ SANG TRÁI
+                </button>
+                <button class="flex-1 py-3.5 bg-blue-600 active:bg-blue-800 text-white rounded-xl font-bold shadow-md text-base select-none" onclick="moveBasketButton('right')">
+                    SANG PHẢI ▶
+                </button>
+            </div>
         </div>
     </div>
     `;
 }
+
+    function moveBasketButton(direction) {
+      const canvas = document.getElementById('game2-canvas');
+      if (!canvas) return;
+      
+      const step = 45;
+      if (direction === 'left') {
+        game2State.basketX = Math.max(0, game2State.basketX - step);
+      } else if (direction === 'right') {
+        game2State.basketX = Math.min(canvas.offsetWidth - 80, game2State.basketX + step);
+      }
+      
+      const basket = canvas.querySelector('.basket-character');
+      if (basket) basket.style.left = game2State.basketX + 'px';
+      
+      if (Math.random() > 0.7) {
+        SoundEffects.basketMove();
+      }
+    }
 
     function initGame2() {
       game2State = {
@@ -3208,7 +3225,7 @@ function renderGame1() {
       }
 
       document.addEventListener('mousemove', handleGame2Mouse);
-      document.addEventListener('touchmove', handleGame2Touch);
+      document.addEventListener('touchmove', handleGame2Touch, { passive: false });
       document.addEventListener('keydown', handleGame2Keys);
 
       document.getElementById('game2-level').textContent = game2State.level;
@@ -3613,11 +3630,11 @@ function renderGame3() {
                     <span class="game-subtitle">Level ${game3State.level}</span>
                 </div>
                 <div class="flex">
-                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')">🎵</button>
-                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')">🔊</button>
-                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game3'); SoundEffects.buttonClick()">❓</button>
-                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game3')">💾</button>
-                    <button class="btn-icon-circle btn-exit" onclick="endGame3()">🚪</button>
+                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')" title="Nhạc nền"><i class="fas fa-music"></i></button>
+                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')" title="Hiệu ứng"><i class="fas fa-volume-up"></i></button>
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game3'); SoundEffects.buttonClick()" title="Hướng dẫn"><i class="fas fa-question"></i></button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game3')" title="Lưu"><i class="fas fa-save"></i></button>
+                    <button class="btn-icon-circle btn-exit" onclick="endGame3()" title="Thoát"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
 
@@ -4027,11 +4044,11 @@ function renderGame4() {
                     <span class="game-subtitle">Level ${game4State.level}</span>
                 </div>
                 <div class="flex">
-                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')">🎵</button>
-                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')">🔊</button>
-                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game4'); SoundEffects.buttonClick()">❓</button>
-                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game4')">💾</button>
-                    <button class="btn-icon-circle btn-exit" onclick="backToMenu()">🚪</button>
+                    <button class="btn-icon-circle btn-sound ${bgmClass}" onclick="toggleBGM(); this.classList.toggle('active')" title="Nhạc nền"><i class="fas fa-music"></i></button>
+                    <button class="btn-icon-circle btn-sound ${sfxClass}" onclick="toggleSFX(); this.classList.toggle('active')" title="Hiệu ứng"><i class="fas fa-volume-up"></i></button>
+                    <button class="btn-icon-circle btn-help" onclick="showTutorial('game4'); SoundEffects.buttonClick()" title="Hướng dẫn"><i class="fas fa-question"></i></button>
+                    <button class="btn-icon-circle btn-save" onclick="saveAndExit('game4')" title="Lưu"><i class="fas fa-save"></i></button>
+                    <button class="btn-icon-circle btn-exit" onclick="backToMenu()" title="Thoát"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
 
