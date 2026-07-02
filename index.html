@@ -5290,6 +5290,12 @@ body.dark-mode .form-label {
                             btnDownload.style.background = '#27ae60';
                             downloadStatus.textContent = `Đã lưu sẵn ${cachedCount}/${totalWithAudio} file âm thanh. Sẵn sàng học offline 100%!`;
                             btnDownload.disabled = true;
+                            
+                            // Tự động ẩn banner tải offline nếu đã tải thành công 100%
+                            const card = document.querySelector('.offline-download-card');
+                            if (card) {
+                                card.style.display = 'none';
+                            }
                         } else if (cachedCount > 0) {
                             btnDownload.innerHTML = `<i class="fas fa-download"></i> Tiếp tục tải offline (${cachedCount}/${totalWithAudio})`;
                             downloadStatus.textContent = `Đã tải được ${cachedCount}/${totalWithAudio} file. Bạn có thể bấm tiếp tục tải phần còn lại.`;
@@ -5392,6 +5398,19 @@ body.dark-mode .form-label {
                             btnDownload.style.background = '#27ae60';
                             downloadStatus.textContent = `Đã tải xong toàn bộ ${total}/${total} file âm thanh. Sẵn sàng offline 100%!`;
                             showToast('Tải dữ liệu âm thanh offline thành công!', 'success');
+                            
+                            // Tự động ẩn banner mượt mà sau khi tải thành công
+                            setTimeout(() => {
+                                const card = document.querySelector('.offline-download-card');
+                                if (card) {
+                                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                    card.style.opacity = '0';
+                                    card.style.transform = 'scale(0.95)';
+                                    setTimeout(() => {
+                                        card.style.display = 'none';
+                                    }, 500);
+                                }
+                            }, 1500);
                         } else {
                             btnDownload.disabled = false;
                             btnDownload.innerHTML = `<i class="fas fa-redo"></i> Tải lại file lỗi (${successCount}/${total})`;
