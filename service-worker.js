@@ -1,8 +1,8 @@
-// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.4 (Sheets network-first)
+// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.5
 // GIỮ NGUYÊN API KEY - FIX LỖI 408 - CACHE CDN & AUDIO LOCAL
 
 // ==================== CẤU HÌNH QUAN TRỌNG ====================
-const APP_VERSION = '10.0.4';
+const APP_VERSION = '10.0.5';
 const CACHE_NAME = `tudien-${APP_VERSION}`;
 const DATA_CACHE = 'tudien-data';   // dữ liệu Google Sheets, giữ qua các phiên bản
 const AUDIO_CACHE = 'tudien-audio'; // âm thanh tải offline, giữ qua các phiên bản
@@ -27,7 +27,9 @@ const STATIC_FILES = [
   './icon-192x192.png',
   './icon-256x256.png',
   './icon-384x384.png',
-  './icon-512x512.png'
+  './icon-512x512.png',
+  './icon-maskable-192x192.png',
+  './icon-maskable-512x512.png'
 ];
 
 // ==================== GOOGLE SHEETS CONFIG ====================

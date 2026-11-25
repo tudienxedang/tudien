@@ -4516,6 +4516,31 @@ body.dark-mode .form-label {
             document.getElementById('darkModeToggle').querySelector('i').className = 'fas fa-sun';
         }
 
+        // ===== THÔNG BÁO NHỎ (TOAST) DÙNG CHUNG CHO CẢ TRANG =====
+        // Trước đây showToast chỉ có bên trong từng khối (function(){...})(), nên các đoạn
+        // code bên ngoài (cập nhật phiên bản, cài app...) gọi showToast bị lỗi ReferenceError.
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) { console.log(message); return; }
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const row = document.createElement('div');
+            row.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+            const icon = document.createElement('i');
+            icon.className = 'fas ' + (type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+            const text = document.createElement('span');
+            text.textContent = message;
+            row.append(icon, text);
+            toast.appendChild(row);
+            toastContainer.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        window.showToast = showToast;
+
         // ===== PWA INSTALLATION =====
 
         
@@ -5296,168 +5321,178 @@ body.dark-mode .form-label {
                 
                 // Tên bộ nhớ đệm khớp với service-worker.js
                 const OFFLINE_CACHE_NAME = 'tudien-audio';
-                
-                // Kiểm tra trạng thái dữ liệu đã tải trước đó
-                checkOfflineStatus();
-                
+                // Đánh dấu máy này đã từng tải đủ âm thanh -> tự cập nhật âm thanh mới
+                const OFFLINE_DONE_KEY = 'audioOfflineDone';
+                const DEFAULT_LABEL = '<i class="fas fa-download"></i> Tải âm thanh offline (~40MB)';
+
+                function readFlag() { try { return localStorage.getItem(OFFLINE_DONE_KEY) === '1'; } catch (e) { return false; } }
+                function writeFlag() { try { localStorage.setItem(OFFLINE_DONE_KEY, '1'); } catch (e) {} }
+                function audioUrl(item) { return `./audio/${item.driveId}.webm`; }
+                function hasAudio(item) { return item.driveId && item.driveId.trim() !== '' && item.driveId !== 'null'; }
+
+                // Xin trình duyệt không tự xóa âm thanh đã tải khi máy thiếu dung lượng
+                async function requestPersistentStorage() {
+                    try {
+                        if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) {
+                            await navigator.storage.persist();
+                        }
+                    } catch (e) {}
+                }
+
+                // Trả về danh sách từ có âm thanh và danh sách còn thiếu trong máy
+                async function getAudioState() {
+                    const cache = await caches.open(OFFLINE_CACHE_NAME);
+                    const cachedUrls = new Set((await cache.keys()).map(req => req.url));
+                    const withAudio = dictionary.filter(hasAudio);
+                    const missing = withAudio.filter(item => !cachedUrls.has(new URL(audioUrl(item), location.href).href));
+                    return { cache, withAudio, missing };
+                }
+
+                // Tải danh sách file (5 luồng song song), trả về số file tải thành công
+                async function downloadItems(cache, items, onProgress) {
+                    let loaded = 0, success = 0;
+                    const queue = [...items];
+                    async function worker() {
+                        while (queue.length) {
+                            const item = queue.shift();
+                            try {
+                                const response = await fetch(audioUrl(item));
+                                if (response.ok) {
+                                    await cache.put(audioUrl(item), response);
+                                    success++;
+                                }
+                            } catch (e) {
+                                console.warn('Lỗi tải file âm thanh:', audioUrl(item), e);
+                            }
+                            loaded++;
+                            if (onProgress) onProgress(loaded, items.length);
+                        }
+                    }
+                    await Promise.all(Array.from({ length: Math.min(5, items.length) }, worker));
+                    return success;
+                }
+
+                function wordList(items) {
+                    const names = items.slice(0, 3).map(i => `"${i.viet}"`).join(', ');
+                    return items.length > 3 ? `${names} và ${items.length - 3} từ khác` : names;
+                }
+
+                function hideCard(delay) {
+                    const card = document.querySelector('.offline-download-card');
+                    if (!card) return;
+                    setTimeout(() => {
+                        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.95)';
+                        setTimeout(() => { card.style.display = 'none'; }, 500);
+                    }, delay);
+                }
+
+                function setButton(html, disabled) {
+                    btnDownload.innerHTML = html;
+                    btnDownload.disabled = !!disabled;
+                    btnDownload.style.opacity = disabled ? '0.7' : '1';
+                }
+
+                // Hiển thị đúng tình huống: chưa tải / có âm thanh mới / tải dở / đã đủ
                 async function checkOfflineStatus() {
                     if (!('caches' in window)) return;
-                    
                     try {
-                        const cache = await caches.open(OFFLINE_CACHE_NAME);
-                        let cachedCount = 0;
-                        let totalWithAudio = 0;
+                        const { cache, withAudio, missing } = await getAudioState();
+                        if (!withAudio.length) return;
 
-                        // Lấy danh sách file đã lưu một lần, thay vì gọi cache.match ~1.300 lần
-                        const cachedUrls = new Set((await cache.keys()).map(req => req.url));
-                        for (const item of dictionary) {
-                            if (item.driveId && item.driveId.trim() !== '') {
-                                totalWithAudio++;
-                                const url = new URL(`./audio/${item.driveId}.webm`, location.href).href;
-                                if (cachedUrls.has(url)) {
-                                    cachedCount++;
-                                }
-                            }
-                        }
-                        
-                        if (totalWithAudio > 0 && cachedCount === totalWithAudio) {
-                            btnDownload.innerHTML = '<i class="fas fa-check-circle"></i> Đã tải offline thành công';
+                        if (!missing.length) {
+                            writeFlag();
+                            setButton('<i class="fas fa-check-circle"></i> Đã tải offline thành công', true);
                             btnDownload.style.background = '#27ae60';
-                            downloadStatus.textContent = `Đã lưu sẵn ${cachedCount}/${totalWithAudio} file âm thanh. Sẵn sàng học offline 100%!`;
-                            btnDownload.disabled = true;
-                            
-                            // Tự động ẩn banner tải offline nếu đã tải thành công 100%
-                            const card = document.querySelector('.offline-download-card');
-                            if (card) {
-                                card.style.display = 'none';
+                            downloadStatus.textContent = `Đã lưu sẵn ${withAudio.length}/${withAudio.length} file âm thanh. Sẵn sàng học offline 100%!`;
+                            hideCard(0);
+                            return;
+                        }
+
+                        const cachedCount = withAudio.length - missing.length;
+
+                        if (readFlag() || cachedCount / withAudio.length >= 0.9) {
+                            // Máy đã tải đủ trước đây -> chỉ là từ điển có âm thanh MỚI: tự tải ngầm
+                            downloadStatus.textContent = `🆕 Từ điển vừa có ${missing.length} âm thanh mới (${wordList(missing)}). Đang tự cập nhật...`;
+                            if (!navigator.onLine) {
+                                downloadStatus.textContent = `🆕 Từ điển có ${missing.length} âm thanh mới (${wordList(missing)}). Sẽ tự cập nhật khi có mạng.`;
+                                setButton(`<i class="fas fa-sync-alt"></i> Cập nhật ${missing.length} âm thanh mới`, false);
+                                return;
                             }
-                        } else if (cachedCount > 0) {
-                            btnDownload.innerHTML = `<i class="fas fa-download"></i> Tiếp tục tải offline (${cachedCount}/${totalWithAudio})`;
-                            downloadStatus.textContent = `Đã tải được ${cachedCount}/${totalWithAudio} file. Bạn có thể bấm tiếp tục tải phần còn lại.`;
+                            setButton('<i class="fas fa-spinner fa-spin"></i> Đang cập nhật âm thanh mới...', true);
+                            const ok = await downloadItems(cache, missing);
+                            if (ok === missing.length) {
+                                setButton('<i class="fas fa-check-circle"></i> Đã cập nhật âm thanh mới', true);
+                                btnDownload.style.background = '#27ae60';
+                                downloadStatus.textContent = `✅ Đã cập nhật ${ok} âm thanh mới. Sẵn sàng học offline 100%!`;
+                                showToast(`Đã cập nhật ${ok} âm thanh mới để học offline`, 'success');
+                                hideCard(2500);
+                            } else {
+                                const left = missing.length - ok;
+                                setButton(`<i class="fas fa-sync-alt"></i> Cập nhật ${left} âm thanh mới`, false);
+                                downloadStatus.textContent = `Còn ${left} âm thanh mới chưa tải được (có thể do mạng). Bấm để thử lại.`;
+                            }
+                            return;
+                        }
+
+                        if (cachedCount > 0) {
+                            // Lần trước tải chưa xong (mất mạng, tắt trang...)
+                            setButton(`<i class="fas fa-download"></i> Tải tiếp ${missing.length} file còn lại`, false);
+                            downloadStatus.textContent = `Bạn đã tải ${cachedCount}/${withAudio.length} file âm thanh. Lần tải trước chưa xong, bấm để tải tiếp ${missing.length} file còn lại.`;
                         }
                     } catch (e) {
                         console.warn('Lỗi kiểm tra trạng thái offline:', e);
                     }
                 }
-                
+
+                checkOfflineStatus();
+                window.addEventListener('online', () => { if (readFlag()) checkOfflineStatus(); });
+
                 btnDownload.addEventListener('click', async () => {
-                    btnDownload.disabled = true;
-                    btnDownload.style.opacity = '0.7';
-                    btnDownload.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang chuẩn bị dữ liệu...';
-                    progressContainer.style.display = 'block';
-                    
                     if (!('caches' in window)) {
                         showToast('Trình duyệt của bạn không hỗ trợ lưu trữ offline!', 'error');
-                        btnDownload.disabled = false;
-                        btnDownload.style.opacity = '1';
-                        btnDownload.innerHTML = '<i class="fas fa-download"></i> Tải âm thanh offline (~40MB)';
                         return;
                     }
-                    
+                    setButton('<i class="fas fa-spinner fa-spin"></i> Đang chuẩn bị dữ liệu...', true);
+                    progressContainer.style.display = 'block';
+                    requestPersistentStorage();
+
                     try {
-                        const cache = await caches.open(OFFLINE_CACHE_NAME);
-                        
-                        // Lọc các từ vựng có ID âm thanh
-                        const itemsToDownload = dictionary.filter(item => item.driveId && item.driveId.trim() !== '');
-                        const total = itemsToDownload.length;
-                        
-                        if (total === 0) {
+                        const { cache, withAudio, missing } = await getAudioState();
+                        if (!withAudio.length) {
                             showToast('Không tìm thấy file âm thanh nào trong dữ liệu!', 'info');
-                            btnDownload.disabled = false;
-                            btnDownload.style.opacity = '1';
-                            btnDownload.innerHTML = '<i class="fas fa-download"></i> Tải âm thanh offline (~40MB)';
+                            setButton(DEFAULT_LABEL, false);
                             progressContainer.style.display = 'none';
                             return;
                         }
-                        
-                        let loaded = 0;
-                        let successCount = 0;
-                        
-                        // Tải song song tối đa 5 luồng cùng lúc
-                        const concurrencyLimit = 5;
-                        const queue = [...itemsToDownload];
-                        
-                        async function downloadNext() {
-                            if (queue.length === 0) return;
-                            
-                            const item = queue.shift();
-                            const url = `./audio/${item.driveId}.webm`;
-                            
-                            // 1. Kiểm tra xem file này đã có trong cache chưa
-                            const exists = await cache.match(url);
-                            if (exists) {
-                                loaded++;
-                                successCount++;
-                                updateProgress();
-                                await downloadNext();
-                                return;
-                            }
-                            
-                            // 2. Nếu chưa có, tiến hành fetch và lưu cache
-                            try {
-                                const response = await fetch(url);
-                                if (response.ok) {
-                                    await cache.put(url, response.clone());
-                                    successCount++;
-                                }
-                            } catch (e) {
-                                console.warn("Lỗi tải file âm thanh từ GitHub:", url, e);
-                            }
-                            
-                            loaded++;
-                            updateProgress();
-                            await downloadNext();
-                        }
-                        
-                        function updateProgress() {
-                            const percent = Math.round((loaded / total) * 100);
+
+                        const already = withAudio.length - missing.length;
+                        const total = withAudio.length;
+                        const ok = await downloadItems(cache, missing, (loaded) => {
+                            const done = already + loaded;
+                            const percent = Math.round((done / total) * 100);
                             progressBar.style.width = `${percent}%`;
-                            progressText.textContent = `Đã tải: ${loaded}/${total} (${percent}%)`;
-                        }
-                        
-                        // Khởi động các luồng bất đồng bộ song song
-                        const promises = [];
-                        for (let i = 0; i < Math.min(concurrencyLimit, queue.length); i++) {
-                            promises.push(downloadNext());
-                        }
-                        
-                        // Chờ tất cả luồng hoàn thành
-                        await Promise.all(promises);
-                        
-                        // Hoàn tất tải
-                        btnDownload.style.opacity = '1';
+                            progressText.textContent = `Đã tải: ${done}/${total} (${percent}%)`;
+                        });
+
                         progressContainer.style.display = 'none';
-                        
-                        if (successCount === total) {
-                            btnDownload.innerHTML = '<i class="fas fa-check-circle"></i> Đã tải offline thành công';
+                        if (ok === missing.length) {
+                            writeFlag();
+                            setButton('<i class="fas fa-check-circle"></i> Đã tải offline thành công', true);
                             btnDownload.style.background = '#27ae60';
                             downloadStatus.textContent = `Đã tải xong toàn bộ ${total}/${total} file âm thanh. Sẵn sàng offline 100%!`;
                             showToast('Tải dữ liệu âm thanh offline thành công!', 'success');
-                            
-                            // Tự động ẩn banner mượt mà sau khi tải thành công
-                            setTimeout(() => {
-                                const card = document.querySelector('.offline-download-card');
-                                if (card) {
-                                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                                    card.style.opacity = '0';
-                                    card.style.transform = 'scale(0.95)';
-                                    setTimeout(() => {
-                                        card.style.display = 'none';
-                                    }, 500);
-                                }
-                            }, 1500);
+                            hideCard(1500);
                         } else {
-                            btnDownload.disabled = false;
-                            btnDownload.innerHTML = `<i class="fas fa-redo"></i> Tải lại file lỗi (${successCount}/${total})`;
-                            downloadStatus.textContent = `Đã tải được ${successCount}/${total} file. Một số file gặp sự cố mạng, bấm tải lại.`;
+                            const left = missing.length - ok;
+                            setButton(`<i class="fas fa-redo"></i> Tải lại ${left} file lỗi`, false);
+                            downloadStatus.textContent = `Đã tải được ${total - left}/${total} file. ${left} file gặp sự cố mạng, bấm để tải lại.`;
                             showToast('Một số file gặp lỗi mạng khi tải. Vui lòng bấm tải lại.', 'warning');
                         }
-                        
                     } catch (err) {
                         console.error('Lỗi nghiêm trọng khi tải offline:', err);
-                        btnDownload.disabled = false;
-                        btnDownload.style.opacity = '1';
-                        btnDownload.innerHTML = '<i class="fas fa-redo"></i> Thử tải lại';
+                        setButton('<i class="fas fa-redo"></i> Thử tải lại', false);
                         progressContainer.style.display = 'none';
                         showToast('Có lỗi xảy ra, vui lòng thử lại.', 'error');
                     }
@@ -6117,23 +6152,112 @@ body.dark-mode .form-label {
                         filename: `${sanitizeFilename(data.filename || data.name)}_${Date.now()}.${data.blob.type.includes('mp3') ? 'mp3' : 'webm'}`
                     };
                     
-                    const response = await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    return { success: true, message: 'File đã được gửi thành công' };
-                    
+                    // Mất mạng -> lưu vào máy, tự gửi lại khi có mạng
+                    if (!navigator.onLine) {
+                        await savePending(payload);
+                        return { success: true, queued: true };
+                    }
+                    try {
+                        await postPayload(payload);
+                    } catch (networkError) {
+                        await savePending(payload);
+                        return { success: true, queued: true };
+                    }
+                    return { success: true, queued: false, message: 'File đã được gửi thành công' };
+
                 } catch (error) {
                     console.error('Lỗi khi gửi file:', error);
                     throw new Error(`Lỗi gửi file: ${error.message}`);
                 }
             }
-            
+
+            // ===== HÀNG ĐỢI ĐÓNG GÓP KHI OFFLINE (IndexedDB) =====
+            // Đóng góp gửi lúc mất mạng được lưu trong máy và tự gửi lại khi có mạng,
+            // kể cả khi người dùng đóng trang rồi mở lại sau.
+            const PENDING_DB = 'tudien-dong-gop';
+            const PENDING_STORE = 'cho-gui';
+
+            function postPayload(payload) {
+                // no-cors: chỉ báo lỗi khi mất mạng, không đọc được phản hồi của Apps Script
+                return fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            function openPendingDb() {
+                return new Promise((resolve, reject) => {
+                    if (!('indexedDB' in window)) { reject(new Error('Trình duyệt không hỗ trợ lưu tạm')); return; }
+                    const req = indexedDB.open(PENDING_DB, 1);
+                    req.onupgradeneeded = () => req.result.createObjectStore(PENDING_STORE, { keyPath: 'id', autoIncrement: true });
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            async function pendingTx(mode, fn) {
+                const db = await openPendingDb();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(PENDING_STORE, mode);
+                    const result = fn(tx.objectStore(PENDING_STORE));
+                    tx.oncomplete = () => { db.close(); resolve(result && result.result !== undefined ? result.result : undefined); };
+                    tx.onerror = () => { db.close(); reject(tx.error); };
+                });
+            }
+
+            async function savePending(payload) {
+                await pendingTx('readwrite', store => store.add({ payload, savedAt: Date.now() }));
+                updatePendingStatus();
+            }
+
+            async function getAllPending() {
+                try { return (await pendingTx('readonly', store => store.getAll())) || []; } catch (e) { return []; }
+            }
+
+            async function updatePendingStatus() {
+                const items = await getAllPending();
+                let box = document.getElementById('pendingContribStatus');
+                if (!box) {
+                    box = document.createElement('div');
+                    box.id = 'pendingContribStatus';
+                    box.style.cssText = 'margin:12px 0;padding:10px 14px;border-radius:10px;background:#fff8e1;color:#8a6d00;border:1px solid #f3d27a;font-size:0.95rem;display:none;';
+                    const anchor = document.getElementById('contribute');
+                    if (anchor) anchor.appendChild(box);
+                }
+                if (!items.length) { box.style.display = 'none'; return; }
+                box.style.display = 'block';
+                box.textContent = `📤 Có ${items.length} đóng góp đã lưu trong máy, đang chờ có mạng để tự gửi.`;
+            }
+
+            let flushing = false;
+            async function flushPending() {
+                if (flushing || !navigator.onLine) return;
+                flushing = true;
+                let sent = 0;
+                try {
+                    const items = await getAllPending();
+                    for (const item of items) {
+                        try {
+                            await postPayload(item.payload);
+                        } catch (e) {
+                            break; // vẫn chưa có mạng, để lần sau
+                        }
+                        await pendingTx('readwrite', store => store.delete(item.id));
+                        sent++;
+                    }
+                } finally {
+                    flushing = false;
+                    updatePendingStatus();
+                }
+                if (sent) showToast(`Đã tự gửi ${sent} đóng góp đã lưu khi offline. Cảm ơn bạn!`, 'success');
+            }
+
+            window.addEventListener('online', flushPending);
+            updatePendingStatus();
+            flushPending();
+
             // ===== SUBMIT FUNCTIONS =====
             dom.submitSingleBtn.addEventListener('click', async function() {
                 const vietnamese = dom.vietnameseWord.value.trim();
@@ -6152,7 +6276,7 @@ body.dark-mode .form-label {
                 showLoading('Đang gửi từ vựng...');
                 
                 try {
-                    await sendFile({
+                    const res = await sendFile({
                         type: 'vocab',
                         vietnamese: vietnamese,
                         xodang: xodang,
@@ -6160,8 +6284,12 @@ body.dark-mode .form-label {
                         name: vietnamese,
                         filename: vietnamese
                     });
-                    
-                    showToast('Đã gửi từ vựng thành công! Cảm ơn bạn đã đóng góp.', 'success');
+
+                    if (res.queued) {
+                        showToast('Đang mất mạng: đã lưu đóng góp vào máy, sẽ tự gửi khi có mạng.', 'info');
+                    } else {
+                        showToast('Đã gửi từ vựng thành công! Cảm ơn bạn đã đóng góp.', 'success');
+                    }
                     
                     // Reset form
                     dom.vietnameseWord.value = '';
@@ -6193,14 +6321,16 @@ body.dark-mode .form-label {
                 showLoading(`Đang gửi ${batchQueue.length} file...`);
                 
                 let successCount = 0;
+                let queuedCount = 0;
                 let failedCount = 0;
                 const errors = [];
-                
+                const failedItems = [];
+
                 for (let i = 0; i < batchQueue.length; i++) {
                     const item = batchQueue[i];
-                    
+
                     try {
-                        await sendFile({
+                        const res = await sendFile({
                             type: 'voice',
                             readingContent: item.name,
                             blob: item.blob,
@@ -6208,22 +6338,28 @@ body.dark-mode .form-label {
                             filename: item.name
                         });
                         successCount++;
-                        
+                        if (res.queued) queuedCount++;
+
                         document.getElementById('loadingText').textContent = 
                             `Đang gửi ${i+1}/${batchQueue.length} file (${successCount} thành công)...`;
                         
                     } catch (error) {
                         console.error(`Lỗi gửi file ${item.name}:`, error);
                         failedCount++;
+                        failedItems.push(item);
                         errors.push(`${item.name}: ${error.message}`);
                     }
                 }
-                
+
                 hideLoading();
-                
+
                 if (successCount === batchQueue.length) {
-                    showToast(`Đã gửi thành công ${batchQueue.length} file! Cảm ơn bạn đã đóng góp.`, 'success');
-                    
+                    if (queuedCount) {
+                        showToast(`Đang mất mạng: đã lưu ${queuedCount} file vào máy, sẽ tự gửi khi có mạng.`, 'info');
+                    } else {
+                        showToast(`Đã gửi thành công ${batchQueue.length} file! Cảm ơn bạn đã đóng góp.`, 'success');
+                    }
+
                     batchQueue = [];
                     currentBatchPlayingIndex = -1;
                     isBatchPlaying = false;
@@ -6233,11 +6369,10 @@ body.dark-mode .form-label {
                 } else if (successCount > 0) {
                     showToast(`Đã gửi ${successCount}/${batchQueue.length} file thành công. ${failedCount} file thất bại.`, 'info');
                     
-                    if (successCount > 0) {
-                        batchQueue = [];
-                        updateBatchUI();
-                        dom.batchStatus.innerHTML = 'Đã xử lý xong hàng đợi';
-                    }
+                    // Chỉ giữ lại các file gửi lỗi để người dùng gửi lại (trước đây bị xóa mất)
+                    batchQueue = failedItems;
+                    updateBatchUI();
+                    dom.batchStatus.textContent = `Còn ${failedItems.length} file gửi lỗi trong hàng đợi, bấm "Gửi tất cả" để thử lại.`;
                     
                     if (errors.length > 0) {
                         console.error('Chi tiết lỗi:', errors);
