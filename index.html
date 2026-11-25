@@ -73,7 +73,7 @@
 	<!-- Preload critical resources -->
 	
 
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" as="style">
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" as="style" crossorigin="anonymous">
 <!-- === HẾT PHẦN PRELOAD === -->
     
     <!-- Canonical & Sitemap -->
@@ -261,8 +261,8 @@
     <!-- Font Awesome - GIỮ NGUYÊN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
-    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js" crossorigin="anonymous" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
 
     <style>
         /* Tất cả CSS từ phiên bản trước vẫn giữ nguyên */
@@ -4707,10 +4707,12 @@ body.dark-mode .form-label {
 
         // ===== SERVICE WORKER REGISTRATION =====
         if ('serviceWorker' in navigator) {
-            // Tự động reload trang khi Service Worker mới kích hoạt và chiếm quyền
+            // Tự động reload trang khi Service Worker MỚI thay thế bản cũ.
+            // Lần đầu truy cập (chưa có SW điều khiển) thì không reload.
+            const hadController = !!navigator.serviceWorker.controller;
             let refreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
+                if (hadController && !refreshing) {
                     refreshing = true;
                     console.log('🔄 Service Worker mới đã chiếm quyền điều khiển. Đang tải lại trang...');
                     window.location.reload();
@@ -5273,13 +5275,14 @@ body.dark-mode .form-label {
                         const cache = await caches.open(OFFLINE_CACHE_NAME);
                         let cachedCount = 0;
                         let totalWithAudio = 0;
-                        
+
+                        // Lấy danh sách file đã lưu một lần, thay vì gọi cache.match ~1.300 lần
+                        const cachedUrls = new Set((await cache.keys()).map(req => req.url));
                         for (const item of dictionary) {
                             if (item.driveId && item.driveId.trim() !== '') {
                                 totalWithAudio++;
-                                const url = `./audio/${item.driveId}.webm`;
-                                const cachedResponse = await cache.match(url);
-                                if (cachedResponse) {
+                                const url = new URL(`./audio/${item.driveId}.webm`, location.href).href;
+                                if (cachedUrls.has(url)) {
                                     cachedCount++;
                                 }
                             }
@@ -7465,9 +7468,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const hasSeenIntro = localStorage.getItem('hasSeenIntro');
     
     // Nếu đã xem intro rồi (lần thứ 2 trở đi)
-    if (hasSeenIntro === 'true') {
-        showAppLoading();
-    }
+    // Không hiện màn hình loading giả 3 giây nữa (làm trang chậm hơn mà không cần thiết).
+    // Nếu muốn bật lại: if (hasSeenIntro === 'true') showAppLoading();
     
     // Lưu lại rằng đã vào ứng dụng (để lần sau biết là đã xem intro)
     localStorage.setItem('hasSeenIntro', 'true');
@@ -7560,5 +7562,6 @@ function checkGameAvailable() {
 
 
 
+</script>
+</body>
 </html>
-

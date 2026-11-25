@@ -1,9 +1,12 @@
-// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.3
+// service-worker.js - PWA OFFLINE AUDIO FIX - Version 10.0.4 (Sheets network-first)
 // GIỮ NGUYÊN API KEY - FIX LỖI 408 - CACHE CDN & AUDIO LOCAL
 
 // ==================== CẤU HÌNH QUAN TRỌNG ====================
-const APP_VERSION = '10.0.3';
+const APP_VERSION = '10.0.4';
 const CACHE_NAME = `tudien-${APP_VERSION}`;
+const DATA_CACHE = 'tudien-data';   // dữ liệu Google Sheets, giữ qua các phiên bản
+const AUDIO_CACHE = 'tudien-audio'; // âm thanh tải offline, giữ qua các phiên bản
+const SHEETS_TIMEOUT_MS = 8000;
 const OFFLINE_PAGE = './offline.html';
 
 // ==================== FILE CẦN CACHE ====================
@@ -81,7 +84,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== 'tudien-audio') {
+          if (cacheName !== CACHE_NAME && cacheName !== AUDIO_CACHE && cacheName !== DATA_CACHE) {
             console.log(`🗑️ Xóa cache cũ: ${cacheName}`);
             return caches.delete(cacheName);
           }
@@ -135,98 +138,50 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// ==================== HÀM XỬ LÝ SHEETS API - FIX LỖI 408 ====================
+// ==================== HÀM XỬ LÝ SHEETS API - NETWORK-FIRST ====================
+// Luôn hỏi Google trước để từ mới thêm vào Sheet hiện ngay.
+// Chỉ dùng bản lưu trong cache khi mất mạng, quá thời gian chờ hoặc Google báo lỗi.
+// Dữ liệu lưu trong cache riêng DATA_CACHE, không bị xóa khi tăng APP_VERSION.
 async function handleSheetsRequest(request) {
-  console.log('📊 Đang xử lý Sheets API request...');
-  
-  // Tạo cache key
-  const cacheKey = request;
-  
+  const cache = await caches.open(DATA_CACHE);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), SHEETS_TIMEOUT_MS);
+
+  let networkResponse = null;
   try {
-    // THỬ LẤY TỪ CACHE TRƯỚC
-    const cached = await caches.match(cacheKey);
-    if (cached) {
-      const cacheTime = new Date(cached.headers.get('sw-cache-time') || 0);
-      const now = new Date();
-      const cacheAge = (now - cacheTime) / 1000 / 60; // phút
-      
-      // Nếu cache còn mới (dưới 30 phút), trả về cache
-      if (cacheAge < 30) {
-        console.log('✅ Trả về Sheets data từ cache (fresh)');
-        return cached;
-      }
-    }
-    
-    // Tạo request mới với timeout ngắn hơn
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 giây
-    
-    const fetchOptions = {
-      signal: controller.signal,
-      headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache'
-      }
-    };
-    
-    const response = await fetch(request, fetchOptions);
-    clearTimeout(timeoutId);
-    
-    if (response.ok) {
-      console.log('✅ Sheets API thành công, lưu vào cache');
-      
-      // Clone response để cache
-      const responseToCache = response.clone();
-      
-      // Thêm thời gian cache vào headers
-      const headers = new Headers(responseToCache.headers);
-      headers.append('sw-cache-time', new Date().toISOString());
-      
-      const cachedResponse = new Response(responseToCache.body, {
-        status: responseToCache.status,
-        statusText: responseToCache.statusText,
-        headers: headers
-      });
-      
-      // Lưu vào cache
-      const cache = await caches.open(CACHE_NAME);
-      await cache.put(cacheKey, cachedResponse);
-      
-      return response;
-    } else {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
+    // Không thêm header tùy chỉnh để tránh request preflight CORS (chậm thêm 1 vòng)
+    networkResponse = await fetch(request.url, { signal: controller.signal, cache: 'no-store' });
   } catch (error) {
-    console.warn('⚠️ Sheets API lỗi:', error.message);
-    
-    // Thử lấy từ cache (cũ cũng được)
-    const cached = await caches.match(cacheKey);
-    if (cached) {
-      console.log('✅ Trả về Sheets data từ cache (stale)');
-      return cached;
-    }
-    
-    // Fallback cuối cùng
-    console.warn('⚠️ Không có cache, trả về data rỗng');
-    return new Response(
-      JSON.stringify({
-        range: "Sheet1!A1:Z1000",
-        majorDimension: "ROWS",
-        values: [],
-        offline: true,
-        timestamp: new Date().toISOString()
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
-          'X-Fallback': 'true'
-        }
-      }
-    );
+    console.warn('⚠️ Sheets API không phản hồi:', error.message);
+  } finally {
+    clearTimeout(timeoutId);
   }
+
+  if (networkResponse && networkResponse.ok) {
+    const headers = new Headers(networkResponse.headers);
+    headers.set('sw-cache-time', new Date().toISOString());
+    const body = await networkResponse.clone().arrayBuffer();
+    await cache.put(request.url, new Response(body, {
+      status: networkResponse.status,
+      statusText: networkResponse.statusText,
+      headers
+    }));
+    return networkResponse;
+  }
+
+  // Mạng lỗi hoặc Google trả lỗi -> dùng bản đã lưu (kể cả cache của phiên bản cũ)
+  const cached = (await cache.match(request.url)) || (await caches.match(request.url));
+  if (cached) {
+    console.log('📴 Trả về dữ liệu Sheets đã lưu lúc', cached.headers.get('sw-cache-time'));
+    return cached;
+  }
+
+  // Không có bản lưu: trả lỗi thật để app hiện thông báo, không giả dữ liệu rỗng
+  if (networkResponse) return networkResponse;
+  return new Response(
+    JSON.stringify({ error: { code: 503, message: 'Offline và chưa có dữ liệu lưu sẵn' } }),
+    { status: 503, statusText: 'Offline', headers: { 'Content-Type': 'application/json' } }
+  );
 }
 
 // ==================== HÀM XỬ LÝ APPS SCRIPT ====================
