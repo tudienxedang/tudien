@@ -46,8 +46,10 @@ function isWebm_(blob, type) {
 }
 
 // ==================== MENU ====================
-function onOpen() {
-  SpreadsheetApp.getUi()
+// Menu được tạo từ onOpen() trong file "duyet-dong-gop-va-bao-ve.gs".
+// Nếu chỉ dùng riêng file này, đổi tên hàm bên dưới thành onOpen().
+function taoMenuGitHub_(ui) {
+  (ui || SpreadsheetApp.getUi())
     .createMenu('Âm thanh GitHub')
     .addItem('Đẩy âm thanh mới lên GitHub', 'syncAudioToGitHub')
     .addItem('Kiểm tra (không đẩy)', 'checkAudioOnGitHub')
