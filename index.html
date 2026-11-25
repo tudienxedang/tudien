@@ -4898,62 +4898,75 @@ body.dark-mode .form-label {
                 }
             }
 
+            // --- CHUẨN HÓA CHUỖI ĐỂ TÌM KIẾM ---
+            // Chuẩn Unicode NFC (bàn phím Unikey/điện thoại có thể gõ dấu dạng tổ hợp),
+            // chữ thường, gộp nhiều khoảng trắng thành một, bỏ khoảng trắng đầu/cuối.
+            function normalizeText(s) {
+                return (s || '').normalize('NFC').toLocaleLowerCase('vi').replace(/\s+/g, ' ').trim();
+            }
+
+            // Bỏ dấu tiếng Việt / Xơ Đăng: "Đi chợ" -> "di cho", "pơlong" -> "polong"
+            function removeDiacritics(s) {
+                return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').normalize('NFC');
+            }
+
+            // Lưu sẵn bản chuẩn hóa của từng mục để không tính lại mỗi lần gõ
+            function getSearchKeys(item, isVietToEthnic) {
+                const field = isVietToEthnic ? 'viet' : 'ethnic';
+                const cacheKey = isVietToEthnic ? '_sv' : '_se';
+                if (!item[cacheKey] || item[cacheKey].src !== item[field]) {
+                    const norm = normalizeText(item[field]);
+                    item[cacheKey] = { src: item[field], norm, plain: removeDiacritics(norm) };
+                }
+                return item[cacheKey];
+            }
+
+            function escapeRegex(s) {
+                return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
             // --- TÌM KIẾM THÔNG MINH ---
+            // - Không phân biệt hoa/thường: "ĐI CHỢ", "đi CHỢ" đều ra "Đi chợ"
+            // - Bỏ qua khoảng trắng thừa: "  đi    chợ  " -> "đi chợ"
+            // - Gõ KHÔNG dấu thì tìm không dấu: "di cho" -> "Đi chợ"
+            //   (gõ CÓ dấu thì so khớp đúng dấu, để "cá" không ra "cà", "ca"...)
+            // - Khớp nguyên từ, ưu tiên: trùng hoàn toàn > bắt đầu bằng từ khóa > từ ngắn hơn
             function smartSearch(term, direction) {
-                const rawKeyword = term.toLowerCase().trim();
                 const isVietToEthnic = direction === 'viet_to_ethnic';
-                
-                if (!rawKeyword || rawKeyword.length === 0) {
-                    return [];
-                }
-                
-                // Tạo regex để tìm từ chính xác
-                const safeKeyword = rawKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const strictRegex = new RegExp(`(^|[^a-zA-Z0-9À-ỹ])${safeKeyword}([^a-zA-Z0-9À-ỹ]|$)`, 'i');
-                
-                // Tìm từ chính xác
-                let exactMatches = [];
-                
-                if (isVietToEthnic) {
-                    exactMatches = dictionary.filter(item => {
-                        return item.viet && strictRegex.test(item.viet);
-                    });
-                } else {
-                    exactMatches = dictionary.filter(item => {
-                        return item.ethnic && strictRegex.test(item.ethnic);
-                    });
-                }
-                
-                // Chỉ trả về từ chính xác
-                const finalResults = exactMatches.map(item => ({
-                    ...item,
-                    matchType: 'exact',
-                    score: 20
-                }));
-                
-                // Loại bỏ trùng lặp
+                const query = normalizeText(term);
+                if (!query) return [];
+
+                const plainQuery = removeDiacritics(query);
+                const useAccents = plainQuery !== query; // người dùng có gõ dấu
+                const boundary = '[^\\p{L}\\p{M}\\p{N}]';
+                const wordRegex = new RegExp(`(^|${boundary})${escapeRegex(useAccents ? query : plainQuery)}(${boundary}|$)`, 'u');
+
                 const uniqueMap = new Map();
-                finalResults.forEach(item => {
+                for (const item of dictionary) {
+                    const keys = getSearchKeys(item, isVietToEthnic);
+                    const text = useAccents ? keys.norm : keys.plain;
+                    const q = useAccents ? query : plainQuery;
+                    if (!text || !wordRegex.test(text)) continue;
+
+                    let score = 1;                                  // chứa từ khóa
+                    if (text.startsWith(q)) score = 2;              // bắt đầu bằng từ khóa
+                    if (text === q) score = 3;                      // trùng hoàn toàn
+                    if (text === q && keys.norm === query) score = 4; // trùng cả dấu
+
                     const key = `${item.viet}|${item.ethnic}`;
-                    if (!uniqueMap.has(key) || item.score > uniqueMap.get(key).score) {
-                        uniqueMap.set(key, item);
+                    if (!uniqueMap.has(key) || score > uniqueMap.get(key).score) {
+                        uniqueMap.set(key, { ...item, matchType: 'exact', score });
                     }
-                });
-                
-                // Chuyển map thành mảng và sắp xếp
-                let displayList = Array.from(uniqueMap.values());
-                
-                // Sắp xếp
+                }
+
+                const displayList = Array.from(uniqueMap.values());
                 displayList.sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
                     const wordA = isVietToEthnic ? a.viet : a.ethnic;
                     const wordB = isVietToEthnic ? b.viet : b.ethnic;
-                    
-                    if (wordA.toLowerCase() === rawKeyword && wordB.toLowerCase() !== rawKeyword) return -1;
-                    if (wordB.toLowerCase() === rawKeyword && wordA.toLowerCase() !== rawKeyword) return 1;
-                    
                     return wordA.length - wordB.length;
                 });
-                
+
                 return displayList.slice(0, 50);
             }
 
@@ -5105,7 +5118,7 @@ body.dark-mode .form-label {
                     return;
                 }
                 
-                const term = dom.wordInput.value.trim();
+                const term = dom.wordInput.value.replace(/\s+/g, ' ').trim();
                 const direction = dom.directionSelect.value;
                 
                 if (!term) {
@@ -5140,21 +5153,22 @@ body.dark-mode .form-label {
             // --- AUTOCOMPLETE ---
             function initAutocomplete() {
                 dom.wordInput.addEventListener('input', function() {
-                    const term = this.value.toLowerCase().trim();
+                    const term = normalizeText(this.value);
                     dom.suggestions.innerHTML = '';
                     
                     if (term.length < 1) return;
                     
                     const direction = dom.directionSelect.value;
                     const isVietToEthnic = direction === 'viet_to_ethnic';
+                    const plainTerm = removeDiacritics(term);
+                    const useAccents = plainTerm !== term;
                     
-                    // Lấy các từ gợi ý
+                    // Lấy các từ gợi ý (không phân biệt hoa/thường, khoảng trắng, có/không dấu)
                     const suggestions = dictionary
                         .filter(item => {
-                            const wordToCheck = isVietToEthnic ? item.viet : item.ethnic;
-                            return wordToCheck && wordToCheck.toLowerCase().includes(term);
+                            const keys = getSearchKeys(item, isVietToEthnic);
+                            return useAccents ? keys.norm.includes(term) : keys.plain.includes(plainTerm);
                         })
-						 // Gợi ý số từ tìm kiếm
                         .slice(0, 5);
                     
                     suggestions.forEach(item => {
