@@ -3459,6 +3459,9 @@ body.dark-mode .download-progress-track {
             50% { transform: translateY(-6px); }
         }
 
+        /* Nút chỉ hiện khi JS xác định app chưa được cài (bỏ thuộc tính hidden) */
+        .install-button[hidden] { display: none !important; }
+
         .install-button:hover {
             transform: translateY(-6px) scale(1.05);
             box-shadow: 0 8px 25px rgba(39, 174, 96, 0.6);
@@ -3913,7 +3916,7 @@ body.dark-mode .form-label {
         </div>
     </div>
 
-    <button id="installButton" class="install-button" aria-label="Cài đặt ứng dụng">
+    <button id="installButton" class="install-button" aria-label="Cài đặt ứng dụng" hidden>
         <i class="fas fa-download"></i> Cài App Ngay
     </button>
 
@@ -4534,83 +4537,99 @@ body.dark-mode .form-label {
                 // Phát hiện trình duyệt của hãng (Samsung, Xiaomi, Oppo...)
                 isOEM: /SamsungBrowser|MiuiBrowser|HeyTapBrowser|OppoBrowser|VivoBrowser|UCBrowser/i.test(ua),
 
-                // Kiểm tra đã cài đặt chưa
-                isStandalone: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+                // Kiểm tra đang chạy trong cửa sổ app đã cài (mọi chế độ hiển thị dạng app)
+                isStandalone: isRunningAsApp()
             };
         }
 
-
-
-
-
+        // Đang chạy như app đã cài? (Chrome/Edge: standalone, minimal-ui, fullscreen,
+        // window-controls-overlay; iOS: navigator.standalone; Android TWA: referrer android-app://)
+        function isRunningAsApp() {
+            const modes = ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay'];
+            return window.navigator.standalone === true ||
+                modes.some(m => window.matchMedia(`(display-mode: ${m})`).matches) ||
+                document.referrer.startsWith('android-app://');
+        }
 
         const env = checkEnvironment();
-        let deferredPrompt = null; 
+        let deferredPrompt = null;
+        const installBtnElement = document.getElementById('installButton');
 
-        // Bắt sự kiện cài đặt của Chrome
+        // ===== ẨN/HIỆN NÚT CÀI ĐẶT =====
+        // Mặc định nút bị ẩn (thuộc tính hidden trong HTML). Chỉ hiện khi CHẮC CHẮN chưa cài:
+        //  - Chrome/Edge/Samsung: chỉ khi trình duyệt phát 'beforeinstallprompt'
+        //    (sự kiện này KHÔNG xảy ra nếu app đã được cài trong profile này).
+        //  - iPhone/iPad (Safari không có sự kiện trên): hiện hướng dẫn khi chưa mở từ màn hình chính.
+        //  - Zalo/Facebook/Instagram...: hiện hướng dẫn mở bằng trình duyệt.
+        //  - Đang chạy trong cửa sổ app: luôn ẩn.
+        function getInstallMode() {
+            if (isRunningAsApp()) return null;
+            if (env.isInApp) return 'inapp';
+            if (deferredPrompt) return env.isOEM ? 'oem' : 'prompt';
+            if (env.isIOS) return 'ios';
+            return null;
+        }
+
+        function renderStatusCard(mode) {
+            const old = document.querySelector('.pwa-status-card');
+            if (old) old.remove();
+            if (!mode) return;
+            const footerContent = document.querySelector('.footer-content');
+            if (!footerContent) return;
+
+            const cards = {
+                prompt: ['good', 'fas fa-mobile-alt', 'Sẵn sàng cài đặt', 'Nhấn nút "Cài App Ngay" ở góc trái để sử dụng Offline.'],
+                oem:    ['warning', 'fas fa-info-circle', 'Khuyên dùng Chrome', 'Trình duyệt này (Samsung/Xiaomi) có thể không hỗ trợ tốt nhất. Hãy dùng Google Chrome.'],
+                ios:    ['warning', 'fab fa-apple', 'Dành cho iPhone/iPad', 'Sử dụng Safari và làm theo hướng dẫn để cài đặt.'],
+                inapp:  ['error', 'fas fa-exclamation-triangle', 'Trình duyệt hạn chế', 'Bạn đang dùng Zalo/Facebook. Vui lòng mở bằng Chrome hoặc Safari để cài đặt.']
+            };
+            const [cardClass, iconClass, title, desc] = cards[mode];
+
+            const statusCard = document.createElement('div');
+            statusCard.className = `pwa-status-card ${cardClass}`;
+            const iconBox = document.createElement('div');
+            iconBox.className = 'pwa-icon-box';
+            const icon = document.createElement('i');
+            icon.className = iconClass;
+            iconBox.appendChild(icon);
+            const text = document.createElement('div');
+            text.className = 'pwa-text-content';
+            const strong = document.createElement('strong');
+            strong.textContent = title;
+            const span = document.createElement('span');
+            span.textContent = desc;
+            text.append(strong, span);
+            statusCard.append(iconBox, text);
+            footerContent.appendChild(statusCard);
+        }
+
+        function updateInstallUI() {
+            const mode = getInstallMode();
+            if (installBtnElement) installBtnElement.hidden = !mode;
+            renderStatusCard(mode);
+        }
+
+        // Bắt sự kiện cài đặt của Chrome/Edge -> chứng tỏ app CHƯA được cài
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            deferredPrompt = e; 
-            console.log("Đã bắt được sự kiện cài đặt.");
+            deferredPrompt = e;
+            updateInstallUI();
         });
 
-        // CHẠY KHI TRANG TẢI XONG
-        window.addEventListener('load', () => {
-            const installBtn = document.getElementById('installButton');
-            const footerContent = document.querySelector('.footer-content');
-
-            // 1. Xử lý hiển thị nút Cài đặt
-            // Nếu chưa cài đặt -> LUÔN HIỆN NÚT (Nhờ CSS opacity: 1)
-            // Nếu đã cài rồi -> Ẩn nút đi
-            if (installBtn && env.isStandalone) {
-                installBtn.style.display = 'none';
-            }
-
-            // 2. Tạo thẻ Cảnh báo đẹp ở Footer (Chỉ hiện khi chưa cài app)
-            if (!env.isStandalone) { 
-                const statusCard = document.createElement('div');
-                let cardClass = 'good';
-                let icon = '<i class="fas fa-mobile-alt"></i>';
-                let title = 'Sẵn sàng cài đặt';
-                let desc = 'Nhấn nút "Cài App Ngay" ở góc trái để sử dụng Offline.';
-
-                // Logic hiển thị nội dung cảnh báo theo môi trường
-                if (env.isInApp) {
-                    cardClass = 'error';
-                    icon = '<i class="fas fa-exclamation-triangle"></i>';
-                    title = 'Trình duyệt hạn chế';
-                    desc = 'Bạn đang dùng Zalo/Facebook. Vui lòng mở bằng Chrome hoặc Safari để cài đặt.';
-                } 
-                else if (env.isOEM) {
-                    cardClass = 'warning';
-                    icon = '<i class="fas fa-info-circle"></i>';
-                    title = 'Khuyên dùng Chrome';
-                    desc = 'Trình duyệt này (Samsung/Xiaomi) có thể không hỗ trợ tốt nhất. Hãy dùng Google Chrome.';
-                }
-                else if (env.isIOS) {
-                    cardClass = 'warning'; // iOS màu vàng nhẹ
-                    icon = '<i class="fab fa-apple"></i>';
-                    title = 'Dành cho iPhone/iPad';
-                    desc = 'Sử dụng Safari và làm theo hướng dẫn để cài đặt.';
-                }
-
-                // Render HTML thẻ cảnh báo
-                statusCard.className = `pwa-status-card ${cardClass}`;
-                statusCard.innerHTML = `
-                    <div class="pwa-icon-box">${icon}</div>
-                    <div class="pwa-text-content">
-                        <strong>${title}</strong>
-                        <span>${desc}</span>
-                    </div>
-                `;
-                
-                // Chèn vào cuối footer
-                if(footerContent) footerContent.appendChild(statusCard);
-            }
+        // Khi người dùng cài xong, Chrome chuyển tab sang cửa sổ app -> display-mode đổi -> ẩn nút
+        ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay'].forEach(m => {
+            const mq = window.matchMedia(`(display-mode: ${m})`);
+            if (mq.addEventListener) mq.addEventListener('change', updateInstallUI);
         });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateInstallUI);
+        } else {
+            updateInstallUI();
+        }
 
         // XỬ LÝ KHI NHẤN NÚT CÀI ĐẶT
-        const installBtnElement = document.getElementById('installButton');
+
         if (installBtnElement) {
             installBtnElement.addEventListener('click', () => {
                 const modal = document.getElementById('installGuideModal');
@@ -4681,10 +4700,9 @@ body.dark-mode .form-label {
 
         // Sự kiện khi cài đặt thành công -> Ẩn nút đi
         window.addEventListener('appinstalled', () => {
-            if(installBtnElement) installBtnElement.style.display = 'none';
-            // Ẩn luôn thẻ cảnh báo ở footer nếu có
-            const statusCard = document.querySelector('.pwa-status-card');
-            if(statusCard) statusCard.style.display = 'none';
+            deferredPrompt = null;
+            if (installBtnElement) installBtnElement.hidden = true;
+            renderStatusCard(null);
             
             showToast('Cài đặt thành công! Kiểm tra màn hình chính.', 'success');
         });
